@@ -1,0 +1,675 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.16.6 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Nonlinear Least Squares | CaseyH</title>
+<meta name="description" content="A site to collect tutorials, thoughts, and ramblings on all things math and programming">
+
+
+  <meta name="author" content="Casey Haaland">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="CaseyH">
+<meta property="og:title" content="Nonlinear Least Squares">
+<meta property="og:url" content="http://localhost:4000/mathematics/gauss-newton/">
+
+
+  <meta property="og:description" content="A site to collect tutorials, thoughts, and ramblings on all things math and programming">
+
+
+
+  <meta property="og:image" content="http://localhost:4000/assets/images/shakespeare-zipf-param-surface%20copy.png">
+
+
+
+
+
+  <meta property="article:published_time" content="2019-09-18T22:12:45+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="http://localhost:4000/mathematics/gauss-newton/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Casey Haaland",
+      "url": "http://localhost:4000/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="CaseyH Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+
+<!--[if IE ]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single wide">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          CaseyH
+          <span class="site-subtitle">Machine Learning, Math, Programming</span>
+        </a>
+        <ul class="visible-links"></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+  
+
+
+
+
+
+
+
+
+
+
+
+<div class="page__hero--overlay"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/assets/images/shakespeare-zipf-param-surface%20copy.png');"
+>
+  
+    <div class="wrapper">
+      <h1 id="page-title" class="page__title" itemprop="headline">
+        
+          Nonlinear Least Squares
+
+        
+      </h1>
+      
+        <p class="page__lead">
+</p>
+      
+      
+        <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  2 minute read
+</p>
+      
+      
+      
+    </div>
+  
+  
+</div>
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+
+      
+        <img src="/assets/images/casey.jpg" alt="Casey Haaland" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Casey Haaland</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Electrical Engineer / Software Developer / Math Hobbyist</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">London, UK</span>
+        </li>
+      
+
+      
+        
+          
+            <li><a href="https://github.com/chaaland" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+          
+        
+          
+            <li><a href="https://linkedin.com/chaaland" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn</a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Nonlinear Least Squares">
+    <meta itemprop="description" content="">
+    <meta itemprop="datePublished" content="September 18, 2019">
+    
+
+    <div class="page__inner-wrap">
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#zipfs-law">Zipf’s Law</a></li>
+  <li><a href="#ordinary-least-squares">Ordinary Least Squares</a></li>
+  <li><a href="#derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</a></li>
+  <li><a href="#python-implementation">Python Implementation</a></li>
+  <li><a href="#conclusion">Conclusion</a>
+    <ul>
+      <li><a href="#references">References</a></li>
+    </ul>
+  </li>
+</ul>
+            </nav>
+          </aside>
+        
+        <p>Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many (most?) simply aren’t familiar with non-linear methods. Historically, solving nonlinear least squares (NNLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people’s familarity with the methods. As we’ll see in the following post, solving NNLS problems is just as simple as OLS.</p>
+
+<h2 id="zipfs-law">Zipf’s Law</h2>
+<p>Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material that follows. Consider modeling the frequency of a word’s appearance in a corpus with vocabulary <script type="math/tex">V</script>, against its rank (by frequency). We start by downloading the text of Shakespeare’s <em>Hamlet</em> using python’s <code class="highlighter-rouge">requests</code> library to get the raw html, then parsing out the raw text using <code class="highlighter-rouge">BeautifulSoup</code> as shown in the following script</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="n">pjoin</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
+
+
+<span class="k">def</span> <span class="nf">download_text</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">html_page</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">content</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html_page</span><span class="p">,</span> <span class="s">"html.parser"</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">text</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s">"hamlet.txt"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="s">".."</span><span class="p">,</span> <span class="s">"txt"</span><span class="p">)):</span>
+        <span class="n">hamlet_url</span> <span class="o">=</span> <span class="s">"http://shakespeare.mit.edu/hamlet/full.html"</span>
+        <span class="n">hamlet_text</span> <span class="o">=</span> <span class="n">download_text</span><span class="p">(</span><span class="n">hamlet_url</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="s">""</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">hamlet_text</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">"a"</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="n">f</span><span class="s">"{t} "</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="s">".."</span><span class="p">,</span> <span class="s">"txt"</span><span class="p">,</span> <span class="s">"hamlet.txt"</span><span class="p">),</span> <span class="s">"wt"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></code></pre></figure>
+
+<p>With this, we can easily write a function computing the frequencies of each word in the text using a specialised <code class="highlighter-rouge">dict</code> contained in python’s <code class="highlighter-rouge">collections</code> module</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="n">pjoin</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
+
+
+<span class="k">def</span> <span class="nf">word_freqs</span><span class="p">(</span><span class="n">topk</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">):</span>
+    <span class="n">word_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span> 
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="s">".."</span><span class="p">,</span> <span class="s">"txt"</span><span class="p">,</span> <span class="s">"hamlet.txt"</span><span class="p">),</span> <span class="s">"rt"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">"[^0-9a-zA-Z ]+"</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="n">all_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">" "</span><span class="p">)]</span>
+        <span class="n">word_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">all_words</span><span class="p">)</span>
+
+    <span class="n">n_words</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_words</span><span class="p">)</span>
+    <span class="n">words</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">word_counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="n">topk</span><span class="p">))</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">c</span> <span class="o">/</span> <span class="n">n_words</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">words</span><span class="p">,</span> <span class="n">freqs</span></code></pre></figure>
+
+<p>We can now use this data to get a plot of top 100 word’s frequencies. A quick glance at the plot below should give a good indication that a <em>power law</em> of the form</p>
+
+<script type="math/tex; mode=display">f(r) = Kr^\alpha</script>
+
+<p>where <script type="math/tex">f :\{1,2, \ldots, \lvert V \rvert\} \rightarrow \mathbf{R}</script>, could be a reasonable fit to this data</p>
+
+<figure class="third">
+    <img src="" />
+    <a href="/assets/images/shakespeare-freq-scatter.png"><img src="/assets/images/shakespeare-freq-scatter.png" /></a>
+    <img src="" />
+</figure>
+
+<p>As it turns out, this observation is not a specific characteristic <em>Hamlet</em>, but is one instance of a broader phenomenon known as <em>Zipf’s Law</em>. From Wikipedia,</p>
+<blockquote>
+  <p>Zipf’s law is an empirical law formulated using mathematical statistics that refers to the fact that many types of data studied in the physical and social sciences can be approximated with a Zipfian distribution, one of a family of related discrete power law probability distributions</p>
+</blockquote>
+
+<p>Now that we’ve established a parametric form for the model along with 100 data points, what remains is to find a suitable <script type="math/tex">K</script> and <script type="math/tex">\alpha</script> that best fit the data.</p>
+
+<h2 id="ordinary-least-squares">Ordinary Least Squares</h2>
+<p>If you’ve taken any linear algebra, you’ll most likely recall the least squares optimisation problem</p>
+
+<script type="math/tex; mode=display">\underset{x}{\text{minimize}} \quad ||Ax - y||^2</script>
+
+<p>where <script type="math/tex">y\in \mathbf{R}^{m}</script> and <script type="math/tex">A\in \mathbf{R}^{m\times n}</script> with <script type="math/tex">m \ge n</script> and having <em>linearly independent</em> columns. The vector inside the Euclidean norm is often called the <em>residual vector</em> and denoted <script type="math/tex">r \in \mathbf{R}^m</script>. Ordinary least squares problems are ideal for a number of reasons but the most salient are</p>
+<ul>
+  <li>objective is differentiable</li>
+  <li>objective is <em>convex</em></li>
+  <li>closed form solution given by the <em>normal equations</em></li>
+</ul>
+
+<script type="math/tex; mode=display">A^TAx^{\star} = A^T y</script>
+
+<h2 id="derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</h2>
+
+<h2 id="python-implementation">Python Implementation</h2>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<h3 id="references">References</h3>
+<ol>
+  <li><a href="https://en.wikipedia.org/wiki/Zipf%27s_law">Zipf’s Law Wikipedia</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm">Gauss-Newton Algorithm Wikipedia</a></li>
+  <li><a href="">Stanford’s Intro to Linear Dynamical Systems</a></li>
+</ol>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/tags/#gauss-newton" class="page__taxonomy-item" rel="tag">Gauss-Newton</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#least-squares" class="page__taxonomy-item" rel="tag">Least Squares</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#nonlinear-modeling" class="page__taxonomy-item" rel="tag">Nonlinear modeling</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#optimization" class="page__taxonomy-item" rel="tag">Optimization</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#regression" class="page__taxonomy-item" rel="tag">Regression</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/categories/#mathematics" class="page__taxonomy-item" rel="tag">Mathematics</a>
+    
+    </span>
+  </p>
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2019-09-18T22:12:45+01:00">September 18, 2019</time></p>
+        
+      </footer>
+
+      <section class="page__share">
+  
+
+  <a href="https://twitter.com/intent/tweet?text=Nonlinear+Least+Squares%20http%3A%2F%2Flocalhost%3A4000%2Fmathematics%2Fgauss-newton%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fmathematics%2Fgauss-newton%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fmathematics%2Fgauss-newton%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+</section>
+
+
+      
+  <nav class="pagination">
+    
+      <a href="/edge%20case/quadratic-penalty-algo/" class="pagination--pager" title="Quadratic Penalty Algo
+">Previous</a>
+    
+    
+      <a href="#" class="pagination--pager disabled">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="/edge%20case/quadratic-penalty-algo/" rel="permalink">Quadratic Penalty Algo
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  less than 1 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different wa...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="/jekyll/update/welcome-to-jekyll/" rel="permalink">Welcome to Jekyll!
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  less than 1 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different wa...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="/edge%20case/edge-cases/" rel="permalink">Edge Case: Many Tags
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  less than 1 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">This post has many tags.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+    <ul class="social-icons">
+      
+  
+      
+        
+          
+            <li><a href="https://github.com/chaaland" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+          
+        
+          
+            <li><a href="https://linkedin.com/chaaland" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn</a></li>
+          
+        
+      
+  
+      <!-- <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li> -->
+    </ul>
+  </div>
+  
+  <div class="page__footer-copyright">&copy; 2019 Casey Haaland. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+  
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+  <script src="https://kit.fontawesome.com/4eee35f757.js"></script>
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+  </body>
+</html>
