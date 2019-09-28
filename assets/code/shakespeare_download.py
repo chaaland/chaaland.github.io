@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 pjoin = os.path.join
 
 
-def download_text(url: str):
+def download_text(url: str) -> str:
     res = requests.get(url)
     html_page = res.content
     soup = BeautifulSoup(html_page, "html.parser")

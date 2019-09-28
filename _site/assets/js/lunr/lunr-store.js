@@ -15,7 +15,7 @@ var store = [{
         "url": "http://localhost:4000/edge%20case/quadratic-penalty-algo/",
         "teaser":null},{
         "title": "Nonlinear Least Squares",
-        "excerpt":"Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many (most?) simply aren’t familiar with non-linear methods. Historically, solving...","categories": ["Mathematics"],
+        "excerpt":"Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren’t familiar with non-linear methods. Historically, solving nonlinear...","categories": ["Mathematics"],
         "tags": ["Optimization","Nonlinear modeling","Gauss-Newton","Least Squares","Regression"],
         "url": "http://localhost:4000/mathematics/gauss-newton/",
         "teaser":null},]

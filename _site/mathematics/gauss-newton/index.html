@@ -27,7 +27,7 @@
 
 
 
-  <meta property="og:image" content="http://localhost:4000/assets/images/shakespeare-zipf-param-surface%20copy.png">
+  <meta property="og:image" content="http://localhost:4000/assets/images/shakespeare-zipf-param-surface-splash.png">
 
 
 
@@ -101,7 +101,7 @@
 
   </head>
 
-  <body class="layout--single wide">
+  <body class="layout--single">
     <nav class="skip-links">
   <h2 class="screen-reader-text">Skip links</h2>
   <ul>
@@ -154,7 +154,7 @@
 
 
 <div class="page__hero--overlay"
-  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/assets/images/shakespeare-zipf-param-surface%20copy.png');"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/assets/images/shakespeare-zipf-param-surface-splash.png');"
 >
   
     <div class="wrapper">
@@ -174,7 +174,7 @@
 
 
 
-  2 minute read
+  4 minute read
 </p>
       
       
@@ -319,18 +319,19 @@
               <ul class="toc__menu">
   <li><a href="#zipfs-law">Zipf’s Law</a></li>
   <li><a href="#ordinary-least-squares">Ordinary Least Squares</a></li>
-  <li><a href="#derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</a></li>
-  <li><a href="#python-implementation">Python Implementation</a></li>
-  <li><a href="#conclusion">Conclusion</a>
+  <li><a href="#nonlinear-least-squares">Nonlinear Least Squares</a>
     <ul>
-      <li><a href="#references">References</a></li>
+      <li><a href="#derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</a></li>
+      <li><a href="#python-implementation">Python Implementation</a></li>
     </ul>
   </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
 </ul>
             </nav>
           </aside>
         
-        <p>Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many (most?) simply aren’t familiar with non-linear methods. Historically, solving nonlinear least squares (NNLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people’s familarity with the methods. As we’ll see in the following post, solving NNLS problems is just as simple as OLS.</p>
+        <p>Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren’t familiar with non-linear methods. Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people’s familarity with the methods. As we’ll see in the following post, solving NLLS problems is just as simple as OLS.</p>
 
 <h2 id="zipfs-law">Zipf’s Law</h2>
 <p>Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material that follows. Consider modeling the frequency of a word’s appearance in a corpus with vocabulary <script type="math/tex">V</script>, against its rank (by frequency). We start by downloading the text of Shakespeare’s <em>Hamlet</em> using python’s <code class="highlighter-rouge">requests</code> library to get the raw html, then parsing out the raw text using <code class="highlighter-rouge">BeautifulSoup</code> as shown in the following script</p>
@@ -342,7 +343,7 @@
 <span class="n">pjoin</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
 
 
-<span class="k">def</span> <span class="nf">download_text</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">download_text</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">html_page</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">content</span>
     <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html_page</span><span class="p">,</span> <span class="s">"html.parser"</span><span class="p">)</span>
@@ -363,7 +364,7 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="s">".."</span><span class="p">,</span> <span class="s">"txt"</span><span class="p">,</span> <span class="s">"hamlet.txt"</span><span class="p">),</span> <span class="s">"wt"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></code></pre></figure>
 
-<p>With this, we can easily write a function computing the frequencies of each word in the text using a specialised <code class="highlighter-rouge">dict</code> contained in python’s <code class="highlighter-rouge">collections</code> module</p>
+<p>With this, we can easily write a function computing the frequencies of each word in the text. Python even has a specialised <code class="highlighter-rouge">dict</code> called <code class="highlighter-rouge">Counter</code> in the <code class="highlighter-rouge">collections</code> module that does almost exactly this.</p>
 
 <figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -385,29 +386,25 @@
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">c</span> <span class="o">/</span> <span class="n">n_words</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">words</span><span class="p">,</span> <span class="n">freqs</span></code></pre></figure>
 
-<p>We can now use this data to get a plot of top 100 word’s frequencies. A quick glance at the plot below should give a good indication that a <em>power law</em> of the form</p>
+<p>We can now use this data to get a plot of top 100 word’s frequencies. Plotting freq vs. rank as in Figure 1 gives a good indication that a <em>power law</em> of the form</p>
 
 <script type="math/tex; mode=display">f(r) = Kr^\alpha</script>
 
 <p>where <script type="math/tex">f :\{1,2, \ldots, \lvert V \rvert\} \rightarrow \mathbf{R}</script>, could be a reasonable fit to this data</p>
 
-<figure class="third">
-    <img src="" />
-    <a href="/assets/images/shakespeare-freq-scatter.png"><img src="/assets/images/shakespeare-freq-scatter.png" /></a>
-    <img src="" />
-</figure>
-
-<p>As it turns out, this observation is not a specific characteristic <em>Hamlet</em>, but is one instance of a broader phenomenon known as <em>Zipf’s Law</em>. From Wikipedia,</p>
+<p>As it turns out, this observation is not a specific characteristic of <em>Hamlet</em>, but is one example of a broader phenomenon known as <em>Zipf’s Law</em>. From Wikipedia,</p>
 <blockquote>
   <p>Zipf’s law is an empirical law formulated using mathematical statistics that refers to the fact that many types of data studied in the physical and social sciences can be approximated with a Zipfian distribution, one of a family of related discrete power law probability distributions</p>
 </blockquote>
 
-<p>Now that we’ve established a parametric form for the model along with 100 data points, what remains is to find a suitable <script type="math/tex">K</script> and <script type="math/tex">\alpha</script> that best fit the data.</p>
+<p>Though Zipf’s Law gives a parametric form for the model, what remains is to find a suitable <script type="math/tex">K</script> and <script type="math/tex">\alpha</script> that best fit the data.</p>
 
 <h2 id="ordinary-least-squares">Ordinary Least Squares</h2>
 <p>If you’ve taken any linear algebra, you’ll most likely recall the least squares optimisation problem</p>
 
-<script type="math/tex; mode=display">\underset{x}{\text{minimize}} \quad ||Ax - y||^2</script>
+<script type="math/tex; mode=display">\begin{equation}
+\underset{x}{\text{minimize}} \quad ||Ax - y||^2
+\end{equation}</script>
 
 <p>where <script type="math/tex">y\in \mathbf{R}^{m}</script> and <script type="math/tex">A\in \mathbf{R}^{m\times n}</script> with <script type="math/tex">m \ge n</script> and having <em>linearly independent</em> columns. The vector inside the Euclidean norm is often called the <em>residual vector</em> and denoted <script type="math/tex">r \in \mathbf{R}^m</script>. Ordinary least squares problems are ideal for a number of reasons but the most salient are</p>
 <ul>
@@ -418,13 +415,82 @@
 
 <script type="math/tex; mode=display">A^TAx^{\star} = A^T y</script>
 
-<h2 id="derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</h2>
+<p>The power law model proposed to fit the empirical word frequency data is very clearly nonlinear in the parameters <script type="math/tex">K</script> and <script type="math/tex">\alpha</script>. Ideally we’d like to find a <script type="math/tex">K</script> and <script type="math/tex">\alpha</script> that solve the following optimisation problem</p>
 
-<h2 id="python-implementation">Python Implementation</h2>
+<script type="math/tex; mode=display">\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{100} \left(f_i - Kr_i^\alpha\right)^2</script>
+
+<p>where <script type="math/tex">f_i\in\mathbf{R}_+</script> is the empircal frequency of the word with rank <script type="math/tex">r_i</script>. If instead of fitting the empirical frequencies with a power law, we fit the logarithm of the frequencies (since frequencies are all &gt;0 this is well defined), the optimisation problem becomes</p>
+
+<script type="math/tex; mode=display">\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{100} \left(\log f_i - \log K - \alpha \log r_i\right)^2</script>
+
+<p>This logarithmic transform moves the data from the <script type="math/tex">f-r</script> space to the <script type="math/tex">\log f-\log r</script> where we can more clearly see the problem as a simple linear regression.</p>
+<figure class="half">
+    <a href="/assets/images/shakespeare-freq-scatter.png"><img src="/assets/images/shakespeare-freq-scatter.png" /></a>
+    <a href="/assets/images/shakespeare-zipf-transformed-param-scatter.png"><img src="/assets/images/shakespeare-zipf-transformed-param-scatter.png" /></a>
+    <figcaption>Figure 1</figcaption>
+</figure>
+
+<p>Since the logarithm makes the model linear with respect to the parameters <script type="math/tex">\log K</script> and <script type="math/tex">\alpha</script>, we can write this optimisation in standard form with <script type="math/tex">A\in \mathbf{R}^{100 \times 2}</script>, <script type="math/tex">x\in\mathbf{R}^2</script>, and <script type="math/tex">y\in \mathbf{R}^{100}</script> as below.</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+A =
+\begin{bmatrix}
+1 & \log r_1\\
+1 & \log r_2\\
+\vdots & \vdots\\
+1 & \log r_{100}\\
+\end{bmatrix},\,
+x = 
+\begin{bmatrix}
+\log K\\
+\alpha \\
+\end{bmatrix}, \,
+y = 
+\begin{bmatrix}
+\log f_1\\
+\log f_2\\
+\vdots\\
+\log f_{100}\\
+\end{bmatrix} %]]></script>
+
+<figure class="half">
+    <a href="/assets/images/shakespeare-zipf-transformed-param-contours.png"><img src="/assets/images/shakespeare-zipf-transformed-param-contours.png" /></a>
+    <a href="/assets/images/shakespeare-zipf-transformed-param-surface.png"><img src="/assets/images/shakespeare-zipf-transformed-param-surface.png" /></a>
+</figure>
+
+<p>The plots of the objective function above confirm it is convex quadratic with a unique minimum. From the plot we can see the minimum is achieved in the region where <script type="math/tex">\log K\approx -2.5</script>  and <script type="math/tex">\alpha\approx -0.85</script>. Using python’s <code class="highlighter-rouge">scipy.optimize</code> module to fit a linear model on the Hamlet data gives</p>
+
+<script type="math/tex; mode=display">f_{OLS}(r) = 0.086 r^{-0.85}</script>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">least_squares</span>
+
+<span class="k">def</span> <span class="nf">fit_zipf_ols</span><span class="p">(</span><span class="n">freq_counts_desc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">freq_counts_desc</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">freq_counts_desc</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ranks</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">freq_counts_desc</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">A</span> <span class="err">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="n">opt_result</span> <span class="o">=</span> <span class="n">least_squares</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">loss</span><span class="o">=</span><span class="s">"linear"</span><span class="p">)</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">opt_result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">opt_result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">opt_result</span><span class="o">.</span><span class="n">cost</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">K</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">mse</span></code></pre></figure>
+
+<h2 id="nonlinear-least-squares">Nonlinear Least Squares</h2>
+
+<h3 id="derivation-of-the-gauss-newton-method">Derivation of the Gauss-Newton Method</h3>
+<figure class="half">
+    <a href="/assets/images/shakespeare-zipf-param-contours.png"><img src="/assets/images/shakespeare-zipf-param-contours.png" /></a>
+    <a href="/assets/images/shakespeare-zipf-param-surface-best-angle.png"><img src="/assets/images/shakespeare-zipf-param-surface-best-angle.png" /></a>
+</figure>
+
+<h3 id="python-implementation">Python Implementation</h3>
 
 <h2 id="conclusion">Conclusion</h2>
 
-<h3 id="references">References</h3>
+<h2 id="references">References</h2>
 <ol>
   <li><a href="https://en.wikipedia.org/wiki/Zipf%27s_law">Zipf’s Law Wikipedia</a></li>
   <li><a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm">Gauss-Newton Algorithm Wikipedia</a></li>
