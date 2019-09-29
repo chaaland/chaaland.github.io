@@ -15,13 +15,14 @@ def word_freqs(topk: int = 25):
     with open(pjoin("..", "txt", "hamlet.txt"), "rt") as f:
         text = " ".join(f.readlines())
         text = re.sub("[^0-9a-zA-Z ]+", "", text)
-        all_words = [word.lower() for word in text.split(" ")]
-        word_counts = Counter(all_words)
+        all_words = [word.lower() for word in text.split() if len(word) > 0]
+        n_words = len(all_words)
+        word_freqs = Counter(all_words)
+        for word in word_freqs.keys():
+            word_freqs[word] /= n_words
 
-    n_words = len(all_words)
-    words, counts = zip(*word_counts.most_common(topk))
-    freqs = np.asarray([c / n_words for c in counts])
-    return words, freqs
+    words, freqs = zip(*word_freqs.most_common(topk))
+    return words, np.asarray(freqs)
 
 def plot_scatter_points(freqs):
     xs = np.arange(1, 1 + freqs.size)
@@ -31,7 +32,9 @@ def plot_scatter_points(freqs):
     plt.title(r"Word Frequency vs. Rank", fontsize=20)
     plt.xlabel("Rank", fontsize=18)
     plt.ylabel("Frequency", fontsize=18)
-    plt.grid(True)
+    plt.grid(b=True, which="major", linestyle='-')
+    plt.minorticks_on()
+    plt.grid(b=True, which="minor", linestyle='--')
     plt.tight_layout()
     plt.savefig(pjoin("..", "images", "shakespeare-freq-scatter.png"))
 
@@ -44,7 +47,7 @@ def fit_zipf_ols(freq_counts_desc: np.ndarray):
 
     K = np.exp(opt_result.x[0])
     alpha = opt_result.x[1]
-    mse = np.sqrt(opt_result.cost)
+    mse = np.sqrt(np.mean(2 * opt_result.cost)) # least_squares has 0.5 in objective
 
     return K, alpha, mse
 
@@ -174,7 +177,7 @@ def plot_zipf_transformed_param_contours(empirical_freqs):
     plt.tight_layout()
     plt.savefig(pjoin("..", "images", "shakespeare-zipf-transformed-param-contours.png"))
 
-def plot_transformed_scatter_points(freqs, N):
+def plot_transformed_scatter_points(freqs):
     ranks = np.arange(1, 1 + freqs.size)
     xs = np.log(ranks)
     ys = np.log(freqs)
@@ -184,7 +187,9 @@ def plot_transformed_scatter_points(freqs, N):
     plt.title(r"$\log(freq)$ vs. $\log(rank)$", fontsize=20)
     plt.xlabel(r"$\log(rank)$", fontsize=18)
     plt.ylabel(r"$\log(freq)$", fontsize=18)
-    plt.grid(True)
+    plt.grid(b=True, which="major", linestyle='-')
+    plt.minorticks_on()
+    plt.grid(b=True, which="minor", linestyle='--')    
     plt.tight_layout()
     plt.savefig(pjoin("..", "images", "shakespeare-zipf-transformed-param-scatter.png"))
 
@@ -201,6 +206,9 @@ def plot_ols_zipf_fit(empirical_freqs):
     plt.plot(xs, K_ols * xs ** alpha_ols, "g", linewidth=2, label=rf"$f_{{ols}}(x) = {K_ols:.2}x^{{{alpha_ols:.2}}}$")
     plt.ylim([0, 0.04])
     plt.legend()
+    plt.grid(b=True, which="major", linestyle='-')
+    plt.minorticks_on()
+    plt.grid(b=True, which="minor", linestyle='--')
     plt.tight_layout()
     plt.savefig(pjoin("..", "images", "shakespeare-zipf-fit.png"))
 
@@ -242,10 +250,10 @@ if __name__ == "__main__":
     N = 100
     most_freq_words, freqs = word_freqs(N)
     plot_scatter_points(freqs)
-    plot_zipf_param_surface(freqs)
-    plot_zipf_param_contours(freqs)
-    plot_transformed_scatter_points(freqs, N)
+    # plot_zipf_param_surface(freqs)
+    # plot_zipf_param_contours(freqs)
+    plot_transformed_scatter_points(freqs)
     plot_zipf_transformed_param_contours(freqs)
     plot_zipf_transformed_param_surface(freqs)
     # plot_nlls_ols_fit(freqs)
-    # plot_ols_zipf_fit(freqs, N)
+    # plot_ols_zipf_fit(freqs)
