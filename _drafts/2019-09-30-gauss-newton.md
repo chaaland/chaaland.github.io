@@ -22,7 +22,7 @@ header:
 Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren't familiar with non-linear methods. Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people's familarity with the methods. As we'll see in the following post, solving NLLS problems is just as simple as OLS.
 
 ## Zipf's Law
-Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material that follows. Consider modeling the frequency of a word's appearance in a corpus with vocabulary $$V$$, against its rank (by frequency). We start by downloading the text of Shakespeare's _Hamlet_ using python's `requests` library to get the raw html, then parsing out the raw text using `BeautifulSoup` as shown in the following script 
+Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material. Consider modeling the frequency of a word's appearance in a corpus with vocabulary $$V$$, against its rank (by frequency). For this example, I used the the text of Shakespeare's _Hamlet_ which was downloaded using python's `requests` library to get the raw html, then the raw text  was parsed out using `BeautifulSoup` as shown in the following script 
 
 {% highlight python %}
 import os
@@ -54,7 +54,7 @@ if __name__ == "__main__":
             f.writelines(output)
 {% endhighlight %}
 
-With this, we can easily write a function computing the frequencies of each word in the text. Python even has a specialised `dict` called `Counter` in the `collections` module that does almost exactly this.
+With the text downloaded this, we can easily write a function that computes the overall frequencies of each word in the text. Python even has a specialised `dict` called `Counter` in the `collections` module that does almost exactly this (except it gives raw counts instead of frequencies). Note that the words are naively split on space but a more specialised library for tokenisation like `nltk` might be better suited for this task.
 
 {% highlight python %}
 import os
@@ -151,7 +151,7 @@ $$
 
 The plots of the objective function above confirm it is convex quadratic with a unique minimum. From the plot we can see the minimum is achieved in the region where $$\log K\approx -2.5$$  and $$\alpha\approx -0.85$$. Using python's `scipy.optimize` module to fit a linear model on the Hamlet data gives
 
-$$f_{OLS}(r) = 0.086 r^{-0.85}$$
+$$f_{OLS}(r) = 0.079 r^{-0.83}$$
 
 {% highlight python %}
 import numpy as np
