@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import lsq_linear
 
+
 def gauss_newton(f, x0, J, max_iter: int = 100):
     iterates = [x0,]
     costs = [np.mean(np.square(f(x0))),]
@@ -16,7 +17,3 @@ def gauss_newton(f, x0, J, max_iter: int = 100):
         cnt += 1
     
     return iterates, costs
-
-
-
-

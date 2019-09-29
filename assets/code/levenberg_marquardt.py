@@ -13,11 +13,12 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
         A = np.stack([J(x_k), np.sqrt(mu) * np.eye(x_k.shape)], axis=0)
         b = np.stack([f(x_k) - A.T @ x_k, np.sqrt(mu) * x_k], axis=0)
         result = lsq_linear(A, b)
-        iterates.append(result.x)
-        costs.append(np.mean(np.square(result.x))
-        cnt += 1
-        if decrease:
+
+        if np.mean(np.square(f(result.x))):
             mu /= 1.5
+            iterates.append(result.x)
+            costs.append(np.mean(np.square(result.x))
+            cnt += 1
         else:
             mu *= 2
     
