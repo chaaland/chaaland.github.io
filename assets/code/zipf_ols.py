@@ -47,7 +47,7 @@ def fit_zipf_ols(freq_counts_desc: np.ndarray):
 
     K = np.exp(opt_result.x[0])
     alpha = opt_result.x[1]
-    mse = np.sqrt(np.mean(2 * opt_result.cost)) # least_squares has 0.5 in objective
+    mse = np.sqrt(2 * opt_result.cost) # least_squares has 0.5 in objective
 
     return K, alpha, mse
 
@@ -218,11 +218,11 @@ def fit_zipf_nlls(empirical_freqs):
     result = least_squares(r, x0=np.zeros(2))
     K = result.x[0]
     alpha = result.x[1]
-    mse = np.sqrt(result.cost)
+    mse = np.sqrt(2 * result.cost)
 
     return K, alpha, mse
 
-def plot_nlls_ols_fit(empirical_freqs):
+def plot_nlls_fit(empirical_freqs):
     K_nlls, alpha_nlls, mse = fit_zipf_nlls(freqs)
     print(f"K: {K_nlls}, alpha: {alpha_nlls}, mse: {mse}")
     plt.figure(figsize=(10,10))
@@ -232,7 +232,7 @@ def plot_nlls_ols_fit(empirical_freqs):
     plt.grid(True)
     
     xs = np.asarray([i for i in range(1, empirical_freqs.size + 1)])
-    ys = K_nlls * xs ** alpha_nlls, 
+    ys = K_nlls * xs ** alpha_nlls
     plt.scatter(xs, empirical_freqs, alpha=0.9)
     plt.plot(
         xs, ys,
@@ -245,15 +245,54 @@ def plot_nlls_ols_fit(empirical_freqs):
     plt.show()
     # plt.savefig(pjoin("..", "images", "shakespeare-zipf-fit.png"))
 
-    
+def plot_gauss_newton_convergence(empirical_freqs):
+    ranks = np.arange(1, empirical_freqs.size + 1)
+    zipf = lambda K, alpha: K * ranks ** alpha
+    from gauss_newton import gauss_newton
+    iterates, costs = gauss_newton(
+        f = lambda x: empirical_freqs - zipf(x[0], x[1]),
+        x0 = np.random.randn(2),
+        # x0 = np.asarray([0.04, -0.5]),
+        J = lambda x: np.stack(
+            [
+                -ranks ** x[1],
+                -np.log(ranks) * zipf(x[0], x[1]),
+            ], axis=1),
+            # max_iter=5,
+    )
+    plt.plot(np.arange(costs.size), costs)
+    print(iterates)
+    plt.show()
+
+def plot_levenberg_marquardt_convergence(empirical_freqs):
+    ranks = np.arange(1, empirical_freqs.size + 1)
+    zipf = lambda K, alpha: K * ranks ** alpha
+    from levenberg_marquardt import levenberg_marquardt
+    iterates, costs = levenberg_marquardt(
+        f = lambda x: empirical_freqs - zipf(x[0], x[1]),
+        x0 = np.random.randn(2),
+        # x0 = np.asarray([0.04, -0.5]),
+        J = lambda x: np.stack(
+            [
+                -ranks ** x[1],
+                -np.log(ranks) * zipf(x[0], x[1]),
+            ], axis=1),
+            max_iter=20,
+    )
+    plt.plot(np.arange(costs.size), costs)
+    print(iterates)
+    plt.show()
+
 if __name__ == "__main__":
     N = 100
     most_freq_words, freqs = word_freqs(N)
-    plot_scatter_points(freqs)
+    # plot_scatter_points(freqs)
     # plot_zipf_param_surface(freqs)
     # plot_zipf_param_contours(freqs)
-    plot_transformed_scatter_points(freqs)
-    plot_zipf_transformed_param_contours(freqs)
-    plot_zipf_transformed_param_surface(freqs)
-    # plot_nlls_ols_fit(freqs)
+    # plot_transformed_scatter_points(freqs)
+    # plot_zipf_transformed_param_contours(freqs)
+    # plot_zipf_transformed_param_surface(freqs)
+    # plot_nlls_fit(freqs)
     # plot_ols_zipf_fit(freqs)
+    # plot_gauss_newton_convergence(freqs)
+    plot_levenberg_marquardt_convergence(freqs)
