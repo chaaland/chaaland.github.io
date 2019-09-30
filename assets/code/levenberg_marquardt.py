@@ -3,10 +3,21 @@ from scipy.optimize import lsq_linear
 
 
 def levenberg_marquardt(f, x0, J, max_iter: int = 100):
-    mse = lambda x: np.sqrt(np.mean(np.square(x)))
+    """Implements the Levenberg-Marquardt algorithm for NNLS
+
+    :param f: function to compute the residual vector
+    :param x0: array corresponding to initial guess
+    :param J: function to compute the jacobian of f
+    :param atol: stopping criterion for the root mean square 
+    of the squared norm of the gradient of f
+    :param max_iter: maximum number of iterations to run before 
+    terminating
+    """
+    MAX_MU = 1e6
+    rms = lambda x: np.sqrt(np.mean(np.square(x)))
     mu = 1
     iterates = [x0,]
-    costs = [mse(f(x0)),]
+    costs = [rms(f(x0)),]
     cnt = 0
 
     while cnt < max_iter:
@@ -15,17 +26,16 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
         b = np.hstack([J(x_k) @ x_k - f(x_k), np.sqrt(mu) * x_k])
         result = lsq_linear(A, b)
 
-        if mse(f(result.x)) < costs[-1]:
+        if rms(f(result.x)) < costs[-1]:
             mu *= 0.8
             iterates.append(result.x)
-            costs.append(mse(f(result.x)))
+            costs.append(rms(f(result.x)))
+            cnt += 1
+        elif 2.0 * mu > MAX_MU:
+            iterates.append(result.x)
+            costs.append(rms(f(result.x)))
             cnt += 1
         else:
             mu *= 2.0
-        print(mu)
     
     return iterates, np.asarray(costs)
-
-
-
-

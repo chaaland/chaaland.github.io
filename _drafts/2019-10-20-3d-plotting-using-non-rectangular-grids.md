@@ -206,170 +206,12 @@ Both the OLS and NNLS problem can be written in the form
 
 $$\underset{x}{\text{minimize}}\quad ||r(x)||^2$$
 
-The only difference between the two is that in OLS the residual function $$r: \mathbf{R}^n \rightarrow \mathbf{R}^{m}$$, is a linear function of $$x$$. For the more general case of non-linear $$r(x)$$, there is the _Gauss-Newton algorithm_ which reduces the problem to a series of OLS problems. 
+The only difference is that in OLS the residual function $$r: \mathbf{R}^n \rightarrow \mathbf{R}^{m}$$, is a linear function of $$x$$. The Gauss-Newton algorithm solves the case when $$r(x)$$ is nonlinear by reducing the problem to a series of OLS problems. 
 
-The core idea behind the algorithm is simple, since OLS problems are easily solvable, we can first linearise $$r(x)$$ around a point $$a$$
-
-$$r_{linear}(x) \approx r(a) + Dr(a)(x - a)$$
-
-Substituting this linearisation for $$r(x)$$ we get a standard least squares problem
-
-$$x^\star = \underset{x}{\text{arg min}}\, ||r(a) + Dr(a)(x - a)||^2$$
-
-Using the OLS solution as the next point around which to linearise $$r(x)$$ we can iterate this process of linearising and solving an OLS problem until convergence. More concretely the algorithm is as follows
+The core idea behind the algorithm is simple, since OLS problems are solvable, we can first linearise $$r(x)$$, solve the resulting OLS problem and use the solution as the next point around which to linearise $$r(x)$$. We can repeatedly iterate linearising around a point and finding a new point to linearise around until convergence.
 
 
-1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$   
-2) Linearise $$r(x)$$ about $$x^{(k)}$$:
-
-$$
-\begin{align*}
-A &:= Dr(x^{(k)})\\
-b &:= Dr(x^{(k)})x^{(k)}-r(x^{(k)})\\
-\end{align*}
-$$
-
-3) Solve OLS:
-
-$$
-\begin{align*}
-x^{(k+1)} &:= \underset{x}{\text{arg min}}\, ||Ax - b||^2\\
-k &:= k + 1\\
-\end{align*}
-$$
-
-Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Netwon method using the mean squared error of 
-$$\nabla_x ||r(x)||^2$$ 
-as part of the convergence criteria. <sup>[2](#footnote2)</sup>
-
-{% highlight python %}
-import numpy as np
-from scipy.optimize import lsq_linear
-
-
-def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
-    """Implements the Gauss-Newton method for NNLS
-
-    :param f: function to compute the residual vector
-    :param x0: array corresponding to initial guess
-    :param J: function to compute the jacobian of f
-    :param atol: stopping criterion for the root mean square 
-    of the squared norm of the gradient of f
-    :param max_iter: maximum number of iterations to run before 
-    terminating
-    """
-    iterates = [x0,]
-    rms = lambda x: np.sqrt(np.mean(np.square(x)))
-    costs = [rms(f(x0)),]
-    cnt = 0
-    grad_rms = np.inf
-
-    while cnt < max_iter and grad_rms > atol:
-        x_k = iterates[-1]
-        A = J(x_k)
-        b = A @ x_k - f(x_k)
-        result = lsq_linear(A, b)
-        iterates.append(result.x)
-        costs.append(rms(f(result.x)))
-        grad_rms = rms(A.T * f(x_k))
-        cnt += 1
-    
-    return iterates, np.asarray(costs)
-{% endhighlight %}
-
-### Levenberg-Marquardt Algorithm
-Having understood the Gauss-Netwon method, the _Levenberg-Marquardt_ algorithm is a simple optimisation. The additional insight of the algorithm is that the linearisation of $$r(x)$$ might not be faithful approximation of the original (at least outside some neighborhood). 
-
-So in addition to the least squares penalty, we'd also like to ensure the next iterate is not too far from the previous. We encode the knowledge that our linear approximation only holds near our previous iterate with a regularization penalty so the objective in Gauss-Newton becomes
-
-$$||Ax-b||^2 + \mu ||x - x_{prev}||^2$$
-
-The parameter $$\mu\in \mathbf{R}$$ is typically a function of the iteration since it is continually grown/shrunk to ensure the step sizes don't become too small/large. This objective function can be written as
-
-$$
-\left\|
-\begin{bmatrix}
-A\\
-\sqrt{\mu}\, I
-\end{bmatrix}x-
-\begin{bmatrix}
-b\\
-\sqrt{\mu}\, x_{prev}\\
-\end{bmatrix}
-\right\|^2
-$$
-
-It should be clear from the above reformulation using stacked matrices that the problem is just a least squares problem in standard form. The Levenberg-Marquardt algorithm is as follows
-
-1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$, $$\mu^{(0)}=1$$   
-2) Linearise $$r(x)$$ about $$x^{(k)}$$:
-
-$$
-\begin{align*}
-A &:= Dr(x^{(k)})\\
-b &:= Dr(x^{(k)})x^{(k)}-r(x^{(k)})\\
-\end{align*}
-$$
-
-3) Solve _regularised_ OLS:  
-
-$$x^{(k+1)} := \underset{x}{\text{arg min}}\ ||Ax - b||^2 + \mu ||x-x^{(k)}||^2$$
-
-4) If 
-$$||f(x^{(k+1)})||^2 < ||f(x^{(k)})||^2$$:
-
-$$
-\begin{align*}
-\mu^{k+1} &:= 0.8 \mu^{k}\\
-k &:= k + 1\\
-\end{align*}
-$$
-
-Else:
-
-$$\mu^{k+1} := 2\mu^{k}$$
-
-{% highlight python %}
-import numpy as np
-from scipy.optimize import lsq_linear
-
-
-def levenberg_marquardt(f, x0, J, max_iter: int = 100):
-    """Implements the Levenberg-Marquardt algorithm for NNLS
-
-    :param f: function to compute the residual vector
-    :param x0: array corresponding to initial guess
-    :param J: function to compute the jacobian of f
-    :param max_iter: maximum number of iterations to run before 
-    terminating
-    """
-    MAX_MU = 1e6
-    rms = lambda x: np.sqrt(np.mean(np.square(x)))
-    mu = 1
-    iterates = [x0,]
-    costs = [rms(f(x0)),]
-    cnt = 0
-
-    while cnt < max_iter:
-        x_k = iterates[-1]
-        A = np.vstack([J(x_k), np.sqrt(mu) * np.eye(x_k.size)])
-        b = np.hstack([J(x_k) @ x_k - f(x_k), np.sqrt(mu) * x_k])
-        result = lsq_linear(A, b)
-
-        if rms(f(result.x)) < costs[-1]:
-            mu *= 0.8
-            iterates.append(result.x)
-            costs.append(rms(f(result.x)))
-            cnt += 1
-        elif 2.0 * mu > MAX_MU:
-            iterates.append(result.x)
-            costs.append(rms(f(result.x)))
-            cnt += 1
-        else:
-            mu *= 2.0
-    
-    return iterates, np.asarray(costs)
-{% endhighlight %}
+### Python Implementation
 
 ## Conclusion
 
@@ -378,9 +220,6 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
 1. [Zipf's Law Wikipedia](https://en.wikipedia.org/wiki/Zipf%27s_law)
 2. [Gauss-Newton Algorithm Wikipedia](https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm)
 3. [Stanford's Intro to Linear Dynamical Systems]()
-4. [scipy.optimize Notes on Least Squares Implementation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html#scipy.optimize.least_squares)
-5. [Boyd & Vandenberghe's Intro to Applied Linear Algebra](http://vmls-book.stanford.edu/)
 
 ## Footnotes
-<a name="footnote1">1</a>: Since the ranks and frequencies are all positive, the logarithm is well defined.  
-<a name="footnote2">2</a>: Since $$\frac{\partial ||r(x)||^2}{\partial x_j} = \sum_{i=1}^m \frac{\partial}{\partial x_j}(r_i^2(x)) =  \sum_{i=1}^m 2r_i(x)\frac{\partial r_i(x)}{\partial x_j}$$ it follows that $$\nabla_x ||r(x)||^2 = (Dr(x))^Tr(x)$$
+<a name="footnote1">1</a>: Since the ranks and frequencies are all positive, the logarithm is well defined.
