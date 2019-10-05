@@ -3,7 +3,7 @@ from scipy.optimize import lsq_linear
 
 
 def levenberg_marquardt(f, x0, J, max_iter: int = 100):
-    """Implements the Levenberg-Marquardt algorithm for NNLS
+    """Implements the Levenberg-Marquardt algorithm for NLLS
 
     :param f: function to compute the residual vector
     :param x0: array corresponding to initial guess

@@ -3,7 +3,7 @@ from scipy.optimize import lsq_linear
 
 
 def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
-    """Implements the Gauss-Newton method for NNLS
+    """Implements the Gauss-Newton method for NLLS
 
     :param f: function to compute the residual vector
     :param x0: array corresponding to initial guess
