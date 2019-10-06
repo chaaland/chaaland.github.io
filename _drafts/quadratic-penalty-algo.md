@@ -1,14 +1,30 @@
 ---
 title: "Quadratic Penalty Algo"
 categories:
-  - Edge Case
-date:   2019-08-14 22:12:45 +0100
+  - Mathematics
+date:   2019-10-20 22:12:45 +0100
 mathjax: true
+toc: true
+# classes: wide
+excerpt: ""
+header: 
+  overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
+  overlay_filter: 0.2
 tags:
-  - Convex Optimization
-  - Constrained Optimization
+  - Optimisation
 ---
 
+# Constrained Optimisation
+# Softmax classifier
+maximize probability of joint probability subject to contraint the probabilities add to 1
+
+# Dominant Eigenvalue
+Maximize ||Ax||^2 subject to ||x|| = 1
+
+# Quadratic Penalty Method
+Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren't familiar with nonlinear methods. 
+
+Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people's familarity with the methods. As we will see, solving NLLS problems is just as simple as OLS.
 You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
 
 To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.

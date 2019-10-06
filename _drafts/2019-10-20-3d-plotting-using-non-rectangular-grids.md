@@ -1,5 +1,5 @@
 ---
-title: "Nonlinear Least Squares"
+title: "Better Contour and Surface Plots Using Non-Rectangular Sampling Grids"
 categories:
   - Mathematics
 date:   2019-09-29 13:32:45 +0100
@@ -18,6 +18,12 @@ header:
   overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
   overlay_filter: 0.2
 ---
+
+
+
+
+# The Problem with Rectangular Grids
+The standard way of creating contour and surface plots of a function $$f:\mathbf{R}^2 \rightarrow \mathbf{R}$$ is first creating a rectangular grid of $$(x,y)$$ coordinates (using something like `meshgrid`), then evaluating the function $$f$$ elementwise at each $$(x,y)$$ pair.
 
 Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren't familiar with non-linear methods. Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people's familarity with the methods. As we'll see, solving NLLS problems is just as simple as OLS.
 
