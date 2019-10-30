@@ -255,7 +255,7 @@ $$f(x) = \frac{1}{2\pi\sqrt{|\Sigma|}} e^{-0.5(x-\mu)^T\Sigma^{-1}(x-\mu)}$$
 
 This distribution will exhibit elliptic symmetry since the exponent is a quadratic form. The _sinc_ function is ubiquitous in electrical engineering and its polar form is given by
 
-$$\text{sinc}(r) = \frac{\sin(\pi r)}{\pi r} = \frac{\sin\left(\sqrt{x^2+y^2}\right)}{\sqrt{x^2+y^2}}$$
+$$\text{sinc}(r) = \frac{\sin(\pi r)}{\pi r} = \frac{\sin\left(\pi\sqrt{x^2+y^2}\right)}{\pi\sqrt{x^2+y^2}}$$
 
 This too exhibits a radial symmetry, lending itself to the circularly symmetric grids described in the post. More often than not, this method of plotting is overkill and all you need is a rough idea of what the surface looks like. Nevertheless, the above technique is a good tool to have available for the situations you do find it necessary
 
