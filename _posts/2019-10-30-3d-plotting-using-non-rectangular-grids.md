@@ -2,7 +2,7 @@
 title: "Better Contour and Surface Plots Using Non-Rectangular Sampling Grids"
 categories:
   - Mathematics
-date:   2019-09-29 13:32:45 +0100
+date:   2019-10-30 23:48:45 +0100
 mathjax: true
 tags:
   - matplotlib
