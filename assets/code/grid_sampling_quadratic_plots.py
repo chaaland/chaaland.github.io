@@ -66,11 +66,11 @@ def plot_sinc_surface():
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot_surface(X, Y, Z, cmap="hot")
-    ax.set_title(r"$\sin(\pi * \sqrt{x^2+y^2})/\sqrt{x^2+y^2}$")
+    ax.set_title(r"$\sin\left(\pi * \sqrt{x^2+y^2}\right)/\pi\sqrt{x^2+y^2}$")
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
 
-    r = np.linspace(0, 6, 50) + 1e-6
+    r = np.hstack([np.arange(0, 1, 0.1/2) + 1e-6, np.linspace(1, 6, 30)])
     theta = np.linspace(0, 2 * np.pi, 100)
     R, Theta = np.meshgrid(r, theta)
 
@@ -79,7 +79,7 @@ def plot_sinc_surface():
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot_surface(X, Y, Z, cmap="hot")
-    ax.set_title(r"$\sin(\pi * \sqrt{x^2+y^2})/\sqrt{x^2+y^2}$")
+    ax.set_title(r"$\sin\left(\pi * \sqrt{x^2+y^2}\right)/\pi\sqrt{x^2+y^2}$")
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
 
@@ -89,7 +89,7 @@ def plot_gaussian_surface():
     
     correlation = 0.0
     var_x = 1
-    var_y = 9
+    var_y = 2
     cov_xy = correlation * np.sqrt(var_x * var_y)
     var_mat = np.asarray([[var_x, cov_xy], [cov_xy, var_y]])
 
@@ -123,8 +123,8 @@ def plot_gaussian_surface():
     plt.contour(X,Y,Z)
     ax = fig.add_subplot(111, projection="3d")
     ax.plot_surface(X, Y, Z, cmap="hot")
-    ax.set_xlim([-16,16])
-    ax.set_ylim([-16,16])
+    ax.set_xlim([-7,7])
+    ax.set_ylim([-7,7])
     ax.set_title(r"Gaussian Distribution")
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
@@ -149,7 +149,7 @@ def plot_elongated_paraboloid(with_grid=False):
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
     ax.set_zlabel(r"$f(x) = x^TAx$", fontsize=14)  
-    ax.tight_layout()
+    plt.tight_layout()
 
     r = np.linspace(0, 2, 20)
     theta = np.linspace(0, 2*np.pi, 50)
@@ -174,15 +174,15 @@ def plot_elongated_paraboloid(with_grid=False):
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)  
     ax.set_zlabel(r"$f(x) = x^TAx$", fontsize=14)  
-    ax.tight_layout()
+    plt.tight_layout()
 
 
 if __name__ == "__main__":
     center = np.asarray([0.25, -0.25]).reshape((-1,1))
     plot_elongated_paraboloid(with_grid=False)
     plot_elongated_paraboloid(with_grid=True)
-    # plot_sinc_surface()
-    # plot_gaussian_surface()
+    plot_sinc_surface()
+    plot_gaussian_surface()
     plot_rectangular_grid(mode="h")
     plot_rectangular_grid(mode="v")
     plot_ellipse_grid([-3,3],[-3,3], mode="h")
