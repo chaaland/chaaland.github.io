@@ -7,6 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import imageio
 from matplotlib.animation import FuncAnimation
+from quadratic_penalty import minimize_subject_to_constraints
 
 pjoin = os.path.join
 
@@ -240,8 +241,6 @@ def plot_relaxed_optimisation_contours(alpha, a, b, mu):
 
 def plot_quadratic_penalty_minimisation_relaxation(alpha: float, a: float, b: float):
   A = create_quadratic_form(alpha, a, b)
-  
-  from quadratic_penalty import minimize_subject_to_constraints
 
   x_vals, mu_penalties = minimize_subject_to_constraints(
     objective=lambda x: x.T @ (-A) @ x, 
@@ -261,6 +260,39 @@ def plot_quadratic_penalty_minimisation_relaxation(alpha: float, a: float, b: fl
 
   return x_vals, mu_penalties
 
+def create_splash_image():
+  A = np.random.rand(5,2)
+  x_true = np.random.rand(2)
+  b = A @ x_true + 0.1 * np.random.randn(5)
+
+  fig, ax = plt.subplots()
+  # lvls = -np.asarray([-0.5, -0.1, 0, 1/1000, 1/500, 1/250, 1/100, 1/50, 0.03,0.04,0.05, 0.1,0.2,0.3, 0.4,0.5,1.0])[::-1]
+  x_vals = np.linspace(-1.5, 1.5, 100)
+  y_vals = np.linspace(-1.5, 1.5, 100)
+
+  X_mesh, Y_mesh = np.meshgrid(x_vals, y_vals)
+  xy_coords = np.row_stack([X_mesh.ravel(), Y_mesh.ravel()])
+  mu = 1.0
+  main_obj = -np.sum(np.square(A @ xy_coords - b[:, np.newaxis]), axis=0)
+  constraint_obj = np.sum(np.square(xy_coords * (1 - xy_coords)), axis=0)
+  Z_mesh =  (main_obj + mu * constraint_obj).reshape(X_mesh.shape)
+
+  cs = ax.contour(
+    X_mesh, 
+    Y_mesh, 
+    Z_mesh, 
+    levels=100, 
+    cmap="magma",
+  )
+
+  # IMPORTANT ANIMATION CODE HERE
+  # Used to keep the limits constant
+  ax.set_xlim(-1.5, 1.5)
+  ax.set_ylim(-1.5, 1.5)
+  plt.axis('off')
+  plt.tight_layout()
+  plt.savefig("../images/quadratic-penalty-splash-image.png")
+ 
 def plot_2d_eigval_problem():
   alpha = 2 * np.pi / 3
   a = 3
@@ -296,7 +328,8 @@ def plot_2d_eigval_problem():
   plot_quadratic_penalty_minimisation_relaxation(alpha, a, b)
   
 def main():
-  plot_2d_eigval_problem()
+  # plot_2d_eigval_problem()
+  create_splash_image()
     
 if __name__ == "__main__":
   main()

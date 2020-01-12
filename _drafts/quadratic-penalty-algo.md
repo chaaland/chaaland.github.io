@@ -8,7 +8,7 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
+  overlay_image: assets/images/quadratic-penalty-splash-image.png
   overlay_filter: 0.2
 tags:
   - Optimisation
@@ -204,8 +204,11 @@ def minimize_subject_to_constraints(
     x_curr = x_init
 
   if isinstance(equality_constraints, (list, tuple)):
-    penalised_obj = lambda x: objective(x) + penalty * sum(np.sum(np.square(c(x))) for c in equality_constraints)  else:
-    penalised_obj = lambda x: objective(x) + penalty * np.sum(np.square(equality_constraints(x)))
+    penalised_obj = lambda x: objective(x) \
+      + penalty * sum(np.sum(np.square(c(x))) for c in equality_constraints)  
+  else:
+    penalised_obj = lambda x: objective(x) \
+      + penalty * np.sum(np.square(equality_constraints(x)))
 
   x_hist = []
   penalty_schedule = []
