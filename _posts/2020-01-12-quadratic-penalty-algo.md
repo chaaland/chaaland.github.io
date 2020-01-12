@@ -2,7 +2,7 @@
 title: "Quadratic Penalty Algo"
 categories:
   - Mathematics
-date:   2020-01-01 22:12:45 +0100
+date:   2020-01-12 12:00:00 +0000
 mathjax: true
 toc: true
 # classes: wide
