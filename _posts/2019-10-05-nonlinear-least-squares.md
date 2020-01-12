@@ -161,12 +161,13 @@ def fit_zipf_ols(freq_counts_desc: np.ndarray):
     ranks = np.arange(1, 1 + freq_counts_desc.size)
     A = np.stack([np.ones_like(freq_counts_desc), np.log(ranks)], axis=1)
     y = np.log(freq_counts_desc)
-    f = lambda x: A @ x - y
-    opt_result = least_squares(f, x0=np.random.randn(2), loss="linear")
+    opt_result = lsq_linear(A, y)
 
     K = np.exp(opt_result.x[0])
     alpha = opt_result.x[1]
-    mse = np.sqrt(np.mean(2 * opt_result.cost)) # least_squares has 0.5 in objective
+
+    r = A @ opt_result.x - y
+    mse = np.sqrt(np.mean(np.square(r)))
 
     return K, alpha, mse
 {% endhighlight %}
