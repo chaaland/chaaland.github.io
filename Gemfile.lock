@@ -218,7 +218,7 @@ GEM
       jemoji (~> 0.10)
     minitest (5.11.3)
     multipart-post (2.1.1)
-    nokogiri (1.10.4)
+    nokogiri (1.10.8)
       mini_portile2 (~> 2.4.0)
     octokit (4.14.0)
       sawyer (~> 0.8.0, >= 0.5.3)
@@ -256,7 +256,6 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
-  jekyll (~> 3.8.5)
   jekyll-feed (~> 0.6)
   jekyll-gist
   jekyll-include-cache
