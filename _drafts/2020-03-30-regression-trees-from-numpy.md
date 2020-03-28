@@ -76,46 +76,45 @@ def leaf_value_estimator(
 ## Stopping Criteria
 The tree building algorithm also needs a termination condition. Growing the tree until each node has only one training example is likely to lead to overfitting so a `min_samples` parameter is important control the model's variance. Likewise, a tree allowed to extend arbitrarily deep is bound to overfit the training data as well, so a `max_depth` or `max_leaves` parameter is provided to control this behaviour.
 
-$$
-f(y_l,y_r) = \frac{n_l}{n_l+n_r} \frac{1}{n_l} \sum_{i=1}^n_l (y^{(i)}_l - \bar{y_l})^2 + \frac{n_r}{n_l+n_r}\sum_{i=1}^n_r(y^{(i)}_r - \bar{y_r})^2 \\
-\end{align*}
-$$
-
-# Algorithm
-An algorithm for building a tree is 
-1) Initialise root node with $$X_{train}, y_{train}$$
-2) For each feature, find the split point that results in the smallest weighted variance
-3) Create a new 
-
 # Regression Tree Implementation
 
 ## Constructor
 The `RegressionTree` class will have a constructor for setting the hyper-parameters and initialising some internal state. Specifically, since the tree is defined recursively, we need a `_depth` variable to indicate how far from the root the current node is. A `_value` parameter is set to `None` but will be updated to a float if the node satisfies the requirements to be a leaf . Lastly, an `_is_fit` variable is set to ensure prediction is not done on an untrained `RegressionTree`
 
 {% highlight python %}
-def __init__(
-  self,
-  min_sample: int=5,
-  max_depth: int=10,
-):
-  """Initialise the regression tree
+import numpy as np
+from sklearn.base import BaseEstimator
+from sklearn.exceptions import NotFittedError
 
-  :param min_sample: an internal node can be split only if it contains more than min_sample points
-  :param max_depth: restriction of tree depth
-  """
-  self.min_sample = min_sample
-  self.max_depth = max_depth
-  self._is_fit = False
-  self._value = None
+class RegressionTree(BaseEstimator):
+  def __init__(
+    self,
+    min_sample: int=5,
+    max_depth: int=10,
+  ):
+    """Initialise the regression tree
+
+    :param min_sample: an internal node can be split only if it contains more than min_sample points
+    :param max_depth: restriction of tree depth
+    """
+    self.min_sample = min_sample
+    self.max_depth = max_depth
+    self._is_fit = False
+    self._value = None
 
 {% endhighlight %}
 
 ## `fit`
-The fit method will take training data $$X\in \mathbf{R}^{n\times p}$$ and targets $$y\in \mathbf{R}^p$$ to create the regression tree. Each node in the tree wil possess attributes `split_id`, `split_value`, and `_value`. The `split_id` will be the index of the feature whose optimal split minimises the weighted sum of variances. The `split_value` is the value of this feature forming the decision boundary. Any data in the node having feature `split_id` less than `split_value` will be assigned to the left child node, otherwise the right.
+The fit method will take training data $$X\in \mathbf{R}^{n\times p}$$ and targets $$y\in \mathbf{R}^p$$ and create the regression tree. Each node in the tree wil possess attributes `split_id`, `split_value`, and `_value`. The `split_id` will be the index of the feature whose optimal split minimises the weighted sum of variances. The `split_value` is the value of this feature forming the decision boundary. Any data in the node having feature `split_id` less than `split_value` will be assigned to the left child node, otherwise the right.
 
 The algorithm for fitting the tree is as follows
-1. Check the base cases to ensure `max_depth` has not been exceeded and there are at least `min_sample` in the node
-2. For each feature/column of $$X$$, sort (`feature`, `y`) ascending by `feature`
+1. Check the base cases to ensure `max_depth` has not been exceeded and there are at least `min_sample` data points in the node. If a base case has been reached, mark the node as a leaf and assign a value
+2. For each feature/column of $$X$$, find the optimal split threshold and corresponding cost
+3. Calculate the best feature to split. If no split is possible given the constraints, mark the node as a leaf and assign a value 
+4. Partition the data based on the optimal split and create two child `RegressionTree`'s with decremented `max_depth` parameters.
+
+Below is an implementation of the `fit` method
+
 {% highlight python %}
 def fit(self, X: np.array, y: np.array):
   """Fit the decision tree in place
@@ -125,7 +124,7 @@ def fit(self, X: np.array, y: np.array):
   subtrees should be fit on the data that fall to the left and right, respectively, 
   of self.split_value. This is a recursive tree building procedure. 
   
-  :param X: a numpy array of training data, shape = (n, m)
+  :param X: a numpy array of training data, shape = (n, p)
   :param y: a numpy array of labels, shape = (n,)
   :return: self
   """
@@ -138,7 +137,7 @@ def fit(self, X: np.array, y: np.array):
   best_split_feature, best_split_score = 0, np.inf
   for feature in range(n_features):
     feat_values = X[:, feature]
-    score, threshold = self._optimal_feature_split(feat_values, y)
+    score, threshold = self._optimal_split(feat_values, y)
     
     if score < best_split_score:
       best_split_score = score
@@ -172,38 +171,94 @@ def fit(self, X: np.array, y: np.array):
   return self
 {% endhighlight %}
 
+In the above code, most of the logic for step 2 of the algorithm is contained in `_optimal_split`. Given a feature `feat_values`$$\in \mathbf{R}^{n}$$, the optimal split is found by linearly scanning each element `feat_vals[i]` of the array and calculating the cost of splitting the data on this value.
+
+In practice, the feature values are first sorted before the linear scan so the data can be easily partitioned into left and right. Additionally, rather than evaluate the cost of every element of `feat_vals`, extra computation can be avoided by using only the unique values. This optimisation provides significant benefit when feature values are repeated in the data (e.g. age in years of an individual).
+
+{%highlight python %}
+def _optimal_split(self, feat_values: np.array, y: np.array):
+  n_data = y.size
+  best_split_score, best_split_threshold = np.inf, np.inf
+
+  sort_indices = np.argsort(feat_values)
+  sorted_values = feat_values[sort_indices]
+  sorted_labels = y[sort_indices]
+  _, unique_indexes = np.unique(sorted_values, return_index=True)
+  for i in unique_indexes:
+    if i < self.min_sample or i > n_data - self.min_sample:
+      continue
+
+    y_l, y_r = sorted_labels[:i], sorted_labels[i:]
+    split_score = self._split_quality(y_l, y_r)
+    if split_score < best_split_score:
+      best_split_score = split_score
+      best_split_threshold = sorted_values[i]
+
+  return best_split_score, best_split_threshold
+
+{% endhighlight %}
+
+## `predict`
+A regression tree with $$T$$ leaf nodes partitions the Cartesian space into disjoint regions $$R_1, R_2, \ldots, R_T$$. The prediction for a data point $$x\in \mathbf{R}^p$$ is given by
+
+$$
+f(x) = \sum_{i=1}^T c_i\, I(x\in R_i)
+$$
+
+where $$c_i$$ is the prediction for region $$R_i$$ (i.e. the mean target value of the training data in the region). Note that though the prediction is represented as a summation, only one of the summands will be non-zero due to the disjoint nature of the regions.
+
+The `predict` method loops over every row of the data and performs a prediction. The prediction for a single sample is done by recursively advancing nodes down the tree based on the feature value of the data and each node's `split_id` and `split_value`. The recursion stops when a leaf node is reached, indicated by the presence of a float `_value` attribute of the node.
+
+The python code below implements the algorithm outlined
+
+{%highlight python %}
+def predict(self, X: np.ndarray):
+  n_predict, _ = X.shape
+  y_pred = np.empty(n_predict)
+
+  for i, x in enumerate(X):
+    y_pred[i] = self._predict_instance(x)
+  
+  return y_pred
+
+def _predict_instance(self, x: np.ndarray):
+  """Predict value by regression tree
+
+  :param x: numpy array with new data, shape (p,)
+  :return: prediction
+  """
+  if not self._is_fit:
+    raise NotFittedError(f"This {self.__class__.__name__} instance is not fitted yet. "
+      "Call 'fit' with appropriate arguments before using this method.") 
+  elif self._value is not None:
+    return self._value
+  elif x[self.split_id] <= self.split_value:
+    return self.left._predict_instance(x)
+  else:
+    return self.right._predict_instance(x)
+{% endhighlight %}
+
+# Optimisations
+# Regression Example
+
+The first example uses the `RegressionTree` implementation above to fit the nonlinear function $$y = \cos(x^2)$$ called a [chirp](https://en.wikipedia.org/wiki/Chirp). From the animation on the right, it is evident that progressively deeper trees can approximate a chirp signal very well.
+
 <figure class="half">
     <a href="/assets/images/1d-chirp.png"><img src="/assets/images/1d-chirp.png"></a>
     <a href="/assets/gifs/1d-regression-tree.gif"><img src="/assets/gifs/1d-regression-tree.gif"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
+The second example shows how a regression tree can be used to approximate functions of two variables as well. Again, the animation illustrates deeper trees approximating non-linear functions to a high degree of accuracy.
 <figure class="half">
     <a href="/assets/images/2d-sinc.png"><img src="/assets/images/2d-sinc.png"></a>
     <a href="/assets/gifs/2d-regression-tree.gif"><img src="/assets/gifs/2d-regression-tree.gif"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
-$$
-\begin{align*}
-A &:= Dr(x^{(k)})\\
-b &:= Dr(x^{(k)})x^{(k)}-r(x^{(k)})\\
-\end{align*}
-$$
 
-3) Solve OLS:
-
-$$
-\begin{align*}
-x^{(k+1)} &:= \underset{x}{\text{arg min}}\, ||Ax - b||^2\\
-k &:= k + 1\\
-\end{align*}
-$$
-
-# Optimisations
-# Regression Example
 # Conclusion
 ## References
-1. [Zipf's Law Wikipedia](https://en.wikipedia.org/wiki/Zipf%27s_law)
+1. [Chapter 9 Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)
 2. [Gauss-Newton Algorithm Wikipedia](https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm)
 3. [Stanford's Intro to Linear Dynamical Systems](http://ee263.stanford.edu/)
 4. [scipy.optimize Notes on Least Squares Implementation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html#scipy.optimize.least_squares)

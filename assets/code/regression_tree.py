@@ -40,7 +40,7 @@ class RegressionTree(BaseEstimator):
     """
     return np.mean(y)
 
-  def _optimal_feature_split(self, feat_values, y):
+  def _optimal_split(self, feat_values: np.array, y: np.array):
     n_data = y.size
     best_split_score, best_split_threshold = np.inf, np.inf
 
@@ -86,7 +86,7 @@ class RegressionTree(BaseEstimator):
     best_split_feature, best_split_score = 0, np.inf
     for feature in range(n_features):
       feat_values = X[:, feature]
-      score, threshold = self._optimal_feature_split(feat_values, y)
+      score, threshold = self._optimal_split(feat_values, y)
       
       if score < best_split_score:
         best_split_score = score
@@ -175,7 +175,7 @@ def plot_2d_example():
 
     return image
 
-  imageio.mimsave('../gifs/1d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 13)], fps=1)
+  imageio.mimsave('../gifs/1d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3)
 
 def plot_3d_example():
   from mpl_toolkits import mplot3d
@@ -221,7 +221,7 @@ def plot_3d_example():
 
     return image
 
-  imageio.mimsave('../gifs/2d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=1) 
+  imageio.mimsave('../gifs/2d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3) 
 
 if __name__ == "__main__":
   import matplotlib
@@ -229,8 +229,8 @@ if __name__ == "__main__":
   import matplotlib.pyplot as plt
   import imageio
 
-  plot_2d_example()
-  # plot_3d_example()
+  # plot_2d_example()
+  plot_3d_example()
   
 # class RegressionTree(BaseEstimator):
 #     """
