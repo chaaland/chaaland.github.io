@@ -249,7 +249,7 @@ The first example uses the `RegressionTree` implementation above to fit the nonl
     <figcaption>Figure 1</figcaption>
 </figure>
 
-The second example shows how a regression tree can be used to approximate functions of two variables as well. Again, the animation illustrates deeper trees approximating non-linear functions to a high degree of accuracy.
+The second example shows how a regression tree can be used to approximate functions of two variables as well. Again, the animation illustrates deeper trees can approximate non-linear functions to a high degree of accuracy.
 <figure class="half">
     <a href="/assets/images/2d-sinc.png"><img src="/assets/images/2d-sinc.png"></a>
     <a href="/assets/gifs/2d-regression-tree.gif"><img src="/assets/gifs/2d-regression-tree.gif"></a>

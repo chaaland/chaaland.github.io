@@ -19,6 +19,7 @@ class RegressionTree(BaseEstimator):
     self._is_fit = False
     self._value = None
 
+  # @profile
   def _split_quality(self, y_left: np.array, y_right: np.array):
     """Return the quality of the proposed node split
 
@@ -32,6 +33,7 @@ class RegressionTree(BaseEstimator):
 
     return w_left * np.var(y_left) + w_right * np.var(y_right)
 
+  # @profile
   def _leaf_value_estimator(self, y: np.array):
     """Return a prediction for the values contained in the leaf
 
@@ -40,6 +42,44 @@ class RegressionTree(BaseEstimator):
     """
     return np.mean(y)
 
+  def _optimal_split_fast(self, feat_values: np.array, y: np.array):
+    n_data = y.size
+    best_split_score, best_split_threshold = np.inf, np.inf
+
+    sort_indices = np.argsort(feat_values)
+    sorted_values = feat_values[sort_indices]
+    sorted_labels = y[sort_indices].squeeze()
+    _, unique_indexes = np.unique(sorted_values, return_index=True)
+    sum_left, sum_right = 0, np.sum(y)
+    sum_square_left, sum_square_right = 0, np.sum(np.square(y))
+
+    # import pdb; pdb.set_trace()
+    for i, curr_split in enumerate(unique_indexes):
+      prev_split = unique_indexes[i - 1] if i - 1 > 0 else 0
+      sum_delta = np.sum(sorted_labels[prev_split:curr_split])
+      sum_square_delta = np.sum(sorted_labels[prev_split:curr_split] ** 2)
+
+      sum_left += sum_delta
+      sum_right -= sum_delta
+      sum_square_left += sum_square_delta
+      sum_square_right -= sum_square_delta
+      if curr_split < self.min_sample or curr_split > n_data - self.min_sample:
+        continue
+
+      n_left = curr_split
+      n_right = n_data - n_left
+      w_left, w_right = n_left / n_data, n_right / n_data
+      var_left = (sum_square_left / n_left) - (sum_left / n_left) ** 2
+      var_right = (sum_square_right / n_right) - (sum_right / n_right) ** 2
+      split_score = w_left * var_left + w_right * var_right
+
+      if split_score < best_split_score:
+        best_split_score = split_score
+        best_split_threshold = (sorted_values[prev_split] + sorted_values[curr_split]) / 2
+
+    return best_split_score, best_split_threshold
+
+  # @profile
   def _optimal_split(self, feat_values: np.array, y: np.array):
     n_data = y.size
     best_split_score, best_split_threshold = np.inf, np.inf
@@ -56,10 +96,11 @@ class RegressionTree(BaseEstimator):
       split_score = self._split_quality(y_l, y_r)
       if split_score < best_split_score:
         best_split_score = split_score
-        best_split_threshold = sorted_values[i]
+        best_split_threshold = (sorted_values[i] + sorted_values[i-1]) / 2
 
     return best_split_score, best_split_threshold
 
+  # @profile
   def fit(self, X: np.array, y: np.array):
     """Fit the decision tree in place
 
@@ -73,7 +114,7 @@ class RegressionTree(BaseEstimator):
     subtrees should be fit on the data that fall to the left and right, respectively, 
     of self.split_value. This is a recursive tree building procedure. 
     
-    :param X: a numpy array of training data, shape = (n, m)
+    :param X: a numpy array of training data, shape = (n, p)
     :param y: a numpy array of labels, shape = (n,)
     :return: self
     """
@@ -86,7 +127,7 @@ class RegressionTree(BaseEstimator):
     best_split_feature, best_split_score = 0, np.inf
     for feature in range(n_features):
       feat_values = X[:, feature]
-      score, threshold = self._optimal_split(feat_values, y)
+      score, threshold = self._optimal_split_fast(feat_values, y)
       
       if score < best_split_score:
         best_split_score = score
@@ -122,7 +163,7 @@ class RegressionTree(BaseEstimator):
   def _predict_instance(self, x: np.ndarray):
     """Predict value by regression tree
 
-    :param x: numpy array with new data, shape (m,)
+    :param x: numpy array with new data, shape (p,)
     :return: prediction
     """
     if not self._is_fit:
@@ -144,6 +185,15 @@ class RegressionTree(BaseEstimator):
     
     return y_pred
 
+
+# @profile
+def profiling_example():
+  X_train = np.linspace(0, np.pi, 500).reshape(-1,1)
+  y_train = np.cos(X_train**2)
+
+  reg_tree = RegressionTree(min_sample=5, max_depth=10)
+  reg_tree.fit(X_train, y_train)
+
 def plot_2d_example():
   X_train = np.linspace(0, np.pi, 500).reshape(-1,1)
   y_train = np.cos(X_train**2)
@@ -163,7 +213,6 @@ def plot_2d_example():
 
     fig, ax = plt.subplots()
     ax.step(x_vals, y_vals)
-    # ax.grid()
     ax.set(xlabel="x", ylabel="y",
            title=f"Regression Tree: max-depth={max_depth}, min-samples=5")
 
@@ -229,38 +278,7 @@ if __name__ == "__main__":
   import matplotlib.pyplot as plt
   import imageio
 
+  # profiling_example()
   # plot_2d_example()
   plot_3d_example()
   
-# class RegressionTree(BaseEstimator):
-#     """
-#     :attribute loss_function_dict: dictionary containing the loss functions used for splitting
-#     :attribute estimator_dict: dictionary containing the estimation functions used in leaf nodes
-#     """
-
-#     loss_function_dict = {"mse": np.var, "mae": mean_absolute_deviation_around_median}
-
-#     estimator_dict = {"mean": np.mean, "median": np.median}
-
-#     def __init__(
-#         self, loss_function="mse", estimator="mean", min_sample=5, max_depth=10
-#     ):
-#         """Initialize RegressionTree
-#         :param loss_function(str): loss function used for splitting internal nodes
-#         :param estimator(str): value estimator of internal node
-#         """
-
-#         self.tree = DecisionTree(
-#             self.loss_function_dict[loss_function],
-#             self.estimator_dict[estimator],
-#             0,
-#             min_sample,
-#             max_depth,
-#         )
-
-#     def fit(self, X, y):
-#         self.tree.fit(X, y)
-#         return self
-
-#     def predict_instance(self, instance):
-#         return self.tree.predict_instance(instance)
