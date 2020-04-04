@@ -2,7 +2,7 @@
 title: "Regression Trees with Numpy"
 categories:
   - Mathematics
-date:   2020-03-10 12:00:00 +0000
+date:   2020-04-04 12:00:00 +0000
 mathjax: true
 toc: true
 # classes: wide
@@ -22,9 +22,9 @@ Decision trees are ubiquitious in machine learning with packages like [LightGBM]
 Looking at the documentation for any of the various existing tree/forest libraries in the python ecosystem, each has dozens of hyper-parameters to choose from. Below is an outline of some of the most consequential ones.
 
 ## Split Criterion
-The most important hyper-parameter to define is the method for evaluating a candidate split's quality. Given the data assigned to the left split, $$X_l \in \mathbf{R}^{n_l \times d}, y_l\in \mathbf{R}^{n_l}$$ and the data assigned to the right split $$X_r \in \mathbf{R}^{n_r \times d}, y_r \in \mathbf{R}^{n_r}$$, the function returns a scalar cost value (lower is better). One common criteria, defined by the code below, is the weighted sum of variances. 
+One of the fundamental steps in the tree building algorithm is finding the best feature value on which to partition the data into left and right. As such, the most important hyper-parameter to define is the method for evaluating a split's quality. Given the data assigned to the left split, $$X_l \in \mathbf{R}^{n_l \times d}, y_l\in \mathbf{R}^{n_l}$$ and the data assigned to the right split $$X_r \in \mathbf{R}^{n_r \times d}, y_r \in \mathbf{R}^{n_r}$$ in a node, the function returns a scalar cost value (lower is better). One common criteria, defined by the code below, is the weighted sum of variances. 
 
-Intuitively, a split is "good" if the target values in the left child are all close together and the target values of the right child are also close together. In this case, the measure of closeness is the variance.
+Intuitively, a split is "good" if the target values in the left child, $$y_l$$, are all close together and the target values of the right child, $$y_r$$, are also close together. The numpy code below measures the closeness using the target's variance.
 
 {% highlight python %}
 import numpy as np 
@@ -40,7 +40,7 @@ def split_quality(
   return w_l * np.var(y_l) + w_r * np.var(y_r)
 {% endhighlight %}
 
-An alternative split quality function could be defined using the weighted sum of absolute deviations from the median target value in each node. This cost function has the advantage that it is much more robust to outlier target values
+An alternative split quality function could be defined using the weighted sum of absolute deviations from the median target value in each node. This cost function has the advantage that it is much more robust to outlier target values.
 
 {% highlight python %}
 import numpy as np 
@@ -61,7 +61,8 @@ def split_quality(
 
 
 ## Leaf Prediction
-An equally important hyper-parameter is how to make predictions at a leaf node. By far the most common method is to simply return the average of the training target values in the leaf
+The leaf nodes of the regression tree are used to make predictions on new data. One of the simplest methods for leaf node prediction is simply returning the average of the training target values in the leaf.
+
 
 {% highlight python %}
 import numpy as np 
@@ -74,12 +75,13 @@ def leaf_value_estimator(
 {% endhighlight %}
 
 ## Stopping Criteria
-The tree building algorithm also needs a termination condition. Growing the tree until each node has only one training example is likely to lead to overfitting so a `min_samples` parameter is important control the model's variance. Likewise, a tree allowed to extend arbitrarily deep is bound to overfit the training data as well, so a `max_depth` or `max_leaves` parameter is provided to control this behaviour.
+The tree building algorithm also needs a termination condition. Growing the tree until each node has only one training example is likely to lead to overfitting so a `min_sample` parameter is important control the model's variance. Likewise, a tree allowed to extend arbitrarily deep is bound to overfit the training data as well, so a `max_depth` or `max_leaves` parameter can be provided to control this behaviour.
 
 # Regression Tree Implementation
+The following sections provide a detailed implementation of the functionality of a simple regression tree.
 
 ## Constructor
-The `RegressionTree` class will have a constructor for setting the hyper-parameters and initialising some internal state. Specifically, since the tree is defined recursively, we need a `_depth` variable to indicate how far from the root the current node is. A `_value` parameter is set to `None` but will be updated to a float if the node satisfies the requirements to be a leaf . Lastly, an `_is_fit` variable is set to ensure prediction is not done on an untrained `RegressionTree`
+The `RegressionTree` class will have a constructor for setting the hyper-parameters and initialising some internal state. Specifically, a `_value` parameter is set to `None` but will be updated to a float if the node satisfies the requirements to be a leaf . An `_is_fit` variable is set to ensure prediction is not done on an untrained `RegressionTree`.
 
 {% highlight python %}
 import numpy as np
@@ -105,7 +107,7 @@ class RegressionTree(BaseEstimator):
 {% endhighlight %}
 
 ## `fit`
-The fit method will take training data $$X\in \mathbf{R}^{n\times p}$$ and targets $$y\in \mathbf{R}^p$$ and create the regression tree. Each node in the tree wil possess attributes `split_id`, `split_value`, and `_value`. The `split_id` will be the index of the feature whose optimal split minimises the weighted sum of variances. The `split_value` is the value of this feature forming the decision boundary. Any data in the node having feature `split_id` less than `split_value` will be assigned to the left child node, otherwise the right.
+The fit method will take training data $$X\in \mathbf{R}^{n\times p}$$ and targets $$y\in \mathbf{R}^n$$ and create the regression tree. Each _internal_ node in the tree wil possess attributes `split_id` and `split_value`. The `split_id` will be the index of the feature whose optimal split minimises the weighted sum of variances. The `split_value` is the value of optimal feature forming the decision boundary. Any data in the node having feature `split_id` less than `split_value` will be assigned to the left child node, otherwise the right.
 
 The algorithm for fitting the tree is as follows
 1. Check the base cases to ensure `max_depth` has not been exceeded and there are at least `min_sample` data points in the node. If a base case has been reached, mark the node as a leaf and assign a value
@@ -209,7 +211,7 @@ where $$c_i$$ is the prediction for region $$R_i$$ (i.e. the mean target value o
 
 The `predict` method loops over every row of the data and performs a prediction. The prediction for a single sample is done by recursively advancing nodes down the tree based on the feature value of the data and each node's `split_id` and `split_value`. The recursion stops when a leaf node is reached, indicated by the presence of a float `_value` attribute of the node.
 
-The python code below implements the algorithm outlined
+The python code below implements the algorithm outlined.
 
 {%highlight python %}
 def predict(self, X: np.ndarray):
@@ -238,8 +240,8 @@ def _predict_instance(self, x: np.ndarray):
     return self.right._predict_instance(x)
 {% endhighlight %}
 
-# Optimisations
-# Regression Example
+
+# Example
 
 The first example uses the `RegressionTree` implementation above to fit the nonlinear function $$y = \cos(x^2)$$ called a [chirp](https://en.wikipedia.org/wiki/Chirp). From the animation on the right, it is evident that progressively deeper trees can approximate a chirp signal very well.
 
@@ -256,12 +258,19 @@ The second example shows how a regression tree can be used to approximate functi
     <figcaption>Figure 2</figcaption>
 </figure>
 
+# Optimisations
+One way in which the code is slow is the continual reevaluation of the mean and variance when computing the quality of a split. A more performant implementation would keep track of the mean and mean square of both left and right splits. When looping over candidate splits of a feature, the left statistics can be updated by adding the next feature split point (times its multiplicity) while subtracting it from the right statistics. The left and right variances can then be computed with the identity $$\mathbf{var}(x) = \mathbf{E}x^2 - \left(\mathbf{E}x\right)^2$$.
+
+A further speedup can be gained by creating histograms for each feature. Rather than exhaustively evaluate the quality of every feature value split, instead evaluate splits only on the edges of each bins. Typically the number of bins is on the order of $$O(100)$$. Compare this with the exhaustive approach which requires evaluating potentially $$n$$ different splits (can be $$O(10^8)$$). This histogram approach is the one taken by both LightGBM and XGBoost.
+
+Another huge performance speedup is gained by launching multiple threads. The above implementation involved evaluating a feature and finding its best split value before moving on to find the optimal split of the next feature. Clearly this loop is embarrassingly parallel as the optimal split point of one feature has no relevance to that of another. The problem has up to $$p$$ degrees of parallelism which can be exploited. For problems with dozens of features, this can be a very significant optimisation.
+
 # Conclusion
+This post showed how a regression tree can be implemented using only `numpy` and the python standard library. However, this example was by no means exhaustive and can easily be extended to support many additional features such as alternate objectives, classification problems, bagging, etc.
+
+For any serious project or research, always prefer a well tested tree library like `XGBoost` or `LightGBM` over a custom implementation like the one given here. These libraries are much more fully featured, unit tested, performant, and scalable to extremely large data.
+
 ## References
 1. [Chapter 9 Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)
-2. [Gauss-Newton Algorithm Wikipedia](https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm)
-3. [Stanford's Intro to Linear Dynamical Systems](http://ee263.stanford.edu/)
-4. [scipy.optimize Notes on Least Squares Implementation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html#scipy.optimize.least_squares)
-5. [Boyd & Vandenberghe's Intro to Applied Linear Algebra](http://vmls-book.stanford.edu/)
-
-An optimisation problem with $$m$$ equality constraints takes the form
+2. [XGBoost ArXiv Paper](https://arxiv.org/abs/1603.02754)
+3. [Decision Tree Wiki](https://en.wikipedia.org/wiki/Decision_tree_learning)

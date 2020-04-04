@@ -42,6 +42,7 @@ class RegressionTree(BaseEstimator):
     """
     return np.mean(y)
 
+  # @profile
   def _optimal_split_fast(self, feat_values: np.array, y: np.array):
     n_data = y.size
     best_split_score, best_split_threshold = np.inf, np.inf
@@ -53,7 +54,6 @@ class RegressionTree(BaseEstimator):
     sum_left, sum_right = 0, np.sum(y)
     sum_square_left, sum_square_right = 0, np.sum(np.square(y))
 
-    # import pdb; pdb.set_trace()
     for i, curr_split in enumerate(unique_indexes):
       prev_split = unique_indexes[i - 1] if i - 1 > 0 else 0
       sum_delta = np.sum(sorted_labels[prev_split:curr_split])
@@ -128,6 +128,7 @@ class RegressionTree(BaseEstimator):
     for feature in range(n_features):
       feat_values = X[:, feature]
       score, threshold = self._optimal_split_fast(feat_values, y)
+      # score, threshold = self._optimal_split(feat_values, y)
       
       if score < best_split_score:
         best_split_score = score
@@ -188,7 +189,7 @@ class RegressionTree(BaseEstimator):
 
 # @profile
 def profiling_example():
-  X_train = np.linspace(0, np.pi, 500).reshape(-1,1)
+  X_train = np.linspace(0, np.pi, 10000).reshape(-1,1)
   y_train = np.cos(X_train**2)
 
   reg_tree = RegressionTree(min_sample=5, max_depth=10)
@@ -279,6 +280,6 @@ if __name__ == "__main__":
   import imageio
 
   # profiling_example()
-  # plot_2d_example()
-  plot_3d_example()
+  plot_2d_example()
+  # plot_3d_example()
   
