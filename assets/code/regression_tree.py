@@ -1,4 +1,5 @@
 import numpy as np
+from pathlib import Path
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
@@ -273,13 +274,42 @@ def plot_3d_example():
 
   imageio.mimsave('../gifs/2d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3) 
 
+def plot_splash_image():
+  np.random.seed(3)
+  n = 100
+  eps = 0.2 * np.random.randn(n)
+  x_train = np.random.randn(n)
+  y_train = np.square(x_train) + eps
+  small_tree = RegressionTree(min_sample=5, max_depth=3)
+  med_tree = RegressionTree(min_sample=5, max_depth=5)
+  big_tree = RegressionTree(min_sample=5, max_depth=11)
+
+  small_tree.fit(x_train[:, np.newaxis], y_train)
+  med_tree.fit(x_train[:, np.newaxis], y_train)
+  big_tree.fit(x_train[:, np.newaxis], y_train)
+
+  x_vals = np.linspace(-3, 3, 1000)[:, np.newaxis]
+  y_small_pred = small_tree.predict(x_vals)
+  y_med_pred = med_tree.predict(x_vals)
+  y_big_pred = big_tree.predict(x_vals)
+
+  plt.scatter(x_train, y_train, color="k", alpha=0.7)
+  plt.step(x_vals, y_small_pred)
+  plt.step(x_vals, y_med_pred)
+  plt.step(x_vals, y_big_pred)
+
+  fname = Path("..", "images", "regression-tree-splash-image.png")
+  plt.savefig(fname)
+
+
 if __name__ == "__main__":
   import matplotlib
-  matplotlib.use("TkAgg")
+  # matplotlib.use("TkAgg")
   import matplotlib.pyplot as plt
   import imageio
 
   # profiling_example()
-  plot_2d_example()
+  # plot_2d_example()
   # plot_3d_example()
+  plot_splash_image()
   

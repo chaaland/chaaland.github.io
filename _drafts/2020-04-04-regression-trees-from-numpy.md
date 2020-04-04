@@ -6,9 +6,10 @@ date:   2020-04-04 12:00:00 +0000
 mathjax: true
 toc: true
 # classes: wide
-excerpt: "Implementing a regression tree from scratch with numpy"
+excerpt: ""
+# excerpt: "Implementing a regression tree from scratch with numpy"
 header: 
-  overlay_image: assets/images/quadratic-penalty-splash-image.png
+  overlay_image: assets/images/regression-tree-splash-image.png
   overlay_filter: 0.2
 tags:
   - Decision Trees
