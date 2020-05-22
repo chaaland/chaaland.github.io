@@ -141,3 +141,7 @@ cython_debug/
 # Editor configs
 .idea
 .vscode
+
+# Other
+/_site
+/assets/code/_site
