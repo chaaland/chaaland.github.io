@@ -140,7 +140,7 @@ def generate_axis_aligned_ellipse_grid(r_low, r_high, n_r, n_theta, a, b):
     return x_mesh, y_mesh
 {% endhighlight %}
 
-To handle the more general case of ellipses with rotated axes we can use a _rotation matrix_<sup>[1](#footnote1)</sup> . The rotation matrixfor rotating by an angle $$\alpha$$ anti-clockwise measured from the positive $$x$$-axis is given by
+To handle the more general case of ellipses with rotated axes we can use a _rotation matrix_<sup>[1](#footnote1)</sup> . The rotation matrix for rotating by an angle $$\alpha$$ anti-clockwise measured from the positive $$x$$-axis is given by
 
 $$
 R_\alpha = 
