@@ -2,7 +2,7 @@
 title: "Plotting Ellipses in Numpy"
 categories:
   - Mathematics
-date:   2020-05-20 10:57:00 +0100
+date:   2020-05-30 12:09:00 +0100
 mathjax: true
 tags:
   - matplotlib
