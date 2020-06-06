@@ -216,7 +216,7 @@ $$
 
 with $$A\in \mathbf{R}^{m\times n}$$, $$y\in\mathbf{R}^m$$. Expanding out the objective we have 
 
-$$f_0(x) = x^TA^TAx + y^TAx + y^Ty.$$
+$$f_0(x) = x^TA^TAx + 2y^TAx + y^Ty.$$
 
 Since it can be shown that $$A^TA$$ will always have non-negative eigenvalues, the level sets of the objevtive $$f_0$$ define ellipses (when $$n=2$$).
 
