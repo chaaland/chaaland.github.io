@@ -91,7 +91,7 @@ $$
 
 
 ## Dominant Eigenvalue
-Another common constraint is ensure a vector has unit length. The definition of the [_spectral norm_](https://en.wikipedia.org/wiki/Matrix_norm#Spectral_norm) of a matrix is defined by such an optimisation problem
+Another common constraint is ensuring a vector has unit length. The definition of the [_spectral norm_](https://en.wikipedia.org/wiki/Matrix_norm#Spectral_norm) of a matrix is defined by such an optimisation problem
 
 $$
 \begin{align*}
@@ -227,4 +227,4 @@ def minimize_subject_to_constraints(
 
 
 # Conclusion
-Though many optimisation routines are specifically for unconstrained optimisationn problems, the quadratic penalty method provides a way to remove equality constraints and encode them into the objective. This means constrained optimisation reduces to solving a sequence of unconstrained optimisation problems. 
+Though many optimisation routines are specifically for unconstrained optimisation problems, the quadratic penalty method provides a way to remove equality constraints and encode them into the objective. This means constrained optimisation reduces to solving a sequence of unconstrained optimisation problems. 
