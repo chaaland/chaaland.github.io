@@ -1,5 +1,5 @@
 ---
-title: "Better Contour and Surface Plots Using Non-Rectangular Sampling Grids"
+title: "Plotting using Non-Rectangular Grids"
 categories:
   - Mathematics
 date:   2019-10-30 23:48:45 +0100

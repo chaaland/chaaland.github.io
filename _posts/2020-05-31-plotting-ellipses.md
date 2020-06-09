@@ -1,5 +1,5 @@
 ---
-title: "Plotting Ellipses in Numpy"
+title: "Plotting Ellipses"
 categories:
   - Mathematics
 date:   2020-05-30 12:09:00 +0100

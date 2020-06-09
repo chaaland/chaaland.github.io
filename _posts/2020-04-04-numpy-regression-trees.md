@@ -1,5 +1,5 @@
 ---
-title: "Regression Trees with Numpy"
+title: "Numpy Regression Trees"
 categories:
   - Mathematics
 date:   2020-04-04 12:00:00 +0000
