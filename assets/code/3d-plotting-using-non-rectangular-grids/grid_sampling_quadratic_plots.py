@@ -1,6 +1,8 @@
 import numpy as np
+import os
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
 
 def plot_rectangular_grid(mode="h"):
     n_x = 10
@@ -19,11 +21,12 @@ def plot_rectangular_grid(mode="h"):
     if mode.lower() == "h":
         plt.scatter(X[horiz_mid-2:horiz_mid+2,:].ravel(), Y[horiz_mid-2:horiz_mid+2,:].ravel(), color="r")
         plt.tight_layout()
-        plt.savefig("../images/grid-sampling-rectangular-horizontal.png")
+        plt.savefig("../../images/3d-plotting-using-non-rectangular-grids/rectangular-horizontal.png")
     else:
         plt.scatter(X[:,vert_mid-2:vert_mid+2].ravel(), Y[:,vert_mid-2:vert_mid+2].ravel(), color="g")
         plt.tight_layout()
-        plt.savefig("../images/grid-sampling-rectangular-vertical.png")
+        plt.savefig("../../images/3d-plotting-using-non-rectangular-grids/rectangular-vertical.png")
+
 
 def plot_ellipse_grid(xlim=None, ylim=None, a=1, b=1, angle=0, center=np.zeros((2,1)), mode="h"):
     n_r = 10
@@ -56,6 +59,7 @@ def plot_ellipse_grid(xlim=None, ylim=None, a=1, b=1, angle=0, center=np.zeros((
     plt.scatter(plot_grid[0,:], plot_grid[1,:], color=c)
     plt.tight_layout()
 
+
 def plot_sinc_surface():
     x = np.linspace(-6, 6, 400) + 1e-6
     y = np.linspace(-6, 6, 400)
@@ -82,6 +86,7 @@ def plot_sinc_surface():
     ax.set_title(r"$\sin\left(\pi * \sqrt{x^2+y^2}\right)/\pi\sqrt{x^2+y^2}$")
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
+
 
 def plot_gaussian_surface():
     x = np.linspace(-3, 3, 400) + 1e-6
@@ -128,6 +133,7 @@ def plot_gaussian_surface():
     ax.set_title(r"Gaussian Distribution")
     ax.set_xlabel(r"$x$", fontsize=14)
     ax.set_ylabel(r"$y$", fontsize=14)    
+
 
 def plot_elongated_paraboloid(with_grid=False):
     x = np.linspace(-1, 1, 30)

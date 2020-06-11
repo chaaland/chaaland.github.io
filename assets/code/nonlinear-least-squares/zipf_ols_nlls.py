@@ -15,7 +15,7 @@ pjoin = os.path.join
 
 def word_freqs(topk: int = 25):
     word_counts = Counter() 
-    with open(pjoin("..", "txt", "hamlet.txt"), "rt") as f:
+    with open(pjoin("..", "..", "txt", "hamlet.txt"), "rt") as f:
         text = " ".join(f.readlines())
         text = re.sub("[^0-9a-zA-Z ]+", "", text)
         all_words = [word.lower() for word in text.split() if len(word) > 0]
@@ -39,7 +39,7 @@ def plot_scatter_points(freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle='--')
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-freq-scatter.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-freq-scatter.png"))
 
 def fit_zipf_ols(freq_counts_desc: np.ndarray):
     ranks = np.arange(1, 1 + freq_counts_desc.size)
@@ -86,7 +86,7 @@ def plot_zipf_param_surface(empirical_freqs: np.ndarray):
     ax.set_xlabel(r"$K$", fontsize=14)
     ax.set_ylabel(r"$\alpha$", fontsize=14)
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-param-surface.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-param-surface.png"))
 
 def plot_zipf_param_contours(empirical_freqs: np.ndarray):
     K_plot = np.linspace(-0.03, .07, 100)
@@ -108,7 +108,7 @@ def plot_zipf_param_contours(empirical_freqs: np.ndarray):
     plt.ylabel(r"$\alpha$", fontsize=14)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-param-contours.png"))
+    plt.savefig(pjoin(("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-param-contours.png"))
 
 def plot_zipf_transformed_param_surface(empirical_freqs):
     n_theta = 200
@@ -148,7 +148,7 @@ def plot_zipf_transformed_param_surface(empirical_freqs):
     ax.set_xlabel(r"$\log\, K$", fontsize=14)
     ax.set_ylabel(r"$\alpha$", fontsize=14)
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-transformed-param-surface.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-transformed-param-surface.png"))
 
 def plot_zipf_transformed_param_contours(empirical_freqs):
     n_theta = 200
@@ -190,7 +190,7 @@ def plot_zipf_transformed_param_contours(empirical_freqs):
     plt.ylabel(r"$\alpha$", fontsize=14)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-transformed-param-contours.png"))
+    plt.savefig(pjoin(("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-transformed-param-contours.png"))
 
 def plot_transformed_scatter_points(freqs):
     ranks = np.arange(1, 1 + freqs.size)
@@ -206,7 +206,7 @@ def plot_transformed_scatter_points(freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle='--')    
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-transformed-param-scatter.png"))
+    plt.savefig(pjoin(("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-transformed-param-scatter.png"))
 
 def plot_zipf_fit(empirical_freqs):
     K_ols, alpha_ols, _ = fit_zipf_ols(empirical_freqs)
@@ -229,7 +229,7 @@ def plot_zipf_fit(empirical_freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle='--')
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-fit.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-fit.png"))
 
     plt.figure(figsize=(10,10))
     plt.title(r"$log(freq)$ vs. $log(rank)$", fontsize=14)
@@ -246,7 +246,7 @@ def plot_zipf_fit(empirical_freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle='--')
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-zipf-fit-loglog.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-fit-loglog.png"))
 
 def plot_direction_arrows(x_coords, y_coords, min_segment_length=0.05, c="b"):
     for i in range(1, x_coords.size):
@@ -305,7 +305,7 @@ def plot_gauss_newton_convergence(empirical_freqs):
     plt.xlim([k_lower, k_upper])
     plt.ylim([alpha_lower, alpha_upper])
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-gauss-newton-fit.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-gauss-newton-fit.png"))
 
 def plot_levenberg_marquardt_convergence(empirical_freqs):
     N_iter = 100
@@ -356,7 +356,7 @@ def plot_levenberg_marquardt_convergence(empirical_freqs):
     plt.xlim([k_lower, k_upper])
     plt.ylim([alpha_lower, alpha_upper])
     plt.tight_layout()
-    plt.savefig(pjoin("..", "images", "shakespeare-levenberg-marquardt-fit.png"))
+    plt.savefig(pjoin("..", "..", "images", "non-linear-least-squares", "shakespeare-levenberg-marquardt-fit.png"))
 
 
 if __name__ == "__main__":

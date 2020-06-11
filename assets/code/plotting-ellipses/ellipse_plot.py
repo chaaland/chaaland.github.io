@@ -73,7 +73,7 @@ def plot_concentric_ellipses():
     for direction in ["top", "right", "bottom", "left"]:
         ax.spines[direction].set_visible(False)
     plt.tight_layout()
-    plt.savefig("assets/images/ellipses-concentric.png")
+    plt.savefig("../../images/plotting-ellipses/ellipses-concentric.png")
 
 
 def rotation_mat(theta_val: float) -> np.array:
@@ -254,8 +254,7 @@ def animate_ellipse_creation(P: np.ndarray, c: np.ndarray):
 
     ani = FuncAnimation(fig, update, np.arange(len(u_data)), init_func=init)
     writer = PillowWriter(fps=24)  
-    ani.save("assets/gifs/ellipse-rotation.gif", writer=writer)   
-
+    ani.save("../../gifs/plotting-ellipses/ellipse-rotation.gif", writer=writer)   
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/quadratic-penalty-splash-image.png
+  overlay_image: assets/images/quadratic-penalty-algo/splash-image.png
   overlay_filter: 0.2
 tags:
   - Optimisation
@@ -126,8 +126,8 @@ $$
 The objective for the original constrained minimisation problem, $$-\left\| Ax \right\|^2$$ is shown in the figure below
 
 <figure class="half">    
-  <a href="/assets/images/quadratic-penalty-spectral-norm-objective.png"><img src="/assets/images/quadratic-penalty-spectral-norm-objective.png"></a>
-  <a href="/assets/images/quadratic-penalty-spectral-norm-contours.png"><img src="/assets/images/quadratic-penalty-spectral-norm-contours.png"></a>
+  <a href="/assets/images/quadratic-penalty-algo/spectral-norm-objective.png"><img src="/assets/images/quadratic-penalty-algo/spectral-norm-objective.png"></a>
+  <a href="/assets/images/quadratic-penalty-algo/spectral-norm-contours.png"><img src="/assets/images/quadratic-penalty-algo/spectral-norm-contours.png"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
@@ -135,14 +135,14 @@ It should be clear from this graph that there are exactly two minima for the uni
 The following animation shows the relaxed problem surface for various values of the penalty parameter $$\mu$$. Note how the objective for the relaxed problem, $$-||Ax||^2 + \mu(||x|| -1)^2$$ is significantly more complicated than just a simple quadratic. unlike the original quadratic objective, this function is highly non-convex for even small values of $$\mu$$.
 
 <figure>
-    <a href="/assets/gifs/quadratic-penalty-surface.gif"><img src="/assets/gifs/quadratic-penalty-surface.gif"></a>
+    <a href="/assets/gifs/quadratic-penalty-algo/surface.gif"><img src="/assets/gifs/quadratic-penalty-algo/surface.gif"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 
 Below is another animation instead showing the level sets of the surface. As $$\mu$$ increases to even moderate values, the minima (inidcated by darker colors) move into increasingly narrow "valleys" of the optimisation landscape. These narrow pockets make it very difficult for an algorithm like gradient descent to navigate into. 
 
 <figure>
-    <a href="/assets/gifs/quadratic-penalty-contours.gif"><img src="/assets/gifs/quadratic-penalty-contours.gif"></a>
+    <a href="/assets/gifs/quadratic-penalty-algo/quadratic-penalty-contours.gif"><img src="/assets/gifs/quadratic-penalty-algo/contours.gif"></a>
     <figcaption>Figure 3</figcaption>
 </figure>
 
@@ -174,7 +174,7 @@ Steps 2 and 3 are repeated until some convergence tolerance is achieved. In step
 A graph of the unit norm constraint violation is shown below from which it is clear that only a few increases of the penalty parameter $$\mu$$ are enough to ensure the constraint is very nearly satisfied with equality.
 
 <figure>
-    <a href="/assets/images/quadratic-penalty-constraint-violation.png"><img src="/assets/images/quadratic-penalty-constraint-violation.png"></a>
+    <a href="/assets/images/algo/quadratic-penalty-constraint-violation.png"><img src="/assets/images/quadratic-penalty-algo/constraint-violation.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 

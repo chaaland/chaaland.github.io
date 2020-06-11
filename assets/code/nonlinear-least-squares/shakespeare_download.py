@@ -23,5 +23,5 @@ if __name__ == "__main__":
             if t.parent.name.lower() == "a":
                 output += f"{t} "
 
-        with open(pjoin("..", "txt", "hamlet.txt"), "wt") as f:
+        with open(pjoin("..", "..", "txt", "hamlet.txt"), "wt") as f:
             f.writelines(output)

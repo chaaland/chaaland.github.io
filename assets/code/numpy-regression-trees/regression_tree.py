@@ -204,7 +204,7 @@ def plot_2d_example():
   ax.plot(X_train, y_train)
   ax.set_ylim(-1.05, 1.05)
   ax.set(xlabel="x", ylabel="y", title=r"$y = \cos(x^2)$")
-  plt.savefig("../images/1d-chirp.png")
+  plt.savefig("../../images/numpy-regression-trees/1d-chirp.png")
 
   def plot_tree_model_fit(max_depth):
     reg_tree = RegressionTree(min_sample=5, max_depth=max_depth)
@@ -226,7 +226,7 @@ def plot_2d_example():
 
     return image
 
-  imageio.mimsave('../gifs/1d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3)
+  imageio.mimsave('../../gifs/numpy-regression-trees/1d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3)
 
 def plot_3d_example():
   from mpl_toolkits import mplot3d
@@ -240,7 +240,7 @@ def plot_3d_example():
   ax = plt.axes(projection="3d")    
   ax.plot_surface(X_mesh, Y_mesh, Z_mesh,cmap="magma", edgecolor='none')
   ax.set(xlabel="x", ylabel="y", title=r"$y = \sin(\sqrt{x^2+y^2}/\sqrt{x^2+y^2})$")
-  plt.savefig("../images/2d-sinc.png")
+  plt.savefig("../../images/numpy-regression-trees/2d-sinc.png")
 
   X_train = np.column_stack([X_mesh.ravel(), Y_mesh.ravel()])
   y_train = Z_mesh.ravel()
@@ -272,7 +272,7 @@ def plot_3d_example():
 
     return image
 
-  imageio.mimsave('../gifs/2d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3) 
+  imageio.mimsave('../../gifs/numpy-regression-trees/2d-regression-tree.gif', [plot_tree_model_fit(i) for i in range(2, 16)], fps=3) 
 
 def plot_splash_image():
   np.random.seed(3)
@@ -298,7 +298,7 @@ def plot_splash_image():
   plt.step(x_vals, y_med_pred)
   plt.step(x_vals, y_big_pred)
 
-  fname = Path("..", "images", "regression-tree-splash-image.png")
+  fname = Path("..", "..", "images", "numpy-regression-trees", "splash-image.png")
   plt.savefig(fname)
 
 

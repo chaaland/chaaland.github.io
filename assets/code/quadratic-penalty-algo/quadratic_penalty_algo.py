@@ -256,7 +256,7 @@ def plot_quadratic_penalty_minimisation_relaxation(alpha: float, a: float, b: fl
   plt.ylabel(r"$\log\left(|\, ||x|| - 1|\right) $", fontsize=14)
   plt.title("Constraint violation vs Iteration", fontsize=14)
   plt.tight_layout()
-  plt.savefig(pjoin("..", "images", "quadratic-penalty-constraint-violation.png"))
+  plt.savefig(pjoin("..", "..",  "images", "quadratic-penalty-algo", "quadratic-penalty-constraint-violation.png"))
 
   return x_vals, mu_penalties
 
@@ -291,7 +291,7 @@ def create_splash_image():
   ax.set_ylim(-1.5, 1.5)
   plt.axis('off')
   plt.tight_layout()
-  plt.savefig("../images/quadratic-penalty-splash-image.png")
+  plt.savefig(pjoin(".." "..", "images", "quadratic-penalty-algo", "splash-image.png"))
  
 def plot_2d_eigval_problem():
   alpha = 2 * np.pi / 3
