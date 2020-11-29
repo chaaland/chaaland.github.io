@@ -174,7 +174,7 @@ Steps 2 and 3 are repeated until some convergence tolerance is achieved. In step
 A graph of the unit norm constraint violation is shown below from which it is clear that only a few increases of the penalty parameter $$\mu$$ are enough to ensure the constraint is very nearly satisfied with equality.
 
 <figure>
-    <a href="/assets/images/algo/quadratic-penalty-constraint-violation.png"><img src="/assets/images/quadratic-penalty-algo/constraint-violation.png"></a>
+    <a href="/assets/images/quadratic-penalty-algo/constraint-violation.png"><img src="/assets/images/quadratic-penalty-algo/constraint-violation.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 
