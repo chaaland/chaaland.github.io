@@ -108,7 +108,7 @@ def plot_zipf_param_contours(empirical_freqs: np.ndarray):
     plt.ylabel(r"$\alpha$", fontsize=14)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(pjoin(("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-param-contours.png"))
+    plt.savefig(pjoin(("..", "..", "images", "non-linear-least-squares", "shakespeare-zipf-param-contours.png")))
 
 def plot_zipf_transformed_param_surface(empirical_freqs):
     n_theta = 200
