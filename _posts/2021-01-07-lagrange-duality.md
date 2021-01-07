@@ -2,7 +2,7 @@
 title: "Lagrange Duality"
 categories:
   - Mathematics
-date:   2021-01-07 10:57:00 +0000
+date:   2021-01-07 00:30:00 +0000
 mathjax: true
 tags:
   - Optimisation
