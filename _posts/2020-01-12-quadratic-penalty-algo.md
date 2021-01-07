@@ -139,7 +139,7 @@ The following animation shows the relaxed problem surface for various values of 
     <figcaption>Figure 2</figcaption>
 </figure>
 
-Below is another animation instead showing the level sets of the surface. As $$\mu$$ increases to even moderate values, the minima (inidcated by darker colors) move into increasingly narrow "valleys" of the optimisation landscape. These narrow pockets make it very difficult for an algorithm like gradient descent to navigate into. 
+Below is another animation instead showing the level sets of the surface. As $$\mu$$ increases to even moderate values, the minima (indicated by darker colors) move into increasingly narrow "valleys" of the optimisation landscape. These narrow pockets make it very difficult for an algorithm like gradient descent to navigate into. 
 
 <figure>
     <a href="/assets/gifs/quadratic-penalty-algo/quadratic-penalty-contours.gif"><img src="/assets/gifs/quadratic-penalty-algo/contours.gif"></a>
