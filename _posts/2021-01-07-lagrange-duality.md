@@ -234,7 +234,7 @@ $$
 
 <a name="footnote3">3</a>: Recall that $$x^\star$$ solves the primal problem, so it must be feasible by definition.
 
-<a name="footnote4">3</a>: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_.
+<a name="footnote4">4</a>: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_.
 
 ## References
 1. [Boyd & Vandenberghe's Convex Optimization](https://web.stanford.edu/~boyd/cvxbook/)
