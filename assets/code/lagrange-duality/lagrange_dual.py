@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 from mayavi import mlab
-# matplotlib.use("Qt4Agg", warn=False, force=True)
 
 plt.rc('axes', labelsize=14)
 plt.rc('xtick', labelsize=14)    # fontsize of the tick labels
@@ -59,6 +58,7 @@ def plot_primal(save_dir):
     plt.ylim(bottom=-5)
     plt.tight_layout()
     plt.savefig(save_dir / "primal_toy_problem.png")
+
     
 def lagrangian_minimiser(lagrange_multiplier):
     return 3 * lagrange_multiplier / (1 + lagrange_multiplier)
@@ -108,53 +108,6 @@ def plot_dual_function(save_dir):
     plt.savefig(save_dir / "dual_fn.png")
     
 
-def plot_lagrangian(save_dir):
-    n_plot_points = 50
-    x_left = 0
-    x_right = 5
-    x_plot = np.linspace(x_left, x_right, n_plot_points)
-    lambda_plot = np.linspace(0, 3, 50)
-    # X_mesh, lambda_mesh = np.meshgrid(x_plot, lambda_plot)
-    X_mesh, lambda_mesh = np.mgrid[x_left:x_right:0.1, 0:3:0.2]
-    lagrangian_mesh = lagrangian(X_mesh, lambda_mesh)
-
-    # fig = plt.figure(figsize=(10, 10))
-    # ax = fig.add_subplot(111, projection="3d")
-    x_minimiser = lagrangian_minimiser(lambda_plot)
-
-    mlab.figure(size=(1080 * 2, 720 * 2),
-            bgcolor=(1.0, 1.0, 1.0),
-            fgcolor=(.6, .1, .1))
-    extent = [x_left, x_right, 0, 3, 0, 5]
-    # mlab.surf(X_mesh, lambda_mesh, lagrangian_mesh, opacity=0.9, extent=extent, colormap='hot')
-    mlab.surf(X_mesh, lambda_mesh, lagrangian_mesh, opacity=0.9, colormap='hot')
-    mlab.plot3d(x_minimiser, lambda_plot, lagrangian(x_minimiser, lambda_plot), tube_radius=None)
-    # mlab.savefig(str(save_dir / 'foo.png'))
-    mlab.show()
-        #   extent=[-1.5, 1.5, -1.5, 1.5, min / 40 + 0.6, max / 40 + 0.6],
-        #   opacity=0.9,
-        #   colormap='ocean')
-    # mlab.plot3d(-circ_X, circ_Y, circ_Z, tube_radius=None)
-
-    # ax.plot3D(x_minimiser, lambda_plot, lagrangian(x_minimiser, lambda_plot), 'g', linewidth=2)
-    # ax.plot_surface(X_mesh, lambda_mesh, lagrangian_mesh, cmap="Reds", edgecolor='none')
-    # ax.plot_wireframe(x_minimiser[:,np.newaxis], lambda_plot[:,np.newaxis], 1+lagrangian(x_minimiser, lambda_plot)[:,np.newaxis], color='red', linewidth=2)
-
-    # ax.plot(x_minimiser, lambda_plot, 1+lagrangian(x_minimiser, lambda_plot), color='black', linewidth=2)
-    # ax.plot_wireframe(X_mesh, lambda_mesh, lagrangian_mesh)
-    # ax.plot3D(x_plot, np.zeros_like(x_plot), primal_objective(x_plot)+0.1, 'k', linewidth=4)
-    # ax.plot3D(lagrangian_minimiser(lambda_plot), lambda_plot, np.zeros_like(lambda_plot), 'k', linewidth=2,)
-
-    
-    # plt.tight_layout()
-    # plt.contour(X, Y, Z, cmap="hot", levels=20)
-    # fig = plt.figure(figsize=(10, 10))
-    # plt.contour(X_mesh, lambda_mesh, lagrangian_mesh, cmap='hot', levels=25)
-
-    # plt.savefig(save_dir / "primal_toy_problem.png")
-    # plt.show()
-    
-
 def plot_relaxed_primal(save_dir):
     n_plot_points = 5000
     x_left = -5
@@ -199,11 +152,10 @@ def main(args):
     image_save_dir = Path(f"../../images/{Path(__file__).absolute().parent.name}")
     image_save_dir.mkdir(exist_ok=True, parents=True)
     # plot_primal(image_save_dir)
-    # plot_lagrangian(image_save_dir)
     # plot_lagrangian_contours(image_save_dir)
     # plot_relaxed_primal(image_save_dir)
     # plot_example()
-    plot_dual_function(image_save_dir)
+    # plot_dual_function(image_save_dir)
 
 
 if __name__ == "__main__":

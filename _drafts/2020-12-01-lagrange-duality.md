@@ -2,16 +2,16 @@
 title: "Lagrange Duality"
 categories:
   - Mathematics
-date:   2020-12-01 10:57:00 +0100
+date:   2021-01-07 10:57:00 +0000
 mathjax: true
 tags:
   - Optimisation
 toc: true
 # classes: wide
 excerpt: ""
-header: 
-  overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
-  overlay_filter: 0.2
+# header: 
+#   overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
+#   overlay_filter: 0.2
 ---
 
 In applications such as machine learning, optimisation problems are typically handled in their so called _primal form_. In this post, we'll look at the closely related _dual form_ of an optimisation problem.
@@ -60,7 +60,7 @@ $$L(x,\lambda) = x^2 + 1 + \lambda(x^2-6x+8)$$
 
 This function is called the _Lagrangian_ .<sup>[1](#footnote1)</sup> Notice that allowing $$\lambda < 0$$ would not approximate the original objective well since violations of the constraint could potentially yield better values of the objective than if the constraint were satisfied. 
 
-For this reason, we restrict $$\lambda \ge 0$$. In this way, violations of the constraint produce larger/worse values of the objective. Larger violations produce larger penalties to the objective. Conversely, satisfying the constraint produces lower/better values of the objective. Contrast this with the hard constraint where any size violation of the constraint resulted in an infinite objective and satisfying the constraint left the objective unaltered. It is worth repeating that the Lagrangian is only an approximation of the original objective, and a crude one at that. 
+For this reason, we restrict $$\lambda \ge 0$$. In this way, violations of the constraint produce larger/worse values of the objective. Larger violations produce larger penalties to the objective. Conversely, satisfying the constraint produces lower/better values of the objective. Contrast this with the hard constraint where any size violation of the constraint results in an infinite objective and satisfying the constraint leaves the objective unaltered. It is worth repeating that the Lagrangian is only an approximation of the original objective, and a crude one at that. 
 
 The following shows a plot for various positive Lagrange multipliers overlayed on the original optimisation problem. It should be clear from figure 2 that Lagrangians (in purple) are hardly great approximations of the hard constraint formulation (in green) for any value of $$\lambda$$.
 
@@ -88,7 +88,7 @@ In particular,
 
 $$L(2, \lambda) \le 5.$$
 
-Though $$x^\star=2$$ is the minimiser of the primal problem, in general, it is not a minimiser of the Lagrangian for any value of $$\lambda$$. Referring to figure 2, it is clear the Lagrangian is minimised by different values of $$x$$ depending on the value of $$\lambda$$. 
+Though $$x^\star=2$$ is the minimiser of the primal problem, in general, it is not necessarily a minimiser of the Lagrangian for all $$\lambda$$. Referring to figure 2, it is clear the Lagrangian is minimised by different values of $$x$$ depending on the value of $$\lambda$$. 
 
 For example, consider the case where $$\lambda = 4$$. The Lagrangian is
 
@@ -186,7 +186,7 @@ $$
 L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^n \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)\\
 $$ 
 
-with $$L:\mathbf{R}^n\times \mathbf{R}_+^m\times \mathbf{R}^p \rightarrow \mathbf{R}$$. With the same reasoning discussed previously, we must have $$\lambda_i \geq 0$$ for this relaxation to be a sensible approximation of the original objective. We do not require any constraints on $$\nu$$ since From here, all the arguments are the same, just with extra variables.
+with $$L:\mathbf{R}^n\times \mathbf{R}_+^m\times \mathbf{R}^p \rightarrow \mathbf{R}$$. With the same reasoning discussed previously, we must have $$\lambda_i \geq 0$$ for this relaxation to be a sensible approximation of the original objective. From here, all the arguments are the same, just with extra variables.
 
 The Lagrangian still lower bounds the objective in the feasible region. The dual function is then given by
 
@@ -209,7 +209,7 @@ where $$\lambda \succeq 0$$ means the vector is component-wise greater or equal 
 
 
 ## Conclusion
-In this post we see the intuition for the formulation of an optimisation problem's tool. The dual problem is important for many reasons. Very often it has interesting interpretations in the domain of the problem. The dual also plays an important role in many algorithms for solving convex optimisations. 
+In this post we see the intuition for the formulation of an optimisation problem's dual. The dual problem is important for many reasons. Very often it has interesting interpretations in the domain of the problem. The dual also plays an important role in many algorithms for solving convex optimisation problems. 
 
 Constructing the dual problem can be summarised by the following four steps 
 
@@ -223,7 +223,7 @@ $$
 $$
 
 2. Form the Lagrangian $$L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^n \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)$$.
-3. Compute the dual function $$g(\lambda, \nu)$$ by taking the infimum over $$x$$ of the Lagrangian.
+3. Compute the dual function $$g(\lambda, \nu)$$ by taking the infimum of the Lagrangian over $$x$$.
 4. Maximise the dual function subject to $$\lambda \succeq 0$$.
 
 
@@ -234,7 +234,7 @@ $$
 
 <a name="footnote3">3</a>: Recall that $$x^\star$$ solves the primal problem, so it must be feasible by definition.
 
-<a name="footnote4">3</a>: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_
+<a name="footnote4">3</a>: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_.
 
 ## References
 1. [Boyd & Vandenberghe's Convex Optimization](https://web.stanford.edu/~boyd/cvxbook/)
