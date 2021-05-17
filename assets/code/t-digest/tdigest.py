@@ -3,13 +3,17 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+
 TAU = 2 * np.pi
+
 
 def scale_fn(q, delta):
   return delta / TAU * np.arcsin(2 * q - 1)
 
+
 def inverse_scale_fn(k, delta):
   return 0.5 * (np.sin(TAU / delta * k) + 1)
+
 
 class Cluster:
   def __init__(self, centroid, weight=1):
@@ -24,7 +28,14 @@ class Cluster:
   def centroid(self):
     return self._mean
 
-  def __add__(self, other: Cluster):
+  def update(self, *clusters):
+    new_weight = self.weight + sum(c.weight for c in clusters)
+    new_mean = (self.centroid * self.weight + sum(c.centroid * c.weight for c in clusters)) / new_weight
+
+    self._n = new_weight
+    self._mean = new_mean
+
+  def __add__(self, other: "Cluster"):
     new_weight = self.weight + other.weight
     new_mean = (self.centroid * self.weight + other.centroid * other.weight) / new_weight
     new_cluster = Cluster(new_mean, new_weight)
@@ -39,20 +50,93 @@ class Cluster:
 
 
 class TDigest:
-  def __init__(self, delta):
+  def __init__(self, delta: float, points: np.array):
+    """
+    """
     self._delta = delta
-    self._clusters = []
+    self._clusters = self.cluster_points(points)
   
-  def update(self, centroids):
-    pass
+  def _cluster_points(self, points: np.array):
+    total_weight = len(points)
+    percentile_increment = 1 / total_weight
+
+    sorted_points = np.sort(points)
+
+    k_limit = scale_fn(0, self.delta) + 1
+    q_limit = inverse_scale_fn(k_limit, self.delta)
+
+    left_cluster_index = 0
+    right_cluster_index = 0
+    data_clusters = []
+
+    for j in range(total_weight):
+        percentile = (j + 1) * percentile_increment
+        if percentile > q_limit:
+          right_cluster_index = j
+
+          cluster_points = sorted_points[left_cluster_index:right_cluster_index]
+          cluster_centroid = np.mean(cluster_points)
+          cluster_weight = right_cluster_index - left_cluster_index
+          cluster = Cluster(centroid=cluster_centroid, weight=cluster_weight)
+          data_clusters.append(cluster)
+          
+          left_cluster_index = right_cluster_index
+          k_limit = scale_fn(percentile, self.delta) + 1
+          q_limit = inverse_scale_fn(k_limit, self.delta)
+
+    return data_clusters
+
+  def update(self, *tdigests):
+    # what to do about current centroid??
+    self._clusters += [c for digest in tdigests for c in digest._clusters]
+    self._clusters.sort(key=lambda c: c.centroid)
+
+    total_weight = sum(c.weight for c in self._clusters)
+
+    k_limit = scale_fn(0, self.delta) + 1
+    q_limit = inverse_scale_fn(k_limit, self.delta)
+
+    left_cluster_index = 0
+    right_cluster_index = 0
+    data_clusters = []
+
+    percentile = 0
+    for j, cluster in enumerate(self._clusters):
+      percentile += cluster.weight / total_weight
+      if percentile > q_limit:
+        right_cluster_index = j
+
+        clusters_to_merge = self._clusters[left_cluster_index:right_cluster_index]
+        merged_cluster_weight = sum(c.weight for c in clusters_to_merge)
+        merged_cluster_centroid = sum(c.centroid * c.weight / merged_cluster_weight for c in clusters_to_merge)
+        cluster = Cluster(centroid=merged_cluster_centroid, weight=merged_cluster_weight)
+        data_clusters.append(cluster)
+        
+        left_cluster_index = right_cluster_index
+        k_limit = scale_fn(percentile, self.delta) + 1
+        q_limit = inverse_scale_fn(k_limit, self.delta)
+
+    self._clusters = data_clusters
   
   def cdf(self, x):
-    pass
+    for i, cluster in enumerate(self._clusters):
+      if x < cluster.centroid:
+        if i == 0:
+          return 0
+        elif cluster[i-1].weight == 1 and cluster[i].weight == 1:
+          return (cluster[i-1].centroid + cluster[i].centroid) / 2
+        elif cluster[i-1].weight > 1 and cluster[i] > 1:
+          
+
+          return (x - )
+
 
   @property
   def centroids(self):
+    # how to return copies
     return [c for c in self._centroids]
 
+  @property
   def clusters(self):
     return [c.centroid for c in self._centroids]
 
