@@ -119,14 +119,17 @@ class TDigest:
     self._clusters = data_clusters
   
   def cdf(self, x):
+    total_weight = sum(c.weight for c in self._clusters)
     for i, cluster in enumerate(self._clusters):
+      
+      percentile = (self._clusters[i].weight + self._clusters[i - 1].weight) / 2
       if x < cluster.centroid:
         if i == 0:
           return 0
         elif cluster[i-1].weight == 1 and cluster[i].weight == 1:
           return (cluster[i-1].centroid + cluster[i].centroid) / 2
         elif cluster[i-1].weight > 1 and cluster[i] > 1:
-          
+
 
           return (x - )
 
