@@ -4,6 +4,11 @@ import pandas as pd
 import numpy as np
 
 
+IMG_DIR = Path("..", "..", "images", "t-digest")
+IMG_DIR.mkdir(exist_ok=True, parents=True)
+GIF_DIR = Path("..", "..", "gifs", "t-digest")
+GIF_DIR.mkdir(parents=True, exist_ok=True)
+
 TAU = 2 * np.pi
 
 
@@ -43,10 +48,10 @@ class Cluster:
     return new_cluster
   
   def __repr__(self):
-    centroid_arg = f"centroid={self._centroid}"
-    n_points_arg = f"n_points={self._n_points}"
+    centroid_arg = f"centroid={self.centroid}"
+    weight_arg = f"weight={self.weight}"
 
-    return f"{self.__class__.__name__}({centroid_arg}, {n_points_arg})"
+    return f"{self.__class__.__name__}({centroid_arg}, {weight_arg})"
 
 
 class TDigest:
@@ -129,78 +134,19 @@ class TDigest:
         elif cluster[i-1].weight == 1 and cluster[i].weight == 1:
           return (cluster[i-1].centroid + cluster[i].centroid) / 2
         elif cluster[i-1].weight > 1 and cluster[i] > 1:
-
-
-          return (x - )
-
+          pass
 
   @property
   def centroids(self):
-    # how to return copies
     return [c for c in self._centroids]
 
   @property
   def clusters(self):
     return [c.centroid for c in self._centroids]
 
-  def __add__(self, other_digest):
-    digest_centroids = [self.centroids, other_digest.centroids]
-    data = list(chain(self.C.values(), other_digest.C.values()))
-    new_digest = TDigest(self.delta, self.K)
-
-    if len(data) > 0:
-        for c in pyudorandom.items(data):
-            new_digest.update(c.mean, c.count)
-
-    return new_digest
-
-def simple_stats_aggregator(files):
-  max_val = -np.inf
-  min_val = np.inf
-  nnz = 0
-
-  for f in files:
-    df = pd.read_csv(f)
-    max_val = max(max_val, df.max())
-    min_val = min(min_val, df.min())
-    nnz += df[df==0].sum(axis=0)
-
-  summary = {
-    "max": max_val,
-    "min": min_val,
-    "nnz": nnz,
-  }
-
-  return summary
 
 def plot_splash_image():
-  np.random.seed(3)
-  n = 100
-  eps = 0.2 * np.random.randn(n)
-  x_train = np.random.randn(n)
-  y_train = np.square(x_train) + eps
-  small_tree = RegressionTree(min_sample=5, max_depth=3)
-  med_tree = RegressionTree(min_sample=5, max_depth=5)
-  big_tree = RegressionTree(min_sample=5, max_depth=11)
-
-  small_tree.fit(x_train[:, np.newaxis], y_train)
-  med_tree.fit(x_train[:, np.newaxis], y_train)
-  big_tree.fit(x_train[:, np.newaxis], y_train)
-
-  x_vals = np.linspace(-3, 3, 1000)[:, np.newaxis]
-  y_small_pred = small_tree.predict(x_vals)
-  y_med_pred = med_tree.predict(x_vals)
-  y_big_pred = big_tree.predict(x_vals)
-
-  plt.scatter(x_train, y_train, color="k", alpha=0.7)
-  plt.step(x_vals, y_small_pred)
-  plt.step(x_vals, y_med_pred)
-  plt.step(x_vals, y_big_pred)
-
-  fname = Path("..", "..", "images", "numpy-regression-trees", "splash-image.png")
-  plt.savefig(fname)
-
-
+  pass
 
 
 def cluster_points(points, delta):
@@ -312,9 +258,7 @@ def clustering_with_scale_function_animation():
 
         return image
 
-    gif_dir = Path("..", "..", "gifs", "t-digest")
-    gif_dir.mkdir(parents=True, exist_ok=True)
-    gif_file = str(gif_dir / "cluster-building-with-scale-function.gif")
+    gif_file = str(GIF_DIR / "cluster-building-with-scale-function.gif")
     imageio.mimsave(gif_file, [plot_cluster_and_k_function(i) for i in range(n_points)], fps=2) 
   
 
@@ -326,9 +270,7 @@ def approximate_cdf():
 
   data_clusters = cluster_points(points, delta)
 
-  img_dir = Path("..", "..", "images", "t-digest")
-  img_dir.mkdir(exist_ok=True, parents=True)
-  img_file = str(img_dir / "simple_approximate_histogram.png")
+  img_file = str(IMG_DIR / "simple-approximate-histogram.png")
 
   plt.subplot(211)
   # plot the empirical histogram
@@ -355,6 +297,91 @@ def approximate_cdf():
   plt.savefig(img_file)
 
 
+def randomly_cluster_points(points, n_clusters):
+  sorted_points = np.sort(points)
+  clusters = []
+  curr_cluster = [sorted_points[0]]
+
+  boundaries = np.random.choice(np.arange(points.size), size=n_clusters) + 1
+  boundaries = np.hstack([boundaries, points.size])
+
+  cnt = 0
+  for i, p in enumerate(sorted_points[1:]):
+    if i < boundaries[cnt]:
+      curr_cluster.append(p)
+    else:
+      clusters.append(curr_cluster)
+      curr_cluster = [p]
+      cnt += 1
+      
+  return [c for c in clusters if len(c) > 0]
+
+def arbitrary_clustering_examples():
+  np.random.seed(2718)
+  n_points = 25
+  delta = 10
+  points = 2 * np.random.randn(n_points) + 0.5 
+  colors = {
+      0: 'b',
+      1: 'g',
+      2: 'y',
+      3: 'orange',
+      4: 'r',
+  }
+
+  n_colors = len(colors)
+
+  for i in range(3):
+    plt.subplot(3, 1, i + 1)
+    clusters = randomly_cluster_points(points, n_clusters=1 + 3)
+    for j, c in enumerate(clusters):
+      plt.scatter(c, np.zeros_like(c), alpha=0.3, color=colors[j % n_colors], s=75)
+
+  fname = str(IMG_DIR / "random-clusters.png") 
+  plt.tight_layout()
+  plt.savefig(fname)
+
+
+def plot_scale_functions():
+  q = np.linspace(0.0001, 0.999, 1000)
+  delta = 10
+
+  plt.subplot(121)
+  plt.plot(q, delta/ TAU * np.arcsin(2*q - 1))
+  plt.title(rf"$k_1(q)$ vs $q$ ($\delta$ = {delta})")
+  plt.xlabel(r"$q$")
+  plt.ylabel(r"$k_1(q)$")
+
+  plt.subplot(122)
+  plt.plot(q, delta/ (4 * np.log(1/delta) + 21) * np.log(q/(1-q)))
+  plt.title(rf"$k_2(q)$ vs $q$ ($\delta$ = {delta})")
+  plt.xlabel(r"$q$")
+  plt.ylabel(r"$k_2(q)$")
+  plt.tight_layout()
+
+  fname = str(IMG_DIR / "scale-functions.png") 
+  plt.savefig(fname)
+
+
+def plot_weakly_ordered_cluster():
+  np.random.seed(3141)
+  # plt.subplot(3,1,2)
+  plt.figure(figsize=(8,2))
+  x = np.sort(np.random.randn(20))
+  plt.scatter(x[:10], np.zeros_like(x[:10]), color='b', alpha=0.5)
+  plt.scatter(x[10:], np.zeros_like(x[10:]), color='g', alpha=0.5)
+  plt.scatter(np.mean(x[:10]), 0, color='b', s=100, marker="x")
+  plt.scatter(np.mean(x[10:]), 0, color='g', s=100, marker="x")
+
+  x = np.random.randn(10) + 1.5
+  plt.scatter(x, np.zeros_like(x), color='y', alpha=0.4)
+  plt.scatter(np.mean(x), 0, color='y', s=100, marker="x")
+
+  fname = str(IMG_DIR / "weakly-ordered-cluster.png") 
+  plt.tight_layout()
+  plt.savefig(fname)
+
+
 if __name__ == "__main__":
   import matplotlib
   matplotlib.use("TkAgg")
@@ -362,9 +389,12 @@ if __name__ == "__main__":
   import imageio
 
   # clustering_with_scale_function_animation()
-  approximate_cdf()
+  # arbitrary_clustering_examples()
+  plot_weakly_ordered_cluster()
+  # plot_scale_functions()
+  # approximate_cdf()
   # profiling_example()
   # plot_2d_example()
   # plot_3d_example()
-  #   plot_splash_image()
+  # plot_splash_image()
     
