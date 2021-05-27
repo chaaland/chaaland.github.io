@@ -412,7 +412,7 @@ def plot_cdf_examples():
   plt.subplot(322)
   centroids = [c.centroid for c in t1.clusters]
   q_approx = [t1.cdf(c) for c in centroids]
-  plt.plot(centroids, q_approx)
+  plt.plot(centroids, q_approx, alpha=0.7)
   plt.scatter(centroids, q_approx)
   plt.hist(x, density=True, bins=100, cumulative=True, histtype="step")
   plt.xlim([np.min(x), np.max(x)])
@@ -423,7 +423,7 @@ def plot_cdf_examples():
   plt.subplot(324)
   centroids = [c.centroid for c in t2.clusters]
   q_approx = [t2.cdf(c) for c in centroids]
-  plt.plot(centroids, q_approx)
+  plt.plot(centroids, q_approx, alpha=0.7)
   plt.scatter(centroids, q_approx)
   plt.hist(x, density=True, bins=100, cumulative=True, histtype="step")
   plt.xlim([np.min(x), np.max(x)])
