@@ -58,10 +58,10 @@ class TDigest:
   def __init__(self, delta: float, points: np.array):
     """
     """
-    self._delta = delta
-    self._clusters = self.cluster_points(points)
+    self.delta = delta
+    self.clusters = self.cluster_points(points)
   
-  def _cluster_points(self, points: np.array):
+  def cluster_points(self, points: np.array):
     total_weight = len(points)
     percentile_increment = 1 / total_weight
 
@@ -77,7 +77,7 @@ class TDigest:
     for j in range(total_weight):
         percentile = (j + 1) * percentile_increment
         if percentile > q_limit:
-          right_cluster_index = j
+          right_cluster_index = j + 1
 
           cluster_points = sorted_points[left_cluster_index:right_cluster_index]
           cluster_centroid = np.mean(cluster_points)
@@ -93,10 +93,10 @@ class TDigest:
 
   def update(self, *tdigests):
     # what to do about current centroid??
-    self._clusters += [c for digest in tdigests for c in digest._clusters]
-    self._clusters.sort(key=lambda c: c.centroid)
+    self.clusters += [c for digest in tdigests for c in digest._clusters]
+    self.clusters.sort(key=lambda c: c.centroid)
 
-    total_weight = sum(c.weight for c in self._clusters)
+    total_weight = sum(c.weight for c in self.clusters)
 
     k_limit = scale_fn(0, self.delta) + 1
     q_limit = inverse_scale_fn(k_limit, self.delta)
@@ -106,12 +106,12 @@ class TDigest:
     data_clusters = []
 
     percentile = 0
-    for j, cluster in enumerate(self._clusters):
+    for j, cluster in enumerate(self.clusters):
       percentile += cluster.weight / total_weight
       if percentile > q_limit:
         right_cluster_index = j
 
-        clusters_to_merge = self._clusters[left_cluster_index:right_cluster_index]
+        clusters_to_merge = self.clusters[left_cluster_index:right_cluster_index]
         merged_cluster_weight = sum(c.weight for c in clusters_to_merge)
         merged_cluster_centroid = sum(c.centroid * c.weight / merged_cluster_weight for c in clusters_to_merge)
         cluster = Cluster(centroid=merged_cluster_centroid, weight=merged_cluster_weight)
@@ -124,25 +124,32 @@ class TDigest:
     self._clusters = data_clusters
   
   def cdf(self, x):
-    total_weight = sum(c.weight for c in self._clusters)
-    for i, cluster in enumerate(self._clusters):
-      
-      percentile = (self._clusters[i].weight + self._clusters[i - 1].weight) / 2
+    total_weight = sum(c.weight for c in self.clusters)
+
+    prev_percentile = 0
+    percentile = 0
+    prev_weight = 0
+    for i, cluster in enumerate(self.clusters):
+      if cluster.weight == 1:
+        percentile += 1 / total_weight
+        prev_weight = 0
+      else:
+        percentile += (cluster.weight / 2 + prev_weight / 2) / total_weight
+        prev_weight = cluster.weight
+
       if x < cluster.centroid:
         if i == 0:
-          return 0
-        elif cluster[i-1].weight == 1 and cluster[i].weight == 1:
-          return (cluster[i-1].centroid + cluster[i].centroid) / 2
-        elif cluster[i-1].weight > 1 and cluster[i] > 1:
-          pass
+          return 0.
+        delta_x = abs(cluster.centroid - prev_cluster.centroid)
+        delta_y = abs(percentile - prev_percentile)
+        m = delta_y / delta_x
 
-  @property
-  def centroids(self):
-    return [c for c in self._centroids]
+        return prev_percentile + m * abs(x - prev_cluster.centroid)
 
-  @property
-  def clusters(self):
-    return [c.centroid for c in self._centroids]
+      prev_percentile = percentile
+      prev_cluster = cluster
+
+    return 1.
 
 
 def plot_splash_image():
@@ -382,6 +389,62 @@ def plot_weakly_ordered_cluster():
   plt.savefig(fname)
 
 
+def plot_cdf_examples():
+  x1 = np.random.randn(1000)
+  x2 = np.random.randn(1000) + 3
+  x3 = np.random.randn(1000) + 7
+
+  x = np.hstack([x1, x2, x3])
+  delta1 = 25
+  delta2 = 50
+  delta3 = 75
+
+  t1 = TDigest(delta1, x)
+  t2 = TDigest(delta2, x)
+  t3 = TDigest(delta3, x)
+
+  plt.figure(figsize=(16,10))
+
+  plt.subplot(121)
+  plt.hist(x, density=True, bins=100)
+
+
+  plt.subplot(322)
+  centroids = [c.centroid for c in t1.clusters]
+  q_approx = [t1.cdf(c) for c in centroids]
+  plt.plot(centroids, q_approx)
+  plt.scatter(centroids, q_approx)
+  plt.hist(x, density=True, bins=100, cumulative=True, histtype="step")
+  plt.xlim([np.min(x), np.max(x)])
+  plt.xticks([])
+  plt.title(rf"Approx CDF ($\delta$ = {delta1})")
+
+
+  plt.subplot(324)
+  centroids = [c.centroid for c in t2.clusters]
+  q_approx = [t2.cdf(c) for c in centroids]
+  plt.plot(centroids, q_approx)
+  plt.scatter(centroids, q_approx)
+  plt.hist(x, density=True, bins=100, cumulative=True, histtype="step")
+  plt.xlim([np.min(x), np.max(x)])
+  plt.xticks([])
+  plt.title(rf"Approx CDF ($\delta$ = {delta2})")
+
+
+  plt.subplot(326)
+  centroids = [c.centroid for c in t3.clusters]
+  q_approx = [t3.cdf(c) for c in centroids]
+  plt.plot(centroids, q_approx, alpha=0.7)
+  plt.scatter(centroids, q_approx)
+  plt.hist(x, density=True, bins=100, cumulative=True, histtype="step")
+  plt.xlim([np.min(x), np.max(x)])
+  plt.title(rf"Approx CDF ($\delta$ = {delta3})")
+
+  fname = str(IMG_DIR / "approximate-cdf.png") 
+  plt.tight_layout()
+  plt.savefig(fname)
+
+
 if __name__ == "__main__":
   import matplotlib
   matplotlib.use("TkAgg")
@@ -390,9 +453,10 @@ if __name__ == "__main__":
 
   # clustering_with_scale_function_animation()
   # arbitrary_clustering_examples()
-  plot_weakly_ordered_cluster()
+  # plot_weakly_ordered_cluster()
   # plot_scale_functions()
-  # approximate_cdf()
+
+  plot_cdf_examples()
   # profiling_example()
   # plot_2d_example()
   # plot_3d_example()
