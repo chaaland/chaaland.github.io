@@ -351,20 +351,26 @@ def arbitrary_clustering_examples():
 
 def plot_scale_functions():
   q = np.linspace(0.0001, 0.999, 1000)
-  delta = 10
+  for delta in [5, 10, 15]:
 
-  plt.subplot(121)
-  plt.plot(q, delta/ TAU * np.arcsin(2*q - 1))
-  plt.title(rf"$k_1(q)$ vs $q$ ($\delta$ = {delta})")
-  plt.xlabel(r"$q$")
-  plt.ylabel(r"$k_1(q)$")
+    plt.subplot(211)
+    plt.plot(q, delta / TAU * np.arcsin(2 * q - 1), label=rf"$\delta={delta}$")
+    plt.title(rf"$k_1(q)$ vs $q$")
+    # plt.xlabel(r"$q$")
+    plt.ylabel(r"$k_1(q)$")
+    leg = plt.legend()
+    leg.get_frame().set_linewidth(0.0)
+    plt.tick_params(bottom=False, labelbottom=False)
+    plt.tight_layout()
 
-  plt.subplot(122)
-  plt.plot(q, delta/ (4 * np.log(1/delta) + 21) * np.log(q/(1-q)))
-  plt.title(rf"$k_2(q)$ vs $q$ ($\delta$ = {delta})")
-  plt.xlabel(r"$q$")
-  plt.ylabel(r"$k_2(q)$")
-  plt.tight_layout()
+    plt.subplot(212)
+    plt.plot(q, delta/ (4 * np.log(1 / delta) + 21) * np.log(q/(1-q)), label=rf"$\delta={delta}$")
+    plt.title(rf"$k_2(q)$ vs $q$")
+    plt.xlabel(r"$q$")
+    plt.ylabel(r"$k_2(q)$")
+    leg = plt.legend()
+    leg.get_frame().set_linewidth(0.0)
+    plt.tight_layout()
 
   fname = str(IMG_DIR / "scale-functions.png") 
   plt.savefig(fname)
@@ -454,9 +460,9 @@ if __name__ == "__main__":
   # clustering_with_scale_function_animation()
   # arbitrary_clustering_examples()
   # plot_weakly_ordered_cluster()
-  # plot_scale_functions()
+  plot_scale_functions()
 
-  plot_cdf_examples()
+  # plot_cdf_examples()
   # profiling_example()
   # plot_2d_example()
   # plot_3d_example()
