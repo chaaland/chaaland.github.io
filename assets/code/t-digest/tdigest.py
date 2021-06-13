@@ -310,6 +310,7 @@ def randomly_cluster_points(points, n_clusters):
   curr_cluster = [sorted_points[0]]
 
   boundaries = np.random.choice(np.arange(points.size), size=n_clusters) + 1
+  boundaries = np.sort(boundaries)
   boundaries = np.hstack([boundaries, points.size])
 
   cnt = 0
@@ -320,6 +321,7 @@ def randomly_cluster_points(points, n_clusters):
       clusters.append(curr_cluster)
       curr_cluster = [p]
       cnt += 1
+  clusters.append(curr_cluster)
       
   return [c for c in clusters if len(c) > 0]
 
@@ -341,10 +343,11 @@ def arbitrary_clustering_examples():
   for i in range(3):
     plt.subplot(3, 1, i + 1)
     clusters = randomly_cluster_points(points, n_clusters=1 + 3)
+    # print(sum(len(c) for c in clusters))
     for j, c in enumerate(clusters):
       plt.scatter(c, np.zeros_like(c), alpha=0.3, color=colors[j % n_colors], s=75)
-
-  fname = str(IMG_DIR / "random-clusters.png") 
+    plt.yticks([])
+  fname = str(IMG_DIR / "strongly-ordered-clusters.png") 
   plt.tight_layout()
   plt.savefig(fname)
 
@@ -389,6 +392,7 @@ def plot_weakly_ordered_cluster():
   x = np.random.randn(10) + 1.5
   plt.scatter(x, np.zeros_like(x), color='y', alpha=0.4)
   plt.scatter(np.mean(x), 0, color='y', s=100, marker="x")
+  plt.yticks([])
 
   fname = str(IMG_DIR / "weakly-ordered-cluster.png") 
   plt.tight_layout()
@@ -458,9 +462,9 @@ if __name__ == "__main__":
   import imageio
 
   # clustering_with_scale_function_animation()
-  # arbitrary_clustering_examples()
+  arbitrary_clustering_examples()
   # plot_weakly_ordered_cluster()
-  plot_scale_functions()
+  # plot_scale_functions()
 
   # plot_cdf_examples()
   # profiling_example()
