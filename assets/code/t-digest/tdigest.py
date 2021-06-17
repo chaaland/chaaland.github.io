@@ -384,13 +384,13 @@ def plot_weakly_ordered_cluster():
   # plt.subplot(3,1,2)
   plt.figure(figsize=(8,2))
   x = np.sort(np.random.randn(20))
-  plt.scatter(x[:10], np.zeros_like(x[:10]), color='b', alpha=0.5)
-  plt.scatter(x[10:], np.zeros_like(x[10:]), color='g', alpha=0.5)
+  plt.scatter(x[:10], np.zeros_like(x[:10]), color='b', alpha=0.5, s=65)
+  plt.scatter(x[10:], np.zeros_like(x[10:]), color='g', alpha=0.5, s=65)
   plt.scatter(np.mean(x[:10]), 0, color='b', s=100, marker="x")
   plt.scatter(np.mean(x[10:]), 0, color='g', s=100, marker="x")
 
   x = np.random.randn(10) + 1.5
-  plt.scatter(x, np.zeros_like(x), color='y', alpha=0.4)
+  plt.scatter(x, np.zeros_like(x), color='y', alpha=0.4, s=65)
   plt.scatter(np.mean(x), 0, color='y', s=100, marker="x")
   plt.yticks([])
 
@@ -462,8 +462,8 @@ if __name__ == "__main__":
   import imageio
 
   # clustering_with_scale_function_animation()
-  arbitrary_clustering_examples()
-  # plot_weakly_ordered_cluster()
+  # arbitrary_clustering_examples()
+  plot_weakly_ordered_cluster()
   # plot_scale_functions()
 
   # plot_cdf_examples()
