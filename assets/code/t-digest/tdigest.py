@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import numpy as np
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 IMG_DIR = Path("..", "..", "images", "t-digest")
 IMG_DIR.mkdir(exist_ok=True, parents=True)
@@ -455,6 +455,81 @@ def plot_cdf_examples():
   plt.savefig(fname)
 
 
+def percentile_estimate_animation():
+  np.random.seed(2718)
+  n_points = 25
+  delta = 10
+  points = 2 * np.random.randn(n_points) + 0.5 
+  colors = {
+      0: 'b',
+      1: 'g',
+      2: 'y',
+      3: 'orange',
+      4: 'r',
+  }
+  n_colors = len(colors)
+  clusters = randomly_cluster_points(points, n_clusters=1 + 3)
+
+  def plot_cluster(i):
+    fig, ax_scatter = plt.subplots(figsize=(5.5, 5.5))
+    low = clusters[0][0]
+    high = clusters[-1][-1]
+
+    plot_scaler = 10
+    pct_to_estimate = 0.9
+    ax_scatter.plot([low, high], [plot_scaler * pct_to_estimate] * 2, color="k", linestyle="--", alpha=0.3)
+
+    if i == len(clusters) - 1:
+      bottom = plot_scaler * (sum(len(c) for c in clusters[:-1]) - len(clusters[-2]) / 2) / n_points
+      top = plot_scaler * (1 - len(clusters[-1]) / (2 * n_points))
+
+      left = np.mean(clusters[-2])
+      right = np.mean(clusters[-1])
+
+      ax_scatter.plot([left, right], [bottom, top], color="k", alpha=0.6,zorder=1)
+      m = (top - bottom) / (right - left)
+      ax_scatter.scatter([(plot_scaler * pct_to_estimate - bottom)/m + left], [plot_scaler * pct_to_estimate], color="k", marker="x", alpha=0.6)
+
+    percentile = 0
+    prev_half_weight = 0
+    for j, c in enumerate((clusters[:i + 1])):
+      curr_half_weight = len(c) / 2
+      percentile += curr_half_weight / n_points + prev_half_weight / n_points
+      ax_scatter.scatter(np.mean(c), 10 * percentile, color=colors[j % n_colors],zorder=2)
+
+      left = percentile - curr_half_weight / n_points
+      right = percentile + curr_half_weight / n_points
+      prev_half_weight = curr_half_weight
+      ax_scatter.set_yticklabels([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+
+    ax_scatter.set_aspect(1.)
+    ax_scatter.set_ylim([0, 10])
+
+    # create new axes on the right and on the top of the current axes.
+    divider = make_axes_locatable(ax_scatter)
+    ax_hist_x = divider.append_axes("bottom", size=0.4, pad=0.1, sharex=ax_scatter)
+
+    for j, c in enumerate(clusters):
+      if j == i:
+        ax_hist_x.scatter(c, np.zeros_like(c), alpha=0.3, color=colors[j % n_colors], s=75)
+        ax_hist_x.scatter(np.mean(c), 0, color=colors[j % n_colors], s=100, marker="x")
+      else:
+        ax_hist_x.scatter(c, np.zeros_like(c), alpha=0.3, color="k", s=75)
+        ax_hist_x.scatter(np.mean(c), 0, alpha=0.5, color="k", s=100, marker="x")
+
+    plt.yticks([])
+    plt.tight_layout()
+
+    fig.canvas.draw()       # draw the canvas, cache the renderer
+    image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
+    image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+    return image
+
+  gif_file = str(GIF_DIR / "percentile-estimation.gif")
+  imageio.mimsave(gif_file, [plot_cluster(i) for i in range(len(clusters))], fps=0.5) 
+
+
 if __name__ == "__main__":
   import matplotlib
   matplotlib.use("TkAgg")
@@ -463,7 +538,8 @@ if __name__ == "__main__":
 
   # clustering_with_scale_function_animation()
   # arbitrary_clustering_examples()
-  plot_weakly_ordered_cluster()
+  # plot_weakly_ordered_cluster()
+  percentile_estimate_animation()
   # plot_scale_functions()
 
   # plot_cdf_examples()
