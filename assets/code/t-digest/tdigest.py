@@ -477,9 +477,9 @@ def percentile_estimate_animation():
 
     plot_scaler = 10
     pct_to_estimate = 0.9
-    ax_scatter.plot([low, high], [plot_scaler * pct_to_estimate] * 2, color="k", linestyle="--", alpha=0.3)
+    ax_scatter.plot([-7, 5], [plot_scaler * pct_to_estimate] * 2, color="k", linestyle="--", alpha=0.3)
 
-    if i == len(clusters) - 1:
+    if i == len(clusters):
       bottom = plot_scaler * (sum(len(c) for c in clusters[:-1]) - len(clusters[-2]) / 2) / n_points
       top = plot_scaler * (1 - len(clusters[-1]) / (2 * n_points))
 
@@ -488,7 +488,9 @@ def percentile_estimate_animation():
 
       ax_scatter.plot([left, right], [bottom, top], color="k", alpha=0.6,zorder=1)
       m = (top - bottom) / (right - left)
-      ax_scatter.scatter([(plot_scaler * pct_to_estimate - bottom)/m + left], [plot_scaler * pct_to_estimate], color="k", marker="x", alpha=0.6)
+      estimated_value = (plot_scaler * pct_to_estimate - bottom)/m + left
+      ax_scatter.scatter([estimated_value], [plot_scaler * pct_to_estimate], color="k", marker="x", alpha=0.6)
+      print(f"Estimated Percentile: {estimated_value}")
 
     percentile = 0
     prev_half_weight = 0
@@ -503,7 +505,9 @@ def percentile_estimate_animation():
       ax_scatter.set_yticklabels([0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     ax_scatter.set_aspect(1.)
+    ax_scatter.set_xlim([-7, 5])
     ax_scatter.set_ylim([0, 10])
+    ax_scatter.set_ylabel("Approximate Percentile")
 
     # create new axes on the right and on the top of the current axes.
     divider = make_axes_locatable(ax_scatter)
@@ -518,6 +522,7 @@ def percentile_estimate_animation():
         ax_hist_x.scatter(np.mean(c), 0, alpha=0.5, color="k", s=100, marker="x")
 
     plt.yticks([])
+    ax_hist_x.set_xlabel(r"$x$")
     plt.tight_layout()
 
     fig.canvas.draw()       # draw the canvas, cache the renderer
@@ -527,7 +532,7 @@ def percentile_estimate_animation():
     return image
 
   gif_file = str(GIF_DIR / "percentile-estimation.gif")
-  imageio.mimsave(gif_file, [plot_cluster(i) for i in range(len(clusters))], fps=0.5) 
+  imageio.mimsave(gif_file, [plot_cluster(i) for i in range(len(clusters)+1)], fps=0.5) 
 
 
 if __name__ == "__main__":
