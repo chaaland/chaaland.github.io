@@ -8,14 +8,14 @@ def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
     :param f: function to compute the residual vector
     :param x0: array corresponding to initial guess
     :param J: function to compute the jacobian of f
-    :param atol: stopping criterion for the root mean square 
+    :param atol: stopping criterion for the root mean square
     of the squared norm of the gradient of f
-    :param max_iter: maximum number of iterations to run before 
+    :param max_iter: maximum number of iterations to run before
     terminating
     """
-    iterates = [x0,]
+    iterates = [x0]
     rms = lambda x: np.sqrt(np.mean(np.square(x)))
-    costs = [rms(f(x0)),]
+    costs = [rms(f(x0))]
     cnt = 0
     grad_rms = np.inf
 
@@ -28,5 +28,5 @@ def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
         costs.append(rms(f(result.x)))
         grad_rms = rms(A.T * f(x_k))
         cnt += 1
-    
+
     return iterates, np.asarray(costs)

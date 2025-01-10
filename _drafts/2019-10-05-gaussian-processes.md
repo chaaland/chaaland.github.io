@@ -11,20 +11,26 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
+  # make some GP with confidence interval shaded
+  overlay_image: ../assets/images/shakespeare-zipf-param-surface-splash.png
   overlay_filter: 0.2
 ---
 
-This post is a light introduction to Gaussian Processes (GPs). The goal is to give an explanation for the key concepts as well as some intuitions behind them. 
+This post is a light introduction to Gaussian Processes (GPs). The goal is to give an explanation of some of key results and most importantly, some intuition for how they come about.
 
-## Motivation
-The problem motivating GPs is that of interpolation. Given $$n$$ data points $$(x_i, y_i) \in \mathbf{R}^d \times \mathbf{R}$$, find the corresponding value $$\hat{y}$$ for a new data point $$z\in\mathbf{R}^d$$. In the following animation, there are 15 known points in 2 dimensions along with various curves perfectly interpolating the data.
+## GP Intuition
+In the case of regression, a GP features $$X\in \mathbf{R}^{n\times d}$$ and corresponding target $$y\in \mathbf{R}^n$$ and makes predictions for a new point $$z\in\mathbf{R}^d$$ by taking a weighted sum of $$y$$.
+The weights are chosen so that points "nearer" to $$z$$ have their targets weighted higher than points futher away.
+The underlying assumption is that the forecast for $$z$$ should be similar to the target values of "nearby" points.
+
+<!-- A good starting point for discussing GPs is the interpolation problem. 
+Given $$n$$ data points $$(x_i, y_i) \in \mathbf{R}^d \times \mathbf{R}$$, find a curve that passes through all $$n$$ points.
+The following animation shows that there are many possible curves that can pass through $$n$$ points. -->
 
 <figure class>
     <a href="/assets/gifs/gaussian-processes/1d-gpr.gif"><img src="/assets/gifs/gaussian-processes/1d-gpr.gif"></a>
 </figure>
 
-At the highest level, a GP takes training data $$X\in \mathbf{R}^{n\times d}$$, $$y\in \mathbf{R}^n$$ and makes predictions for a new point $$z\in\mathbf{R}^d$$ based on the assumption that the corresponding output value should be similar to the output values of "nearby" points.
 
 ## Covariance Functions
 The notion of "nearness" for GPs is given by a _covariance function_ $$k: \mathbf{R}^{d} \times \mathbf{R}^{d} \rightarrow \mathbf{R}$$. Some example covariance functions include the exponentiated quadratic 
@@ -47,7 +53,7 @@ which of course reduces to
 $$\frac{1}{\ell^2}||x^{(1)} - x^{(2)}||^2$$ 
 in the special case $$\ell_1 = \ell_2 =\cdots=\ell_n$$.
 
-The criteria for a function to be a valid covariance function is that
+The criteria for a function to be a valid covariance function is that the matrix with elements $$\Sigma_{ij} = k(x^{(i)}, x^{(j)})$$ form a valid covariance matrix (i.e. $$\Sigma \in \mathbf{S}_+^n$$)
 
 ## Gaussian Distributions
 ### Univariate Gaussian

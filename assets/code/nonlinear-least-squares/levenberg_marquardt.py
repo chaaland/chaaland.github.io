@@ -8,16 +8,16 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
     :param f: function to compute the residual vector
     :param x0: array corresponding to initial guess
     :param J: function to compute the jacobian of f
-    :param atol: stopping criterion for the root mean square 
+    :param atol: stopping criterion for the root mean square
     of the squared norm of the gradient of f
-    :param max_iter: maximum number of iterations to run before 
+    :param max_iter: maximum number of iterations to run before
     terminating
     """
     MAX_MU = 1e6
     rms = lambda x: np.sqrt(np.mean(np.square(x)))
     mu = 1
-    iterates = [x0,]
-    costs = [rms(f(x0)),]
+    iterates = [x0]
+    costs = [rms(f(x0))]
     cnt = 0
 
     while cnt < max_iter:
@@ -37,5 +37,5 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
             cnt += 1
         else:
             mu *= 2.0
-    
+
     return iterates, np.asarray(costs)
