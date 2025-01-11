@@ -24,6 +24,7 @@ logo                     : # path of logo image to display in the masthead, e.g.
 masthead_title           : # overrides the website title displayed in the masthead, use " " for no title
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
+google_analytics         : "G-FL4HTN0JH2"
 
 # Social Sharing
 # For specifying social profiles, used in _includes/seo.html
