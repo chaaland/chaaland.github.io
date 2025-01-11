@@ -4,6 +4,9 @@ import numpy as np
 from sklearn import tree
 from sklearn.gaussian_process import GaussianProcessRegressor
 
+GIF_DIR = Path("gifs")
+GIF_DIR.mkdir(exist_ok=True, parents=True)
+
 
 def fn(x_vals):
     return 2 * np.sin(x_vals) + 2 / 3 * np.sin(3 * x_vals) + 1 / 2 * np.sin(5 * x_vals)
@@ -65,7 +68,7 @@ def plot_1d_example():
     plot_params += [(0, i) for i in reversed(np.linspace(0.5, 2.0, 5, endpoint=True))]
     plot_params += [(0, i) for i in reversed(np.linspace(1.0, 0.5, 10, endpoint=True))]
     imageio.mimsave(
-        "../../gifs/gaussian-processes/1d-gaussian.gif",
+        GIF_DIR / "1d-gaussian.gif",
         [plot_gaussian_1d_pdf(mu, sigma_sq) for mu, sigma_sq in plot_params],
         fps=5,
     )
@@ -98,88 +101,13 @@ def plot_gpr_1d():
         return image
 
     plot_params = []
-    plot_params += [i for i in 10 ** np.linspace(-2.5, -0.5, 20, endpoint=True)]
-    plot_params += [i for i in reversed(10 ** np.linspace(-2.5, -0.5, 10, endpoint=True))]
-    imageio.mimsave(
-        "../../gifs/gaussian-processes/1d-gpr.gif", [plot_gpr(length_scale) for length_scale in plot_params], fps=5
-    )
-
-
-def plot_3d_example():
-    x_vals = np.linspace(-2 * np.pi, 2 * np.pi, 100)
-    y_vals = np.linspace(-2 * np.pi, 2 * np.pi, 100)
-    X_mesh, Y_mesh = np.meshgrid(x_vals, y_vals)
-    R_mesh = np.sqrt(X_mesh**2 + Y_mesh**2 + 1e-5)
-    Z_mesh = np.sin(R_mesh) / R_mesh
-
-    fig = plt.figure()
-    ax = plt.axes(projection="3d")
-    ax.plot_surface(X_mesh, Y_mesh, Z_mesh, cmap="magma", edgecolor="none")
-    ax.set(xlabel="x", ylabel="y", title=r"$y = \sin(\sqrt{x^2+y^2}/\sqrt{x^2+y^2})$")
-    plt.savefig("../../images/numpy-regression-trees/2d-sinc.png")
-
-    X_train = np.column_stack([X_mesh.ravel(), Y_mesh.ravel()])
-    y_train = Z_mesh.ravel()
-
-    def plot_tree_model_fit(max_depth):
-        reg_tree = RegressionTree(min_sample=5, max_depth=max_depth)
-        reg_tree.fit(X_train, y_train)
-
-        x_vals = np.linspace(-2 * np.pi, 2 * np.pi, 100)
-        y_vals = np.linspace(-2 * np.pi, 2 * np.pi, 100)
-        X_pred_mesh, Y_pred_mesh = np.meshgrid(x_vals, y_vals)
-
-        X_pred = np.column_stack([X_pred_mesh.ravel(), Y_pred_mesh.ravel()])
-        z_pred = reg_tree.predict(X_pred)
-
-        fig = plt.figure()
-        ax = plt.axes(projection="3d")
-        ax.plot_surface(X_pred_mesh, Y_pred_mesh, z_pred.reshape(X_pred_mesh.shape), cmap="magma", edgecolor="none")
-        ax.set(xlabel="x", ylabel="y", title=f"Regression Tree: max-depth={max_depth}, min-samples=5")
-
-        ax.set_xlim(-2 * np.pi, 2 * np.pi)
-        ax.set_ylim(-2 * np.pi, 2 * np.pi)
-        ax.set_zlim(-0.2, 1.0)
-
-        fig.canvas.draw()  # draw the canvas, cache the renderer
-        image = np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8")
-        image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-        return image
-
-    imageio.mimsave(
-        "../../gifs/numpy-regression-trees/2d-regression-tree.gif",
-        [plot_tree_model_fit(i) for i in range(2, 16)],
-        fps=3,
-    )
+    plot_params += list(10 ** np.linspace(-2.5, -0.5, 20, endpoint=True))
+    plot_params += list(reversed(10 ** np.linspace(-2.5, -0.5, 10, endpoint=True)))
+    imageio.mimsave(GIF_DIR / "1d-gpr.gif", [plot_gpr(length_scale) for length_scale in plot_params], fps=5)
 
 
 def plot_splash_image():
-    np.random.seed(3)
-    n = 100
-    eps = 0.2 * np.random.randn(n)
-    x_train = np.random.randn(n)
-    y_train = np.square(x_train) + eps
-    small_tree = RegressionTree(min_sample=5, max_depth=3)
-    med_tree = RegressionTree(min_sample=5, max_depth=5)
-    big_tree = RegressionTree(min_sample=5, max_depth=11)
-
-    small_tree.fit(x_train[:, np.newaxis], y_train)
-    med_tree.fit(x_train[:, np.newaxis], y_train)
-    big_tree.fit(x_train[:, np.newaxis], y_train)
-
-    x_vals = np.linspace(-3, 3, 1000)[:, np.newaxis]
-    y_small_pred = small_tree.predict(x_vals)
-    y_med_pred = med_tree.predict(x_vals)
-    y_big_pred = big_tree.predict(x_vals)
-
-    plt.scatter(x_train, y_train, color="k", alpha=0.7)
-    plt.step(x_vals, y_small_pred)
-    plt.step(x_vals, y_med_pred)
-    plt.step(x_vals, y_big_pred)
-
-    fname = Path("..", "..", "images", "numpy-regression-trees", "splash-image.png")
-    plt.savefig(fname)
+    ...
 
 
 def plot_regression_example():
@@ -219,8 +147,7 @@ if __name__ == "__main__":
     import imageio
     import matplotlib.pyplot as plt
 
-    # profiling_example()
-    # plot_1d_example()
+    plot_1d_example()
     plot_gpr_1d()
     # plot_regression_example()
     # plot_3d_example()

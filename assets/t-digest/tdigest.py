@@ -3,9 +3,10 @@ from pathlib import Path
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-IMG_DIR = Path("..", "..", "images", "t-digest")
-IMG_DIR.mkdir(exist_ok=True, parents=True)
-GIF_DIR = Path("..", "..", "gifs", "t-digest")
+IMAGE_DIR = Path("images")
+IMAGE_DIR.mkdir(exist_ok=True, parents=True)
+
+GIF_DIR = Path("gifs")
 GIF_DIR.mkdir(parents=True, exist_ok=True)
 
 TAU = 2 * np.pi
@@ -275,7 +276,7 @@ def approximate_cdf():
 
     data_clusters = cluster_points(points, delta)
 
-    img_file = str(IMG_DIR / "simple-approximate-histogram.png")
+    img_file = str(IMAGE_DIR / "simple-approximate-histogram.png")
 
     plt.subplot(211)
     # plot the empirical histogram
@@ -346,7 +347,7 @@ def arbitrary_clustering_examples():
         for j, c in enumerate(clusters):
             plt.scatter(c, np.zeros_like(c), alpha=0.3, color=colors[j % n_colors], s=75)
         plt.yticks([])
-    fname = str(IMG_DIR / "strongly-ordered-clusters.png")
+    fname = str(IMAGE_DIR / "strongly-ordered-clusters.png")
     plt.tight_layout()
     plt.savefig(fname)
 
@@ -373,7 +374,7 @@ def plot_scale_functions():
         leg.get_frame().set_linewidth(0.0)
         plt.tight_layout()
 
-    fname = str(IMG_DIR / "scale-functions.png")
+    fname = str(IMAGE_DIR / "scale-functions.png")
     plt.savefig(fname)
 
 
@@ -392,7 +393,7 @@ def plot_weakly_ordered_cluster():
     plt.scatter(np.mean(x), 0, color="y", s=100, marker="x")
     plt.yticks([])
 
-    fname = str(IMG_DIR / "weakly-ordered-cluster.png")
+    fname = str(IMAGE_DIR / "weakly-ordered-cluster.png")
     plt.tight_layout()
     plt.savefig(fname)
 
@@ -445,7 +446,7 @@ def plot_cdf_examples():
     plt.xlim([np.min(x), np.max(x)])
     plt.title(rf"Approx CDF ($\delta$ = {delta3})")
 
-    fname = str(IMG_DIR / "approximate-cdf.png")
+    fname = str(IMAGE_DIR / "approximate-cdf.png")
     plt.tight_layout()
     plt.savefig(fname)
 

@@ -2,7 +2,7 @@
 title: "Lagrange Interpolation"
 categories:
   - Mathematics
-date:   2025-10-15 10:57:00 +0100
+date:   2025-01-31 10:57:00 +0100
 mathjax: true
 tags:
   - Numerical methods
@@ -10,9 +10,9 @@ tags:
 toc: true
 # classes: wide
 excerpt: ""
-header: 
-  overlay_image: ../assets/images/shakespeare-zipf-param-surface-splash.png
-  overlay_filter: 0.2
+# header: 
+#   overlay_image: assets/lagrange-interpolation/images/shakespeare-zipf-param-surface-splash.png
+#   overlay_filter: 0.2
 ---
 
 This post is a light introduction to Gaussian Processes (GPs). The goal is to give an explanation of some of key results and most importantly, some intuition for how they come about.
@@ -25,30 +25,47 @@ How would you compute a number's logarithm?
 Historically, someone would arduously work through the arithmetic to compute the logarithm for a variety of values up to a certain precision and then publish a table.
 
 The table might look something like this
-┌──────┬────────────┐
-│ x    ┆ y          │
-╞══════╪════════════╡
-│ 0.8  ┆ -0.223144  │
-│ 1.0  ┆ 0.0        │
-│ 1.2  ┆ 0.182322   │
-│ 1.4  ┆ 0.336472   │
-│ 1.6  ┆ 0.470004   │
-│ 1.8  ┆ 0.587787   │
-└──────┴────────────┘
+
+| x   | log(x)   |
+| --- | -------- |
+| 0.8 | -0.223144|
+| 1.0 | 0.0      |
+| 1.2 | 0.182322 |
+| 1.4 | 0.336472 |
+| 1.6 | 0.470004 |
+| 1.8 | 0.587787 |
 
 But what if you want the value of the logarithm at a value _not_ in the table?
 What if you really wanted to know the logarithm of 1.35?
 
 The easiest thing to do is a weighted average to take into account that 1.35 is closer to 1.4 than to 1.2 (both of which have logarithms in the table).
+
 $$\log(1.35) \approx 0.25 \log(1.2) + 0.75 \log(1.4)$$
 
 This amounts to using a _linear_ interpolation between 1.2 and 1.4.
-The figure below shows the line passing passing through both points and the corresponding estimate of $$\log(1.35)$$.
+The figure below shows the line passing passing through the two points.
+The estimate of $$\log(1.35)$$ is shown as a yellow star.
 
 <figure class>
-    <a href="/assets/lagrange-duality/images/logarithm_lerp.png"><img src="/assets/lagrange-duality/images/logarithm_lerp.png"></a>
+    <a href="/assets/lagrange-interpolation/images/logarithm_lerp.png"><img src="/assets/lagrange-interpolation/images/logarithm_lerp.png"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
+
+But if you wanted a _really_ good approximation of $$\log(1.35)$$?
+Without going through the all the tedium of summing terms in the Taylor series?
+Notice how in the linear interpolation, we're making use of only two of the five values in the table.
+Is there a way to use all the values of the logarithm to improve our estimate?
+
+## Lagrange Interpolation
+
+Consider trying to fit a quadratic function through the points shown in Figure 2.
+
+<figure class>
+    <a href="/assets/lagrange-interpolation/images/points.png"><img src="/assets/lagrange-interpolation/images/points.png"></a>
+    <figcaption>Figure 2</figcaption>
+</figure>
+
+The most common way to do this is to set up a system of equations with 3 equations and 3 unkowns (coefficients of $$x^2, x$$ and a bias).
 
 $$
 \begin{align*}

@@ -1,5 +1,10 @@
+from pathlib import Path
+
 import numpy as np
 from matplotlib import pyplot as plt
+
+IMAGE_DIR = Path("images")
+IMAGE_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def plot_rectangular_grid(mode="h"):
@@ -19,11 +24,11 @@ def plot_rectangular_grid(mode="h"):
     if mode.lower() == "h":
         plt.scatter(X[horiz_mid - 2 : horiz_mid + 2, :].ravel(), Y[horiz_mid - 2 : horiz_mid + 2, :].ravel(), color="r")
         plt.tight_layout()
-        plt.savefig("../../images/3d-plotting-using-non-rectangular-grids/rectangular-horizontal.png")
+        plt.savefig(IMAGE_DIR / "rectangular-horizontal.png")
     else:
         plt.scatter(X[:, vert_mid - 2 : vert_mid + 2].ravel(), Y[:, vert_mid - 2 : vert_mid + 2].ravel(), color="g")
         plt.tight_layout()
-        plt.savefig("../../images/3d-plotting-using-non-rectangular-grids/rectangular-vertical.png")
+        plt.savefig(IMAGE_DIR / "rectangular-vertical.png")
 
 
 def plot_ellipse_grid(xlim=None, ylim=None, a=1, b=1, angle=0, center=np.zeros((2, 1)), mode="h"):

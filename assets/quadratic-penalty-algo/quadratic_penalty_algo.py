@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -7,7 +7,11 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from quadratic_penalty import minimize_subject_to_constraints
 
-pjoin = os.path.join
+IMAGE_DIR = Path("images")
+IMAGE_DIR.mkdir(exist_ok=True, parents=True)
+
+GIF_DIR = Path("gifs")
+GIF_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def rotation_matrix(ccw_angle: float):
@@ -264,7 +268,7 @@ def plot_quadratic_penalty_minimisation_relaxation(alpha: float, a: float, b: fl
     plt.ylabel(r"$\log\left(|\, ||x|| - 1|\right) $", fontsize=14)
     plt.title("Constraint violation vs Iteration", fontsize=14)
     plt.tight_layout()
-    plt.savefig(pjoin("..", "..", "images", "quadratic-penalty-algo", "quadratic-penalty-constraint-violation.png"))
+    plt.savefig(IMAGE_DIR / "quadratic-penalty-constraint-violation.png")
 
     return x_vals, mu_penalties
 
@@ -300,7 +304,7 @@ def create_splash_image():
     ax.set_ylim(-1.5, 1.5)
     plt.axis("off")
     plt.tight_layout()
-    plt.savefig(pjoin("....", "images", "quadratic-penalty-algo", "splash-image.png"))
+    plt.savefig(IMAGE_DIR / "splash-image.png")
 
 
 def plot_2d_eigval_problem():
@@ -309,28 +313,28 @@ def plot_2d_eigval_problem():
     b = 9
 
     # Plot original objective surface
-    # fname = pjoin("..", "images", "quadratic-penalty-spectral-norm-objective.png")
+    # fname = IMAGE_DIR / "quadratic-penalty-spectral-norm-objective.png"
     # plot_optimisation_problem(alpha, a, b, savefile=fname)
 
-    # fname = pjoin("..", "images", "quadratic-penalty-spectral-norm-contours.png")
+    # fname = IMAGE_DIR / "quadratic-penalty-spectral-norm-contours.png"
     # plot_optimisation_level_sets(alpha, a, b, savefile=fname)
 
     # for penalty in [0.1,0.2,0.4,0.6,0.8,1.0]:
-    #   fname = pjoin("..", "images", f"quadratic-penalty-spectral-norm-relaxed-objective-{penalty}.png")
+    #   fname = IMAGE_DIR / f"quadratic-penalty-spectral-norm-relaxed-objective-{penalty}.png"
     #   plot_relaxed_optimisation_surface(alpha, a, b, mu=penalty, savefile=fname)
 
     # n_mu = 50
     # mu_vals = np.linspace(0.0, 0.6, n_mu)
     # mu_vals = np.hstack([mu_vals, mu_vals[::-2]])
     # imageio.mimsave(
-    #   "../gifs/quadratic-penalty-surface.gif",
+    #   GIF_DIR / "surface.gif",
     #   [plot_relaxed_optimisation_surface(alpha, a, b, mu=mu, azim=i/n_mu * 360) for i, mu in enumerate(mu_vals)],
     #   fps=5)
 
     # mu_vals = np.linspace(-6, -0.7, 50)
     # mu_vals = np.hstack([mu_vals, mu_vals[::-2]])
     # imageio.mimsave(
-    #   '../gifs/quadratic-penalty-contours.gif',
+    #   GIF_DIR / 'contours.gif',
     #   [plot_relaxed_optimisation_contours(alpha, a, b, 2**i) for i in mu_vals],
     #   fps=5,
     # )

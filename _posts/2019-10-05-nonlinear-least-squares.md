@@ -14,7 +14,7 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/nonlinear-least-squares/splash-image.png
+  overlay_image: assets/nonlinear-least-squares/images/splash-image.png
   overlay_filter: 0.2
 ---
 
@@ -111,8 +111,8 @@ $$\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{|V|} \left(\log f_i -
 This logarithmic transform moves the data from the $$f-r$$ space to the $$\log f-\log r$$ space where we can more clearly see the problem as a simple linear regression.
 
 <figure class="half">
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-freq-scatter.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-freq-scatter.png"></a>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-scatter.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-scatter.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-freq-scatter.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-freq-scatter.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-scatter.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-scatter.png"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
@@ -144,8 +144,8 @@ y =
 $$
 
 <figure class="half">
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-contours.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-contours.png"></a>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-surface.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-transformed-param-surface.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-contours.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-contours.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-surface.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-transformed-param-surface.png"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 
@@ -180,8 +180,8 @@ $$\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{|V|} \left(f_i - Kr_i
 by noticing we could solve a transformed version of the problem instead. The difficulty with this original formulation is that it a non-convex function of $$K$$ and $$\alpha$$. Of course, the consequence of this is that there are potentially many local extrema in addition to the global minimum. Figure 3 shows plots of the objective function $$J(K,\alpha)$$ and its non-convexity
 
 <figure class="half">
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-param-contours.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-param-contours.png"></a>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-param-surface-best-angle.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-param-surface-best-angle.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-param-contours.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-param-contours.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-param-surface-best-angle.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-param-surface-best-angle.png"></a>
     <figcaption>Figure 3</figcaption>
 </figure>
 
@@ -286,7 +286,7 @@ def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
 As should be clear from the algorithm, Gauss-Newton requires an initial starting point as input. But since our problem is non-convex, different choices of initial start points can lead to different optima or even non-convergence. In Figure 3, there are several runs of the algorithm to fit the Zipf distribution parameters to our Hamlet data using different starting points. 
 
 <figure>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-gauss-newton-fit.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-gauss-newton-fit.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-gauss-newton-fit.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-gauss-newton-fit.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 
@@ -400,7 +400,7 @@ def levenberg_marquardt(f, x0, J, max_iter: int = 100):
 In Figure 5, the same initial points are used as in the illustration of the Gauss-Newton method in Figure 4. The points in quadrants one and two no longer exhibit the tendency to overshoot the optimum as we saw in Gauss-Newton. We should expect this since the improved algorithm regularises the size of the steps that can be taken in the descent direction
 
 <figure>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-levenberg-marquardt-fit.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-levenberg-marquardt-fit.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-levenberg-marquardt-fit.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-levenberg-marquardt-fit.png"></a>
     <figcaption>Figure 5</figcaption>
 </figure>
 
@@ -412,8 +412,8 @@ Having solved both the NLLS and the log space OLS problem, we can compare the mo
 We can plot both resulting models as in Figure 6 and notice the qualitative differences between them. The model resulting from NLLS does a much better job fitting the first few high ranking word frequencies compared to the OLS model which shows very large errors (as measured by the vertical distance between the point and the graph). In the lower ranking words however, the NLLS model shows a consistent overestimation of the word frequency that the OLS model does not. In log space, this pattern is even more pronounced
 
 <figure class="half">
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-fit.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-fit.png"></a>
-    <a href="/assets/images/nonlinear-least-squares/shakespeare-zipf-fit-loglog.png"><img src="/assets/images/nonlinear-least-squares/shakespeare-zipf-fit-loglog.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-fit.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-fit.png"></a>
+    <a href="/assets/nonlinear-least-squares/images/shakespeare-zipf-fit-loglog.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-zipf-fit-loglog.png"></a>
     <figcaption>Figure 6</figcaption>
 </figure>
 

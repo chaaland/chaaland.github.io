@@ -9,11 +9,11 @@ tags:
   - Regression
 toc: true
 # classes: wide
-excerpt: ""
-header: 
-  # make some GP with confidence interval shaded
-  overlay_image: ../assets/images/shakespeare-zipf-param-surface-splash.png
-  overlay_filter: 0.2
+# excerpt: ""
+# header: 
+#   # make some GP with confidence interval shaded
+#   overlay_image: assets/gaussian-processes/images/.png
+#   overlay_filter: 0.2
 ---
 
 This post is a light introduction to Gaussian Processes (GPs). The goal is to give an explanation of some of key results and most importantly, some intuition for how they come about.

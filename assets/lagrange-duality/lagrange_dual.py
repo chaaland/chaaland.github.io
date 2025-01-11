@@ -4,6 +4,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+IMAGE_DIR = Path("images")
+IMAGE_DIR.mkdir(exist_ok=True, parents=True)
+
 plt.rc("axes", labelsize=14)
 plt.rc("xtick", labelsize=14)  # fontsize of the tick labels
 plt.rc("ytick", labelsize=14)
@@ -159,13 +162,10 @@ def plot_relaxed_primal(save_dir):
 
 
 def main(args):
-    image_save_dir = Path(f"../../images/{Path(__file__).absolute().parent.name}")
-    image_save_dir.mkdir(exist_ok=True, parents=True)
-    # plot_primal(image_save_dir)
-    # plot_lagrangian_contours(image_save_dir)
-    # plot_relaxed_primal(image_save_dir)
-    # plot_example()
-    # plot_dual_function(image_save_dir)
+    plot_primal(IMAGE_DIR)
+    plot_lagrangian_contours(IMAGE_DIR)
+    plot_relaxed_primal(IMAGE_DIR)
+    plot_dual_function(IMAGE_DIR)
 
 
 if __name__ == "__main__":

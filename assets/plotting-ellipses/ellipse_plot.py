@@ -1,7 +1,15 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.patches import Ellipse
+
+IMAGE_DIR = Path("images")
+IMAGE_DIR.mkdir(exist_ok=True, parents=True)
+
+GIF_DIR = Path("gifs")
+GIF_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def plot_ellipse_parametric(P: np.ndarray, c: np.ndarray):
@@ -74,7 +82,7 @@ def plot_concentric_ellipses():
     for direction in ["top", "right", "bottom", "left"]:
         ax.spines[direction].set_visible(False)
     plt.tight_layout()
-    plt.savefig("../../images/plotting-ellipses/ellipses-concentric.png")
+    plt.savefig(IMAGE_DIR / "ellipses-concentric.png")
 
 
 def rotation_mat(theta_val: float) -> np.array:
@@ -258,7 +266,7 @@ def animate_ellipse_creation(P: np.ndarray, c: np.ndarray):
 
     ani = FuncAnimation(fig, update, np.arange(len(u_data)), init_func=init)
     writer = PillowWriter(fps=24)
-    ani.save("../../gifs/plotting-ellipses/ellipse-rotation.gif", writer=writer)
+    ani.save(GIF_DIR / "ellipse-rotation.gif", writer=writer)
 
 
 if __name__ == "__main__":

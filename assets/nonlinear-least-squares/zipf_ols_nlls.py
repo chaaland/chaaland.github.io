@@ -14,7 +14,7 @@ from scipy.optimize import least_squares, lsq_linear
 
 pjoin = os.path.join
 
-IMAGE_DIR = Path("..", "..", "images")
+IMAGE_DIR = Path("images")
 TEXT_DIR = Path("..", "..", "txt")
 DATA_DIR = Path("..", "..", "data")
 
@@ -50,7 +50,7 @@ def plot_scatter_points(freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle="--")
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-freq-scatter.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-freq-scatter.png")
 
 
 def fit_zipf_ols(freq_counts_desc: np.ndarray):
@@ -100,7 +100,7 @@ def plot_zipf_param_surface(empirical_freqs: np.ndarray):
     ax.set_xlabel(r"$K$", fontsize=14)
     ax.set_ylabel(r"$\alpha$", fontsize=14)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-param-surface.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-param-surface.png")
 
 
 def plot_zipf_param_contours(empirical_freqs: np.ndarray):
@@ -123,7 +123,7 @@ def plot_zipf_param_contours(empirical_freqs: np.ndarray):
     plt.ylabel(r"$\alpha$", fontsize=14)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-param-contours.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-param-contours.png")
 
 
 def plot_zipf_transformed_param_surface(empirical_freqs):
@@ -164,7 +164,7 @@ def plot_zipf_transformed_param_surface(empirical_freqs):
     ax.set_xlabel(r"$\log\, K$", fontsize=14)
     ax.set_ylabel(r"$\alpha$", fontsize=14)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-transformed-param-surface.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-transformed-param-surface.png")
 
 
 def plot_zipf_transformed_param_contours(empirical_freqs):
@@ -207,7 +207,7 @@ def plot_zipf_transformed_param_contours(empirical_freqs):
     plt.ylabel(r"$\alpha$", fontsize=14)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-transformed-param-contours.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-transformed-param-contours.png")
 
 
 def plot_transformed_scatter_points(freqs):
@@ -224,7 +224,7 @@ def plot_transformed_scatter_points(freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle="--")
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-transformed-param-scatter.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-transformed-param-scatter.png")
 
 
 def plot_zipf_fit(empirical_freqs):
@@ -260,7 +260,7 @@ def plot_zipf_fit(empirical_freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle="--")
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-fit.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-fit.png")
 
     plt.figure(figsize=(10, 10))
     plt.title(r"$log(freq)$ vs. $log(rank)$", fontsize=14)
@@ -277,7 +277,7 @@ def plot_zipf_fit(empirical_freqs):
     plt.minorticks_on()
     plt.grid(b=True, which="minor", linestyle="--")
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-zipf-fit-loglog.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-zipf-fit-loglog.png")
 
 
 def plot_direction_arrows(x_coords, y_coords, min_segment_length=0.05, c="b"):
@@ -350,7 +350,7 @@ def plot_gauss_newton_convergence(empirical_freqs):
     plt.xlim([k_lower, k_upper])
     plt.ylim([alpha_lower, alpha_upper])
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-gauss-newton-fit.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-gauss-newton-fit.png")
 
 
 def plot_levenberg_marquardt_convergence(empirical_freqs):
@@ -404,7 +404,7 @@ def plot_levenberg_marquardt_convergence(empirical_freqs):
     plt.xlim([k_lower, k_upper])
     plt.ylim([alpha_lower, alpha_upper])
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "non-linear-least-squares" / "shakespeare-levenberg-marquardt-fit.png")
+    plt.savefig(IMAGE_DIR / "shakespeare-levenberg-marquardt-fit.png")
 
 
 if __name__ == "__main__":
