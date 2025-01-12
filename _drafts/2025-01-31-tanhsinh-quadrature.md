@@ -204,7 +204,7 @@ The derivatives of the hyperbolic functions
 
 <a name="footnote2">2</a>: You may hear this called zero-order hold in time series contexts. That is, the value of the function in between sampling points is assumed constant (a zero order polynomial) until the next sampling point.
 
-<a name="footnote3">2</a>: A simple change of variables $$u = a + x (b-a)$$ allows handling arbitrary limits of integration.
+<a name="footnote3">3</a>: A simple change of variables $$u = a + x (b-a)$$ allows handling arbitrary limits of integration.
 
 ## References
 
