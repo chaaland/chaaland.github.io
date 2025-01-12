@@ -3,6 +3,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from integrate import left_riemann_points, right_riemann_points, trapezoidal_points
 
 IMAGE_DIR = Path("images")
 IMAGE_DIR.mkdir(exist_ok=True, parents=True)
@@ -29,12 +30,17 @@ def remove_spines(ax):
     ax.spines[["right", "top"]].set_visible(False)
 
 
-def plot_integrand_with_asymptote():
+def plot_integral_with_asymptote():
     xs = np.linspace(-2, 1, 1000, endpoint=False)
     ys = shifted_rsqrt(xs)
 
+    x_fill = np.linspace(-1, 1, 1000, endpoint=False)
+    y_fill = shifted_rsqrt(x_fill)
+
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
+    ax = plt.gca()
+    ax.fill_between(x_fill, y_fill, color="lightblue", alpha=0.5, label="Area Under Curve")
     plt.axvline([1], linestyle="--", color="gray")
     plt.xlim([-2, 2])
     plt.ylim([0, 4])
@@ -50,25 +56,28 @@ def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
     ys = 1 / xs
 
     # Calculate step size and partition points
-    x_k = np.linspace(a, b, n + 1)
     h = (b - a) / n
     match quad_type.lower():
         case "left":
             # zero out the last edge
-            w_k = h * np.array([1 if i != n else 0 for i, _ in enumerate(x_k)])
+            x_k, w_k = left_riemann_points(a, b, n)
             image_file = IMAGE_DIR / "left_riemann.png"
         case "right":
             # zero out the last edge
-            w_k = h * np.array([1 if i != 0 else 0 for i, _ in enumerate(x_k)])
+            x_k, w_k = right_riemann_points(a, b, n)
             image_file = IMAGE_DIR / "right_riemann.png"
         case "trapezoid":
             # only half weight on first and last point
-            w_k = h / 2 * np.array([2.0 if 1 <= i < n else 1.0 for i, _ in enumerate(x_k)])
+            # w_k = h / 2 * np.array([2.0 if 1 <= i < n else 1.0 for i, _ in enumerate(x_k)])
+            x_k, w_k = trapezoidal_points(a, b, n)
             image_file = IMAGE_DIR / "trapezoid.png"
 
     # Left-hand Riemann sum
     f_xk = 1 / x_k
     approx_integral = np.dot(w_k, f_xk)
+    exact_inegral = np.log(2)
+    pct_error = np.abs((approx_integral - exact_inegral) / exact_inegral) * 100
+    print(f"{quad_type} 1/x: {approx_integral:.4}, exact: {exact_inegral:.4}, pct_error={(pct_error):.4}%")
 
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
@@ -95,7 +104,6 @@ def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
     plt.savefig(image_file)
 
     # Print results
-    print(f"{quad_type} 1/x: {approx_integral}")
 
 
 def plot_tanh_sinh():
@@ -122,7 +130,8 @@ def plot_nodes_and_weights():
     w_k = np.pi / 2 * np.cosh(t_k) / (np.cosh(sinh_term) ** 2)
     # tanh_term goes identically to 1 which causes an error.
     # Really it should asymptote but it saturates so fast it becomes 1 to working precision
-    y_k = 1 / np.sqrt(1 - x_k) * w_k
+    f_xk = shifted_rsqrt(1 - x_k)
+    y_k = f_xk * w_k
 
     plt.figure(figsize=(8, 8))
     plt.plot(t_k, y_k)
@@ -153,13 +162,53 @@ def plot_nodes_and_weights():
     plt.savefig(IMAGE_DIR / "tanhsinh_nodes_weights.png")
 
 
+def plot_splash_image():
+    # Define a cubic function
+    def cubic(x):
+        return x**3 - 6 * x**2 + 9 * x + 2
+
+    # Define the range of the plot and the integration limits
+    x = np.linspace(-1, 5, 500)  # Full range for the curve
+    x_fill = np.linspace(1, 4, 500)  # Range for the area to be filled
+
+    # Compute the y-values for the curve and the filled area
+    y = cubic(x)
+    y_fill = cubic(x_fill)
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot the cubic curve
+    ax.plot(x, y, label=r"$f(x) = x^3 - 6x^2 + 9x + 2$", color="purple", linewidth=2)
+
+    # Fill the area under the curve
+    ax.fill_between(x_fill, y_fill, color="lightblue", alpha=0.5, label="Area Under Curve")
+
+    # Add labels, legend, and title
+    ax.grid(alpha=0.4)
+    plt.tight_layout()
+
+    make_cartesian_plane(ax)
+    plt.savefig(IMAGE_DIR / "splash_image.png")
+
+
 def main():
-    plot_integrand_with_asymptote()
-    plot_simple_quadrature(quad_type="left")
-    plot_simple_quadrature(quad_type="right")
-    plot_simple_quadrature(quad_type="trapezoid")
-    plot_tanh_sinh()
-    plot_nodes_and_weights()
+    # plot_splash_image()
+    # plot_integral_with_asymptote()
+    # plot_simple_quadrature(quad_type="left")
+    # plot_simple_quadrature(quad_type="right")
+    # plot_simple_quadrature(quad_type="trapezoid")
+
+    from integrate import riemann_quadrature, trapezoidal_quadrature
+
+    print(riemann_quadrature(shifted_rsqrt, side="left"))
+    # print(riemann_quadrature(shifted_rsqrt, side="right"))
+    # print(trapezoidal_quadrature(shifted_rsqrt))
+    # approx_integral = tanh_sinh_quadrature(lambda x: 1 / x, n_points=10, h=0.2)
+    # print(f"tanhsinh 1/x: {approx_integral:.4}")
+
+    # plot_tanh_sinh()
+    # plot_nodes_and_weights()
     # # Compute integrals
     # result1 = tanh_sinh_quadrature(f1, n_points=50)
     # # result2 = tanh_sinh_quadrature(f2, n_points=100)

@@ -31,7 +31,6 @@ analytics:
   google:
     tracking_id          : "G-FL4HTN0JH2"
     anonymize_ip         : true
-# google_analytics         : "G-FL4HTN0JH2"
 
 # Social Sharing
 # For specifying social profiles, used in _includes/seo.html
