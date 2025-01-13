@@ -198,47 +198,63 @@ def plot_splash_image():
 
 def plot_tanhsinh_substitution():
     import imageio
+    import matplotlib.colors as mcolors
 
-    # x_plot = np.concatenate([-2**-np.linspace(0, 10, 100, endpoint=False), np.linspace(0.9, 0.9999, 50)])
-    # more points near 1 since that's where singularity is
-    x_plot_0_to_1 = 1 - 2 ** np.linspace(-16, 0, 250, endpoint=False)[::-1]
-    x_plot = np.concatenate([-x_plot_0_to_1[::-1], x_plot_0_to_1])  # from -1 to 1 now
+    t_plot_0_to_infty = np.linspace(1e-4, 3, 100)
+    t_plot = np.concatenate([-t_plot_0_to_infty[::-1], t_plot_0_to_infty])
+    x_plot_0_to_1 = np.tanh(np.pi / 2 * np.sinh(t_plot_0_to_infty))
+    x_plot = np.tanh(np.pi / 2 * np.sinh(t_plot))
     y_plot = shifted_rsqrt(x_plot)
 
-    t_plot_0_to_infty = np.asinh(np.atanh(x_plot_0_to_1) / (np.pi / 2))
-    t_plot = np.asinh(np.atanh(x_plot) / (np.pi / 2))
-    # breakpoint()
     sinh_term = np.pi / 2 * np.sinh(t_plot)
     x_k = np.tanh(sinh_term)
     dx = np.pi / 2 * np.cosh(t_plot) / (np.cosh(sinh_term) ** 2)
     y_plot_transformed = shifted_rsqrt(x_k) * dx
 
+    # Normalize x to the range [0, 1] for color mapping
+    norm = mcolors.Normalize(vmin=0, vmax=1)
+
+    # Create a colormap (rainbow)
+    cmap = plt.cm.rainbow
+
+    n_points = len(t_plot)
+    colors = cmap(norm(np.linspace(0, 1, n_points)))
+
     def generate_frames(theta):
         fig, ax = plt.subplots()
         # how to deform x-axis into t-axis??
         if theta == 0:
-            ax.plot(x_plot, y_plot, lw=3)
+            # ax.plot(x_plot, y_plot, lw=3)
+            for i in range(n_points - 1):
+                ax.plot(x_plot[i : i + 2], y_plot[i : i + 2], color=colors[i], linewidth=3)
         elif theta == 1:
-            ax.plot(t_plot, y_plot_transformed, lw=3)
+            for i in range(n_points - 1):
+                ax.plot(t_plot[i : i + 2], y_plot[i : i + 2], color=colors[i], linewidth=3)
+            # ax.plot(t_plot, y_plot_transformed, lw=3)
         else:
             blended_abscissa_0_to_1 = x_plot_0_to_1 ** (1 - theta) * t_plot_0_to_infty**theta
             blended_abscissa = np.concatenate([-blended_abscissa_0_to_1[::-1], blended_abscissa_0_to_1])
+            blended_y = y_plot ** (1 - theta) * y_plot_transformed**theta
 
-            colors = ["tab:red", "tab:orange", "tab:blue", "tab:green"]
-            for i, c in enumerate(colors):
-                n_points = len(x_plot) // len(colors)  # prob want ceil
-                blended_y = y_plot ** (1 - theta) * y_plot_transformed**theta
-                ax.plot(
-                    blended_abscissa[i * n_points : (i + 1) * n_points],
-                    blended_y[i * n_points : (i + 1) * n_points],
-                    lw=3,
-                    color=c,
-                )
+            # Generate colors for the line
+            for i in range(n_points - 1):
+                ax.plot(blended_abscissa[i : i + 2], blended_y[i : i + 2], color=colors[i], linewidth=3)
+
+            # colors = ["tab:red", "tab:orange", "tab:blue", "tab:green"]
+            # for i, c in enumerate(colors):
+            #     n_points = len(x_plot) // len(colors)  # prob want ceil
+            #     blended_y = y_plot ** (1 - theta) * y_plot_transformed**theta
+            #     ax.plot(
+            #         blended_abscissa[i * n_points : (i + 1) * n_points],
+            #         blended_y[i * n_points : (i + 1) * n_points],
+            #         lw=3,
+            #         color=c,
+            #     )
             # ax.plot(blended_abscissa, y_plot ** (1 - theta) * y_plot_transformed**theta, lw=3)
 
         # ax.set(xlabel="x", ylabel="y", title="Gaussian Process Regression")
-        ax.set_xlim([-2, 2])
-        ax.set_ylim([0, 4])
+        ax.set_xlim([-3, 3])
+        ax.set_ylim([0, 8])
         make_cartesian_plane(ax)
         plt.tight_layout()
 
@@ -247,98 +263,11 @@ def plot_tanhsinh_substitution():
         plt.close(fig)
         return image
 
-    plot_params = np.arange(0, 1, 0.01 / 2).tolist()
+    plot_params = np.arange(0, 0.1, 0.01 / 5).tolist()
+    # for i in range(10):
+    #     plot_params += [i * 0.01] * (10 - i)
+    plot_params += np.arange(0.1, 1, 0.01).tolist()
     imageio.mimsave(GIF_DIR / "tanhsinh_transform.gif", [generate_frames(theta) for theta in plot_params], fps=25)
-
-
-# def create_gif(frame_generator, filename="animation.gif", fps=10, dpi=100, title=None, **kwargs):
-#     """
-#     Creates a GIF from a sequence of matplotlib figures.
-
-#     Parameters:
-#         frame_generator: Iterator yielding (fig, ax) tuples for each frame
-#         filename: Output GIF filename
-#         fps: Frames per second in the output GIF
-#         dpi: Resolution of the output GIF
-#         title: Optional title for the animation
-#         **kwargs: Additional keyword arguments passed to frame_generator
-
-#     Example usage:
-#     def generate_frames():
-#         for i in range(10):
-#             fig, ax = plt.subplots()
-#             ax.plot([0, i], [0, i**2])
-#             ax.set_xlim(0, 10)
-#             ax.set_ylim(0, 100)
-#             yield fig, ax
-#             plt.close(fig)  # Important: close figure to free memory
-
-#     create_gif(generate_frames)
-#     """
-#     # Create a list to store the figures
-#     frames = []
-
-#     # Get the frames from the generator
-#     for fig, ax in frame_generator(**kwargs):
-#         # If a title was provided, set it
-#         if title:
-#             ax.set_title(title)
-
-#         # Convert figure to image array and append to frames
-#         # We need to draw the canvas first to ensure the figure is rendered
-#         fig.canvas.draw()
-#         image = np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8")
-#         image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-#         frames.append(image)
-
-#     # Create the GIF using PIL (Python Imaging Library)
-#     writer = PillowWriter(fps=fps)
-
-#     # Create a new figure for the animation
-#     fig = plt.figure()
-#     plt.axis("off")  # Hide axes for the animation
-#     im = plt.imshow(frames[0])
-
-#     def update(frame):
-#         im.set_array(frame)
-#         return [im]
-
-#     # Create the animation
-#     anim = animation.ArtistAnimation(fig, [(im,) for frame in frames], interval=1000 / fps)
-
-#     # Save the animation
-#     anim.save(filename, writer=writer, dpi=dpi)
-#     plt.close(fig)  # Clean up
-
-#     return filename
-
-
-# # Example usage with a simple sine wave animation
-# def generate_tanhsinh_frames(num_frames=30):
-#     """
-#     Example frame generator that creates a moving sine wave.
-#     """
-#     t = np.linspace(0, 2 * np.pi, 100)
-
-#     for i in range(num_frames):
-#         # Create new figure for each frame
-#         fig, ax = plt.subplots()
-
-#         # Calculate phase shift for this frame
-#         phase = 2 * np.pi * i / num_frames
-
-#         # Plot the sine wave
-#         ax.plot(t, np.sin(t + phase))
-
-#         # Set consistent axes limits
-#         ax.set_xlim(0, 2 * np.pi)
-#         ax.set_ylim(-1.5, 1.5)
-
-#         # Add grid for better visualization
-#         ax.grid(True)
-
-#         yield fig, ax
-#         plt.close(fig)  # Clean up
 
 
 def main():

@@ -21,16 +21,20 @@ The fundamental theorem of calculus gives us a deceptively simple method of eval
 
 $$\int_a^b f(x) dx = F(b) - F(a)$$.
 
-But what happens when the function has no nice antiderivative?
-What do you if you want to write code that does integration but the user only provides function to integrate, $$f(x)$$?
+But what if F(x) doesn't exist in closed form? 
+Or what if you're writing software where users provide arbitrary functions to integrate? 
+This is where numerical integration becomes essential.
 
-In the release notes of [Scipy 1.15.0](https://docs.scipy.org/doc/scipy/release/1.15.0-notes.html) there is a new feature called `tanhsinh` in the `scipy.integrate` subpackage.
-In this post we'll see how this method can be used to accurately approximate definite integrals.
+In the release notes of [Scipy 1.15.0](https://docs.scipy.org/doc/scipy/release/1.15.0-notes.html) a new method called `tanhsinh` was added to the `scipy.integrate` subpackage.
+In this post we'll see how this method can be used to accurately approximate even especially tricky integrals.
 
 ## Riemann approximation
 
 The simplest method you learn for approximating the integral is the Riemann sum.
 This approximates the area under the curve as the sum of many small rectangles.
+The more rectangles you have, the more accurate the approximation.
+
+Mathematically, this translates to:
 
 $$
 \begin{align*}
@@ -39,7 +43,8 @@ $$
 \end{align*}
 $$
 
-Where we've let $$h= {b-a \over n}$$ for ease of notation<sup>[1](#footnote1)</sup>.
+Where each term in the sum represents the area of one of our recatangles.
+The width of each block is $$h={b-a \over n}$$ (the total interval divided into $$n$$ pieces), and the height is $$f(a + {b-a \over n} k)$$ (the function evaluated at the left edge of each block)<sup>[1](#footnote1)</sup>.
 
 <figure class>
     <a href="/assets/tanhsinh-quadrature/images/left_riemann.png"><img src="/assets/tanhsinh-quadrature/images/left_riemann.png"></a>
@@ -159,19 +164,28 @@ In the next section we'll see a method for taming these endpoint asymptotes.
 
 ## tanh-sinh quadrature
 
-In this section we'll restrict our attention to integrals in the interval [-1,1]<sup>[3](#footnote3)</sup> for simplicity.
+Why do our previous methods struggle with endpoint asymptotes?
+The problem is that we're sampling points uniformly in our interval.
+Near the asymptote, the function changes so rapidly that no reasonable number of uniform samples can capture its behavior.
+
+Tanh-sinh quadrature transforms our integral in a way that "tames" these asymptotes. 
+
+In this section we'll restrict our attention to integrals in the interval [-1,1] for simplicity<sup>[3](#footnote3)</sup>.
 We'll start by making the rather unusual variable subsitution
 
 $$x = \tanh\left(\sinh \left({\pi \over 2} t\right)\right)$$
 
-This function is plotted in Figure 5 along with regular hyperbolic tangent.
+This function is plotted in Figure 5 along with the regular hyperbolic tangent.
 
 <figure class>
     <a href="/assets/tanhsinh-quadrature/images/tanhsinh.png"><img src="/assets/tanhsinh-quadrature/images/tanhsinh.png"></a>
     <figcaption>Figure 5: The tanhsinh function saturates much more quickly than the regular hyperbolic tangent.</figcaption>
 </figure>
 
-Recalling that the derivatives of the hyperbolic functions are essentially the same as their trig counterparts and applying the chain rule, we have
+From the figure we can see that it maps the infinite interval $$(-\infty, \infty)$$ to $$(-1, 1)$$.
+Also, because of how rapidly the function saturates, it will cluster our sampling points near $$\pm 1$$, exactly where we need them for handling endpoint behavior.
+
+Recalling that the derivatives of the hyperbolic functions are essentially the same as their trigonometric counterparts, we can apply the chain rule to compute the derivative
 
 $$
 \begin{align*}
@@ -180,21 +194,39 @@ $$
 \end{align*}
 $$
 
-With this subsitution, our integral becomes rather complicated looking
-
-$$\int_{-1}^1 f(x) dx = \int_a^b f\left(\tanh\left(\sinh \left({\pi \over 2} t\right)\right)\right){\pi \over 2}\text{sech}^2\left(\sinh \left({\pi \over 2} t\right)\right) \cosh \left({\pi \over 2} t\right) dt
-$$
-
-Using this graph we see
+With this subsitution, our integral becomes the doubly improper and rather complicated looking
 
 $$
 \begin{align*}
-\lim_{t\rightarrow \infty} \tanh\left(\sinh \left({\pi \over 2} t\right)\right) &= 1\\
-\lim_{t\rightarrow -\infty} \tanh\left(\sinh \left({\pi \over 2} t\right)\right) &= -1
+\int_{-1}^1 f(x) &\,dx = \\
+&\int_{-\infty}^\infty f\left(\tanh\left(\sinh \left({\pi \over 2} t\right)\right)\right){\pi \over 2}\text{sech}^2\left(\sinh \left({\pi \over 2} t\right)\right) \cosh \left({\pi \over 2} t\right) dt
 \end{align*}
 $$
 
-The derivatives of the hyperbolic functions
+It's not immediately clear what we have gained by doing this.
+In fact, it looks like we may have even made things significantly worse.
+
+But let's look at what happens to the integrand $${1 \over \sqrt{1-x}}$$ using this substitution.
+
+<figure class>
+    <a href="/assets/tanhsinh-quadrature/gifs/output-onlinegiftools.gif"><img src="/assets/tanhsinh-quadrature/gifs/output-onlinegiftools.gif"></a>
+    <figcaption>Figure 6: The original integrand being transformed after the tanhsinh substitution. The colors are just to keep track of where segment of the line in the original graph gets mapped to in the end.</figcaption>
+</figure>
+
+From the animation, you can see that the asymptote at 1 disappears!
+What's more, the function decays extremely quickly to 0 (double exponentially in fact).
+This means it is much easier to accurately integrate numerically.
+
+$$\int_{-1}^1 f(x) dx \approx \sum_{k=-N}^N w_k f(x_k)$$
+
+where 
+
+$$
+\begin{align*}
+w_k &=h{\pi \over 2}\text{sech}^2\left(\sinh \left({\pi \over 2} kh\right)\right) \cosh \left({\pi \over 2} kh\right) \\
+x_k &=f\left(\tanh\left(\sinh \left({\pi \over 2} kh\right)\right)\right) 
+\end{align*}
+$$
 
 ## Conclusion
 
@@ -208,4 +240,5 @@ The derivatives of the hyperbolic functions
 
 ## References
 
-1. [Lagrange Polynomial](https://en.wikipedia.org/wiki/Lagrange_polynomial)
+1. [Scipy 1.15.0 release notes](https://docs.scipy.org/doc/scipy/release/1.15.0-notes.html)
+2. [tanhsinh quadrature](https://en.wikipedia.org/wiki/Tanh-sinh_quadrature)
