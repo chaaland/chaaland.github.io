@@ -1,6 +1,8 @@
 from pathlib import Path
 
+import imageio
 import matplotlib as mpl
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from integrate import left_riemann_points, right_riemann_points, trapezoidal_points
@@ -79,9 +81,9 @@ def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
     # Left-hand Riemann sum
     f_xk = 1 / x_k
     approx_integral = np.dot(w_k, f_xk)
-    exact_inegral = np.log(2)
-    pct_error = np.abs((approx_integral - exact_inegral) / exact_inegral) * 100
-    print(f"{quad_type} 1/x: {approx_integral:.4}, exact: {exact_inegral:.4}, pct_error={(pct_error):.4}%")
+    exact_integral = np.log(2)
+    pct_error = np.abs((approx_integral - exact_integral) / exact_integral) * 100
+    print(f"{quad_type} 1/x: {approx_integral:.4}, exact: {exact_integral:.4}, pct_error={(pct_error):.4}%")
 
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
@@ -106,8 +108,6 @@ def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
     plt.ylim([0, 1.5])
     plt.tight_layout()
     plt.savefig(image_file)
-
-    # Print results
 
 
 def plot_tanh_sinh():
@@ -197,9 +197,6 @@ def plot_splash_image():
 
 
 def plot_tanhsinh_substitution():
-    import imageio
-    import matplotlib.colors as mcolors
-
     t_plot_0_to_infty = np.linspace(1e-4, 3, 100)
     t_plot = np.concatenate([-t_plot_0_to_infty[::-1], t_plot_0_to_infty])
     x_plot_0_to_1 = np.tanh(np.pi / 2 * np.sinh(t_plot_0_to_infty))
@@ -222,15 +219,23 @@ def plot_tanhsinh_substitution():
 
     def generate_frames(theta):
         fig, ax = plt.subplots()
-        # how to deform x-axis into t-axis??
+
         if theta == 0:
-            # ax.plot(x_plot, y_plot, lw=3)
             for i in range(n_points - 1):
                 ax.plot(x_plot[i : i + 2], y_plot[i : i + 2], color=colors[i], linewidth=3)
+
+            ax.set_xlim([-3, 3])
+            ax.set_ylim([0, 8])
+            make_cartesian_plane(ax)
+            fig.savefig(IMAGE_DIR / "integrand.png")
         elif theta == 1:
             for i in range(n_points - 1):
-                ax.plot(t_plot[i : i + 2], y_plot[i : i + 2], color=colors[i], linewidth=3)
-            # ax.plot(t_plot, y_plot_transformed, lw=3)
+                ax.plot(t_plot[i : i + 2], y_plot_transformed[i : i + 2], color=colors[i], linewidth=3)
+
+            ax.set_xlim([-3, 3])
+            ax.set_ylim([0, 8])
+            make_cartesian_plane(ax)
+            fig.savefig(IMAGE_DIR / "integrand_tanhsinh.png")
         else:
             blended_abscissa_0_to_1 = x_plot_0_to_1 ** (1 - theta) * t_plot_0_to_infty**theta
             blended_abscissa = np.concatenate([-blended_abscissa_0_to_1[::-1], blended_abscissa_0_to_1])
@@ -240,19 +245,6 @@ def plot_tanhsinh_substitution():
             for i in range(n_points - 1):
                 ax.plot(blended_abscissa[i : i + 2], blended_y[i : i + 2], color=colors[i], linewidth=3)
 
-            # colors = ["tab:red", "tab:orange", "tab:blue", "tab:green"]
-            # for i, c in enumerate(colors):
-            #     n_points = len(x_plot) // len(colors)  # prob want ceil
-            #     blended_y = y_plot ** (1 - theta) * y_plot_transformed**theta
-            #     ax.plot(
-            #         blended_abscissa[i * n_points : (i + 1) * n_points],
-            #         blended_y[i * n_points : (i + 1) * n_points],
-            #         lw=3,
-            #         color=c,
-            #     )
-            # ax.plot(blended_abscissa, y_plot ** (1 - theta) * y_plot_transformed**theta, lw=3)
-
-        # ax.set(xlabel="x", ylabel="y", title="Gaussian Process Regression")
         ax.set_xlim([-3, 3])
         ax.set_ylim([0, 8])
         make_cartesian_plane(ax)
@@ -263,11 +255,76 @@ def plot_tanhsinh_substitution():
         plt.close(fig)
         return image
 
-    plot_params = np.arange(0, 0.1, 0.01 / 5).tolist()
-    # for i in range(10):
-    #     plot_params += [i * 0.01] * (10 - i)
-    plot_params += np.arange(0.1, 1, 0.01).tolist()
+    plot_params = np.linspace(0, 0.1, 50).tolist()
+    plot_params += np.linspace(0.1, 1, 100).tolist()
+
     imageio.mimsave(GIF_DIR / "tanhsinh_transform.gif", [generate_frames(theta) for theta in plot_params], fps=25)
+
+
+def plot_tanhsinh_quadrature():
+    # Define the interval and number of subintervals
+    ts = np.linspace(-3, 3, 1000, endpoint=True)
+
+    sinh_t = np.sinh(ts)
+    cosh_t = np.cosh(ts)
+    tanh_term = np.tanh(np.pi / 2 * sinh_t)
+    cosh_term = np.cosh(np.pi / 2 * sinh_t)
+
+    # Compute the new integrand post-substitution
+    ys = 1 / np.sqrt(1 - tanh_term) * (np.pi / 2 * (cosh_t / (cosh_term * cosh_term)))
+
+    # Calculate step size and partition points
+    h = 0.2
+    n = 10
+    a = -h * n
+    b = h * n
+    t_k, w_k = left_riemann_points(a, b, 2 * n)
+
+    # # Left-hand Riemann sum
+    sinh_t = np.sinh(t_k)
+    cosh_t = np.cosh(t_k)
+    tanh_term = np.tanh(np.pi / 2 * sinh_t)
+    cosh_term = np.cosh(np.pi / 2 * sinh_t)
+    f_xk = 1 / np.sqrt(1 - tanh_term) * (np.pi / 2 * cosh_t / (cosh_term * cosh_term))
+    approx_integral = np.dot(w_k, f_xk)
+    exact_integral = 2 * 2**0.5
+    pct_error = np.abs((approx_integral - exact_integral) / exact_integral) * 100
+    print(f"tanhsinh 1/sqrt(1-x): {approx_integral:.6}, exact: {exact_integral:.6}, pct_error={(pct_error):.6}%")
+
+    plt.figure(figsize=(8, 8))
+    plt.plot(ts, ys)
+    for i in range(2 * n):
+        plt.fill_between([t_k[i], t_k[i + 1]], 0, [f_xk[i], f_xk[i]], color="blue", alpha=0.3)
+
+    make_cartesian_plane(plt.gca())
+    plt.xlim([-3, 3])
+    plt.ylim([0, 2])
+    plt.tight_layout()
+    plt.savefig(IMAGE_DIR / "tanhsinh_riemann.png")
+
+
+def plot_sigmoid_substitution():
+    t_plot = np.linspace(-10, 10, 100)
+
+    sigmoid_term = 1 / (1 + np.exp(-t_plot))
+    dx = sigmoid_term * (1 - sigmoid_term)
+    x_k = sigmoid_term
+    y_plot_transformed = shifted_rsqrt(x_k) * dx
+    # Normalize x to the range [0, 1] for color mapping
+    norm = mcolors.Normalize(vmin=0, vmax=1)
+
+    # Create a colormap (rainbow)
+    cmap = plt.cm.rainbow
+
+    n_points = len(t_plot)
+    colors = cmap(norm(np.linspace(0, 1, n_points)))
+    plt.figure(figsize=(8, 8))
+    for i in range(n_points - 1):
+        plt.plot(t_plot[i : i + 2], y_plot_transformed[i : i + 2], color=colors[i], linewidth=3)
+
+    make_cartesian_plane(plt.gca())
+    plt.tight_layout()
+    plt.savefig(IMAGE_DIR / "integrand_sigmoid.png")
 
 
 def main():
@@ -277,11 +334,16 @@ def main():
     # plot_simple_quadrature(quad_type="right")
     # plot_simple_quadrature(quad_type="trapezoid")
 
-    plot_tanhsinh_substitution()
+    # plot_tanhsinh_substitution()
+    plot_tanhsinh_quadrature()
+    # plot_sigmoid_substitution()
     # print(riemann_quadrature(shifted_rsqrt, side="right"))
     # print(trapezoidal_quadrature(shifted_rsqrt))
-    # approx_integral = tanh_sinh_quadrature(lambda x: 1 / x, n_points=10, h=0.2)
-    # print(f"tanhsinh 1/x: {approx_integral:.4}")
+    from integrate import tanh_sinh_quadrature
+
+    approx_integral = tanh_sinh_quadrature(lambda x: 1 / (1 - x) ** 0.5, n=10, h=0.2)
+    # approx_integral = tanh_sinh_quadrature(lambda x: 1 / (1 - x) ** 0.5, n_points=10, h=0.2)
+    print(f"tanhsinh 1/sqrt(1-x): {approx_integral:.6}, actual 1/sqrt(1-x): {2**1.5:.6}")
 
     # plot_tanh_sinh()
     # plot_nodes_and_weights()
