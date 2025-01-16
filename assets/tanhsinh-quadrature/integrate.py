@@ -64,26 +64,33 @@ def right_riemann_points(a, b, n_points):
     return x_k, w_k
 
 
-def riemann_quadrature(f, a=-1, b=1, n_points=10, side="left"):
+def riemann_quadrature(f, a=-1, b=1, n=10, side="left", ignore_infs: bool = True):
     match side:
         case "left":
-            points, weights = left_riemann_points(a, b, n_points)
+            points, weights = left_riemann_points(a, b, n)
         case "right":
-            points, weights = right_riemann_points(a, b, n_points)
+            points, weights = right_riemann_points(a, b, n)
         case _:
             raise ValueError(f"Unsupported value `{side=}`")
 
-    return np.dot(weights, f(points))
+    f_vals = f(points)
+
+    if ignore_infs:
+        is_finite_mask = np.isfinite(f_vals)
+        weights = weights[is_finite_mask]
+        f_vals = f_vals[is_finite_mask]
+
+    return np.dot(weights, f_vals)
 
 
-def trapezoidal_points(a, b, n_points):
-    h = (b - a) / n_points
-    x_k = np.linspace(a, b, n_points + 1)
-    w_k = h / 2 * np.array([2.0 if 1 <= i < n_points else 1.0 for i, _ in enumerate(x_k)])
+def trapezoidal_points(a, b, n):
+    h = (b - a) / n
+    x_k = np.linspace(a, b, n + 1)
+    w_k = h / 2 * np.array([2.0 if 1 <= i < n else 1.0 for i, _ in enumerate(x_k)])
 
     return x_k, w_k
 
 
-def trapezoidal_quadrature(f, a=-1, b=1, n_points=10):
-    points, weights = trapezoidal_points(a, b, n_points)
+def trapezoidal_quadrature(f, a=-1, b=1, n=10):
+    points, weights = trapezoidal_points(a, b, n)
     return np.dot(weights, f(points))

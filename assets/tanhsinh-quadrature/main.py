@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 
 import imageio
@@ -5,7 +6,7 @@ import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from integrate import left_riemann_points, right_riemann_points, trapezoidal_points
+from integrate import left_riemann_points, riemann_quadrature, right_riemann_points, trapezoidal_points
 
 mpl.use("Agg")
 
@@ -19,6 +20,13 @@ plt.rc("axes", labelsize=14)
 plt.rc("xtick", labelsize=14)  # fontsize of the tick labels
 plt.rc("ytick", labelsize=14)
 mpl.rcParams["lines.linewidth"] = 3
+
+
+class QuadratureMethod(str, Enum):
+    left_riemann = "left_riemann"
+    right_riemann = "right_riemann"
+    trapezoid = "trapezoid"
+    tanhsinh = "tanhsinh"
 
 
 def shifted_rsqrt(x):
@@ -56,31 +64,33 @@ def plot_integral_with_asymptote():
     plt.savefig(IMAGE_DIR / "shifted_rsqrt.png")
 
 
-def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
+def plot_simple_quadrature(f, a=1, b=2, n=10, quad_type=QuadratureMethod.left_riemann):
     # Define the interval and number of subintervals
     xs = np.linspace(0.1, 3, 1000, endpoint=False)
-    ys = 1 / xs
+    ys = f(xs)
 
     # Calculate step size and partition points
     h = (b - a) / n
-    match quad_type.lower():
-        case "left":
+    match quad_type:
+        case QuadratureMethod.left_riemann:
             # zero out the last edge
             x_k, w_k = left_riemann_points(a, b, n)
             image_file = IMAGE_DIR / "left_riemann.png"
-        case "right":
+        case QuadratureMethod.right_riemann:
             # zero out the last edge
             x_k, w_k = right_riemann_points(a, b, n)
             image_file = IMAGE_DIR / "right_riemann.png"
-        case "trapezoid":
+        case QuadratureMethod.trapezoid:
             # only half weight on first and last point
             # w_k = h / 2 * np.array([2.0 if 1 <= i < n else 1.0 for i, _ in enumerate(x_k)])
             x_k, w_k = trapezoidal_points(a, b, n)
             image_file = IMAGE_DIR / "trapezoid.png"
 
     # Left-hand Riemann sum
-    f_xk = 1 / x_k
-    approx_integral = np.dot(w_k, f_xk)
+    f_xk = f(x_k)
+
+    is_finite_mask = np.isfinite(f_xk)
+    approx_integral = np.dot(w_k[is_finite_mask], f_xk[is_finite_mask])
     exact_integral = np.log(2)
     pct_error = np.abs((approx_integral - exact_integral) / exact_integral) * 100
     print(f"{quad_type} 1/x: {approx_integral:.4}, exact: {exact_integral:.4}, pct_error={(pct_error):.4}%")
@@ -88,12 +98,12 @@ def plot_simple_quadrature(a=1, b=2, n=10, quad_type="left"):
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
     for i in range(n):
-        match quad_type.lower():
-            case "left":
+        match quad_type:
+            case QuadratureMethod.left_riemann:
                 plt.fill_between([x_k[i], x_k[i + 1]], 0, [f_xk[i], f_xk[i]], color="blue", alpha=0.3)
-            case "right":
+            case QuadratureMethod.right_riemann:
                 plt.fill_between([x_k[i], x_k[i + 1]], 0, [f_xk[i + 1], f_xk[i + 1]], color="blue", alpha=0.3)
-            case "trapezoid":
+            case QuadratureMethod.trapezoid:
                 plt.fill_between(
                     [x_k[i], x_k[i] + h],
                     [f_xk[i], f_xk[i + 1]],
@@ -122,48 +132,6 @@ def plot_tanh_sinh():
     make_cartesian_plane(plt.gca())
     plt.tight_layout()
     plt.savefig(IMAGE_DIR / "tanhsinh.png")
-
-
-def plot_nodes_and_weights():
-    # TODO caseyh: mess with this function some. What are we tring to show exactly?
-    t_k = np.linspace(-4, 4, 1000, endpoint=False)
-
-    sinh_term = np.pi / 2 * np.sinh(t_k)
-    x_k = np.tanh(sinh_term)
-
-    w_k = np.pi / 2 * np.cosh(t_k) / (np.cosh(sinh_term) ** 2)
-    # tanh_term goes identically to 1 which causes an error.
-    # Really it should asymptote but it saturates so fast it becomes 1 to working precision
-    f_xk = shifted_rsqrt(1 - x_k)
-    y_k = f_xk * w_k
-
-    plt.figure(figsize=(8, 8))
-    plt.plot(t_k, y_k)
-    remove_spines(plt.gca())
-    plt.ylim([0, 2])
-
-    h = 0.1
-    t_k = np.arange(-3, 3, h)
-
-    sinh_term = np.pi / 2 * np.sinh(t_k)
-    x_k = np.tanh(sinh_term)
-    w_k = np.pi / 2 * np.cosh(t_k) / (np.cosh(sinh_term) ** 2)
-
-    plt.figure(figsize=(12, 4))
-    plt.subplot(131)
-    plt.scatter(t_k, w_k)
-    remove_spines(plt.gca())
-
-    plt.subplot(132)
-    plt.scatter(t_k, x_k)
-    remove_spines(plt.gca())
-
-    plt.subplot(133)
-    plt.scatter(t_k, 1 / np.sqrt(1 - x_k) * w_k)
-    plt.ylim([0, 2])
-    remove_spines(plt.gca())
-
-    plt.savefig(IMAGE_DIR / "tanhsinh_nodes_weights.png")
 
 
 def plot_splash_image():
@@ -274,13 +242,13 @@ def plot_tanhsinh_quadrature():
     ys = 1 / np.sqrt(1 - tanh_term) * (np.pi / 2 * (cosh_t / (cosh_term * cosh_term)))
 
     # Calculate step size and partition points
-    h = 0.2
+    h = 0.3
     n = 10
     a = -h * n
     b = h * n
     t_k, w_k = left_riemann_points(a, b, 2 * n)
 
-    # # Left-hand Riemann sum
+    # Left-hand Riemann sum
     sinh_t = np.sinh(t_k)
     cosh_t = np.cosh(t_k)
     tanh_term = np.tanh(np.pi / 2 * sinh_t)
@@ -327,33 +295,48 @@ def plot_sigmoid_substitution():
     plt.savefig(IMAGE_DIR / "integrand_sigmoid.png")
 
 
-def main():
-    # plot_splash_image()
-    # plot_integral_with_asymptote()
-    # plot_simple_quadrature(quad_type="left")
-    # plot_simple_quadrature(quad_type="right")
-    # plot_simple_quadrature(quad_type="trapezoid")
-
-    # plot_tanhsinh_substitution()
-    plot_tanhsinh_quadrature()
-    # plot_sigmoid_substitution()
-    # print(riemann_quadrature(shifted_rsqrt, side="right"))
-    # print(trapezoidal_quadrature(shifted_rsqrt))
+def compute_errors():
+    import polars as pl
     from integrate import tanh_sinh_quadrature
 
-    approx_integral = tanh_sinh_quadrature(lambda x: 1 / (1 - x) ** 0.5, n=10, h=0.2)
-    # approx_integral = tanh_sinh_quadrature(lambda x: 1 / (1 - x) ** 0.5, n_points=10, h=0.2)
-    print(f"tanhsinh 1/sqrt(1-x): {approx_integral:.6}, actual 1/sqrt(1-x): {2**1.5:.6}")
+    approx_integrals = []
+    widths = [0.3, 0.15, 0.05, 0.01]
+    exact_integral = 2**1.5
+    for h in widths:
+        # n * h = 3
+        n = int(3 / h)
+        approx_integrals.append(tanh_sinh_quadrature(lambda x: 1 / (1 - x) ** 0.5, n=n, h=h))
+        print(f"{h=}, {n=}")
+        # pct_error = np.abs(exact_integral - approx_integral) / exact_integral * 100
+        # print(f"tanhsinh 1/sqrt(1-x): {approx_integral:.6}, actual 1/sqrt(1-x): {:.6}, pct_error: {pct_error:.6}")
 
+    pct_error_expr = (pl.col("exact") - pl.col("approx")).abs() / pl.col("exact").abs() * 100
+    df = pl.DataFrame({"width": widths, "exact": exact_integral, "approx": approx_integrals}).with_columns(
+        pct_error_expr.alias("pct_error")
+    )
+    print(df)
+
+
+def main():
+    # misc images
+    # plot_splash_image()
     # plot_tanh_sinh()
-    # plot_nodes_and_weights()
-    # # Compute integrals
-    # result1 = tanh_sinh_quadrature(f1, n_points=50)
-    # # result2 = tanh_sinh_quadrature(f2, n_points=100)
 
-    # print("Integral of 1/sqrt(1-x) from -1 to 1:")
-    # print(f"Computed: {result1:.10f}")
-    # print(f"Exact: {2 * np.sqrt(2):.10f}")
+    # # work with 1 / x
+    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.left_riemann)
+    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.right_riemann)
+    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.trapezoid)
+
+    # # work with 1/ sqrt(1-x)
+    # plot_integral_with_asymptote()
+    # plot_tanhsinh_substitution()
+    # plot_sigmoid_substitution()
+    # plot_tanhsinh_quadrature()
+
+    riemann_approx = riemann_quadrature(shifted_rsqrt, a=-1, b=1, n=20, side="left")
+    print(f"{riemann_approx=:.6}")
+
+    compute_errors()
 
 
 if __name__ == "__main__":

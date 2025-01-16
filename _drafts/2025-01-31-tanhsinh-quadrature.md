@@ -9,7 +9,7 @@ tags:
   - Integration
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Tanhsinh quadrature is a powerful numerical integration technique for handling integrals with endpoint singularities, leveraging a clever variable transformation to cluster points where the function changes rapidly."
 header: 
   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_filter: 0.2
@@ -43,7 +43,7 @@ $$
 \end{align*}
 $$
 
-Where each term in the sum represents the area of one of our recatangles.
+Where each term in the sum represents the area of one of our rectangles.
 The width of each block is $$h={b-a \over N}$$ (the total interval divided into $$n$$ pieces), and the height is $$f\left(a + {b-a \over N} k\right)$$ (the function evaluated at the left edge of each block)<sup>[1](#footnote1)</sup>.
 
 <figure class>
@@ -171,7 +171,7 @@ Near the asymptote, the function changes so rapidly that a reasonable number of 
 Tanh-sinh quadrature transforms our integral in a way that "tames" these asymptotes.
 
 In this section we'll restrict our attention to integrals in the interval $$[-1,1]$$ for simplicity<sup>[3](#footnote3)</sup>.
-We'll start by making the rather unusual variable subsitution
+We'll start by making the rather unusual variable substitution
 
 $$x = \tanh\left(\sinh \left({\pi \over 2} t\right)\right)$$
 
@@ -209,7 +209,7 @@ In fact, it looks like we may have even made things significantly worse.
 But let's look at what happens to the integrand $${1 \over \sqrt{1-x}}$$ using this substitution.
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/gifs/output-onlinegiftools.gif"><img src="/assets/tanhsinh-quadrature/gifs/output-onlinegiftools.gif"></a>
+    <a href="/assets/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"><img src="/assets/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"></a>
     <figcaption>Figure 6: The original integrand being transformed after the tanhsinh substitution. The colors are just to keep track of where each segment of the original graph gets mapped to in the end.</figcaption>
 </figure>
 
@@ -246,7 +246,7 @@ $$
 
 <figure class>
     <a href="/assets/tanhsinh-quadrature/images/tanhsinh_riemann.png"><img src="/assets/tanhsinh-quadrature/images/tanhsinh_riemann.png"></a>
-    <figcaption>Figure 8: Left Riemann rectangles of the integrand after the tanhsinh substitution using 20 rectangles between -2 and 2</figcaption>
+    <figcaption>Figure 8: Left Riemann rectangles of the integrand after the tanhsinh substitution using 20 rectangles between -3 and 3.</figcaption>
 </figure>
 
 A simple python implementation of tanhsinh quadrature is shown below: 
@@ -275,7 +275,29 @@ def tanh_sinh_quadrature(f, n=30, h=0.1):
     return np.sum(weights * f(points))
 {% endhighlight %}
 
+The true value is $$2\sqrt{2}\approx 2.828427$$. Using this code we can approximate the integral with $$N=10$$ and $$h=0.3$$ which gives $$2.828425$$, a $$7\times 10^{-5}%$$ error! Compare this with 20 left Riemann rectangles which gives $$2.40183$$, a 15% error.
+
+### Implementation Challenges
+
+The code above is actually numerically unstable and will break when $$n*h$$ gets a bit bigger than 3 (using double precision).
+This is because of the rapid saturation of the tanhsinh substitution and the limits of floating point precision.
+The $$x$$ values become indistinguishable from 1 for arguments just larger than 3.
+This causes $$1/\sqrt{1-x}$$ to divide by zero and enters an infinity into the dot summation.
+
+A more robust implementation of this would find the first value (based on the floating point precision) that becomes identically 1 under the tanhsinh transformation.<sup>[4](#footnote4)</sup>.
+This effectively truncates the infinite summation and allows the user to only specify $$h$$ (since $$a$$ and $$b$$ becomes finite).
+
 ## Conclusion
+
+We've seen that tanhsinh quadrature can be a powerful method for numerically integrating functions with endpoint singularities or rapid changes near the boundaries.
+
+We saw how it can be viewed in two different ways
+
+1. a clever weighting scheme with doubly exponential roll off combined with non-uniformly distributed points with extra points concentrated near the limits of integration.
+2. Riemann rectangles applied to the integral after the substitution $$x=\tanh(\pi/2 \sinh(t))$$
+
+The first corresponds to the view in $$x$$ space and using quadrature. 
+The second corresponds to uniform spacing in $$t$$ space and using Riemann rectangles of equal weight.
 
 ## Footnotes
 
@@ -285,7 +307,15 @@ def tanh_sinh_quadrature(f, n=30, h=0.1):
 
 <a name="footnote3">3</a>: A simple change of variables $$u = a + x (b-a)$$ allows handling arbitrary limits of integration.
 
+<a name="footnote4">4</a>: The easiest way to do this is to find where the complement of $$x$$ achieves the smallest normal floating point number, denoted $$\epsilon$$. Some algebra shows
+
+$$1-x = {2 \over 1+e^{\pi/2 \sinh(t)}}.$$
+
+We then just need to compute $$t_{max} = {1 \over \pi}\text{asinh}(\log\left(2/\epsilon - 1\right))$$.
+For single precision it's about 1.65 and for double it's around 2.31.
+
 ## References
 
 1. [Scipy 1.15.0 release notes](https://docs.scipy.org/doc/scipy/release/1.15.0-notes.html)
-2. [tanhsinh quadrature](https://en.wikipedia.org/wiki/Tanh-sinh_quadrature)
+2. [Wikipedia](https://en.wikipedia.org/wiki/Tanh-sinh_quadrature)
+3. [Original paper](https://ems.press/content/serial-article-files/41766)
