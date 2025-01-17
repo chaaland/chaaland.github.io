@@ -161,6 +161,7 @@ def plot_splash_image():
     plt.tight_layout()
 
     make_cartesian_plane(ax)
+    plt.ylim([-2, 10])
     plt.savefig(IMAGE_DIR / "splash_image.png")
 
 
@@ -319,7 +320,7 @@ def compute_errors():
 
 def main():
     # misc images
-    # plot_splash_image()
+    plot_splash_image()
     # plot_tanh_sinh()
 
     # # work with 1 / x

@@ -208,20 +208,21 @@ def lagrange_interpolate(x: np.ndarray, pts: list[tuple[int, int]]):
 
 ## Special Function Interpolation
 
-Returning to our problem of estimating $$\log(1.35)$$, instead of using a linear interpolation, we can use Lagrange interpolation with a polynomial of degree 5 as shown in Figure 6.
+Returning to our problem of estimating $$\log(1.35)$$, instead of using a linear interpolation, we can use Lagrange interpolation with a polynomial of degree 4 as shown in Figure 6.
 
 <figure class>
     <a href="/assets/lagrange-interpolation/images/logarithm_interpolator.png"><img src="/assets/lagrange-interpolation/images/logarithm_interpolator.png"></a>
-    <figcaption>Figure 6: Quintic Lagrange interpolation of the logarithm</figcaption>
+    <figcaption>Figure 6: Quartic Lagrange interpolation of the logarithm</figcaption>
 </figure>
 
-Using this quintic polynomial, we get an estimate of $$\log(1.35) \approx 0.300117$$.
+Using this quartic polynomial, we get an estimate of $$\log(1.35) \approx 0.300117$$.
 Compared to the true value of $$0.300105$$, the relative error is a miniscule 0.004% (recall our linear interpolation error of 0.72%).
 
 We can plot the relative error for various values of the logarithm as shown in figure 7.
 Of note are
 
-The error is zero at the table values because the polynomial passes through them exactly. However, outside the table's range, the polynomial is no longer constrained by the data, leading to significant extrapolation errors.
+The error is zero at the table values because the polynomial passes through them exactly. 
+However, outside the table's range, the polynomial is no longer constrained by the data, leading to significant extrapolation errors.
 
 <figure class>
     <a href="/assets/lagrange-interpolation/images/logarithm_interpolation_error.png"><img src="/assets/lagrange-interpolation/images/logarithm_interpolation_error.png"></a>

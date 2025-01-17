@@ -2,18 +2,21 @@
 title: "Tanhsinh Quadrature"
 categories:
   - Mathematics
-date:   2025-01-11 14:33:00 +0100
+date:   2025-01-17 14:33:00 +0100
 mathjax: true
 tags:
   - Numerical methods
   - Integration
 toc: true
 # classes: wide
-excerpt: "Tanhsinh quadrature is a powerful numerical integration technique for handling integrals with endpoint singularities, leveraging a clever variable transformation to cluster points where the function changes rapidly."
+excerpt: ""
 header: 
+#   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_filter: 0.2
 ---
+
+Tanhsinh quadrature is a powerful numerical integration technique for handling integrals with endpoint singularities, leveraging a clever variable transformation to cluster points where the function changes rapidly.
 
 ## Motivation
 
