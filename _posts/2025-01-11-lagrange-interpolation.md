@@ -68,7 +68,7 @@ Consider trying to fit a quadratic function through the points shown in Figure 2
 
 The most common way is to parametrize the quadratic as
 
-$$y = a_2 x^2 + a_1 x + a_0$$.
+$$y = a_2 x^2 + a_1 x + a_0.$$
 
 The quadratic must pass through all three points, so we solve for the coefficients by setting up this linear system:
 
