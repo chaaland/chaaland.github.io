@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from aaa import simple_ols
+from aaa import aaa, simple_ols
 from scipy.special import gamma
 
 mpl.use("Agg")
@@ -70,11 +70,10 @@ def plot_ols_gamma(f, degree: int, filename: str):
     xs = np.concatenate([np.linspace(i + 0.001, i + 1, 500, endpoint=False) for i in range(-5, 5)])
     ys = gamma(xs)
 
-    a, b = simple_ols(gamma, xs, m=degree)
-
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
 
+    a, b = simple_ols(gamma, xs, m=degree)
     A = np.vander(xs, degree + 1, increasing=True)
     numerator = A @ a
     denominator = A[:, 1:] @ b
@@ -92,16 +91,25 @@ def plot_ols_gamma(f, degree: int, filename: str):
 
 
 def plot_aaa_gamma(f, degree: int, filename: str):
-    pass
+    xs = np.concatenate([np.linspace(i + 0.001, i + 1, 500, endpoint=False) for i in range(-5, 5)])
+    ys = gamma(xs)
+
+    a, b = simple_ols(gamma, xs, m=degree)
+    aaa(gamma, xs, max_degree=5)
+
+    plt.figure(figsize=(8, 8))
+    plt.plot(xs, ys)
 
 
 def main():
-    plot_gamma()
-    for i in range(1, 4):
-        plot_simple_ols(np.log, degree=i, filename=f"ols_logarithm_degree_{i}")
+    # plot_gamma()
+    # for i in range(1, 4):
+    #     plot_simple_ols(np.log, degree=i, filename=f"ols_logarithm_degree_{i}")
 
-    for i in range(1, 20):
-        plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
+    # for i in range(1, 20):
+    #     plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
+
+    plot_aaa_gamma(gamma, degree=2, filename=f"aaa_gamma_degree_{2:02}")
 
 
 if __name__ == "__main__":
