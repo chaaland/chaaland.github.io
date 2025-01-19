@@ -4,8 +4,6 @@ import imageio
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import tree
-from sklearn.gaussian_process import GaussianProcessRegressor
 
 mpl.use("Agg")
 
@@ -22,11 +20,6 @@ def fn(x_vals):
 
 def remove_spines(ax):
     ax.spines[["right", "top"]].set_visible(False)
-
-
-def vandermonde(x_vals, degree: int = 3):
-    cols = [x_vals.squeeze() ** d for d in range(degree + 1)]
-    return np.stack(cols, axis=1)
 
 
 def rbf_kernel(x1, x2, length_scale: float = 1.0):
@@ -118,36 +111,6 @@ def plot_gpr_1d():
     imageio.mimsave(GIF_DIR / "1d-gpr.gif", [plot_gpr(length_scale) for length_scale in plot_params], fps=5)
 
 
-def plot_regression_example():
-    x_vals = 5 * np.random.rand(15)
-    y_vals = fn(x_vals)
-
-    x_plot = np.linspace(0, 5, 100)
-    y_plot = fn(x_plot)
-
-    A1 = vandermonde(x_vals)
-    theta = np.linalg.lstsq(A1, y_vals, rcond=None)[0]
-    y1 = vandermonde(x_plot) @ theta
-
-    regression_tree = tree.DecisionTreeRegressor(max_depth=1)
-    regression_tree = regression_tree.fit(x_vals[:, np.newaxis], y_vals)
-    y2 = regression_tree.predict(x_plot[:, np.newaxis])
-
-    gpr = GaussianProcessRegressor(random_state=0, n_restarts_optimizer=10).fit(x_vals[:, np.newaxis], y_vals)
-    y3 = gpr.predict(x_plot[:, np.newaxis])
-
-    # plt.figure(figsize=(8,10))
-    plt.scatter(x_vals, y_vals)
-    plt.plot(x_plot, y1)
-    plt.plot(x_plot, y2)
-    plt.plot(x_plot, y3)
-    plt.xlim([0, 5])
-
-    plt.xlabel(r"$x$")
-    plt.ylabel(r"$y$")
-    plt.show()
-
-
 def make_splash_image():
     # Set random seed for reproducibility
     np.random.seed(42)
@@ -200,15 +163,47 @@ def make_splash_image():
     plt.savefig(IMAGE_DIR / "splash_image.png")
 
 
+def save_image(data, filename):
+    fig = plt.figure(figsize=(1, 1))
+    ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    ax.imshow(data)
+    fig.savefig(IMAGE_DIR / filename, dpi=data.shape[0])
+    plt.close(fig)
+
+
+def plot_rbf_kernel(file):
+    x = np.linspace(0, 1, 500)
+
+    d = x[:, None] - x[None, :]
+    image = np.exp(-0.5 * (x[:, None] - x[None, :]) ** 2)
+    save_image(image, file)
+
+
+def plot_matern_kernel(file):
+    x = np.linspace(0, 1, 500)
+
+    d = x[:, None] - x[None, :]
+    image = np.exp(-0.5 * np.abs(d))
+
+    save_image(image, file)
+
+
+def plot_rational_quadratic_kernel(file):
+    x = np.linspace(0, 1, 500)
+    d = x[:, None] - x[None, :]
+    alpha = 0.1
+    image = (1 + 0.5 * d**2 / alpha) ** -alpha
+
+    save_image(image, file)
+
+
 if __name__ == "__main__":
-    # import matplotlib
+    make_splash_image()
 
-    # matplotlib.use("TkAgg")
-    # import imageio
-    # import matplotlib.pyplot as plt
-
+    plot_rbf_kernel("rbf_kernel.png")
+    plot_matern_kernel("matern_kernel.png")
+    plot_rational_quadratic_kernel("rational_quadratic_kernel.png")
     # plot_1d_example()
     # plot_gpr_1d()
-    # plot_regression_example()
-    # plot_3d_example()
-    make_splash_image()
