@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from aaa import aaa, simple_ols
+from interpolate import aaa_iter_, simple_ols
 from scipy.special import gamma
 
 mpl.use("Agg")
@@ -90,15 +90,73 @@ def plot_ols_gamma(f, degree: int, filename: str):
     return a, b
 
 
-def plot_aaa_gamma(f, degree: int, filename: str):
-    xs = np.concatenate([np.linspace(i + 0.001, i + 1, 500, endpoint=False) for i in range(-5, 5)])
+def plot_aaa_log(f, degree: int):
+    xs = np.linspace(0.01, 5, 500, endpoint=False)
+    ys = np.log(xs)
+
+    max_degree = 10
+    tol = 1e-9
+    z = xs
+    M = z.size
+    y = np.log(z)
+
+    support_mask = np.zeros(M, dtype=bool)
+    error = y - np.mean(y)  # (M,)
+
+    threshold = tol * np.linalg.norm(y, ord=np.inf)
+    for m in range(max_degree):
+        max_error_index = np.argmax(np.abs(error)).item()
+        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+
+        plt.figure(figsize=(8, 8))
+        plt.plot(xs, ys)
+        plt.plot(xs, y_hat)
+        plt.scatter(z[support_mask], y[support_mask])
+        plt.xlim([0, 5])
+        plt.ylim([-5, 3])
+        make_cartesian_plane(plt.gca())
+        plt.savefig(IMAGE_DIR / f"aaa_log_degree_{m:02}.png")
+        # print(w)
+
+        max_abs_error = np.linalg.norm(error, ord=np.inf)
+        print(f"[{m=}] {max_abs_error:.6}")
+        if max_abs_error < threshold:
+            break
+
+
+def plot_aaa_gamma(f, degree: int):
+    xs = np.concat([np.linspace(i + 0.01, i + 1, 25, endpoint=False) for i in range(-3, 5)])
     ys = gamma(xs)
 
-    a, b = simple_ols(gamma, xs, m=degree)
-    aaa(gamma, xs, max_degree=5)
+    max_degree = 10
+    tol = 1e-9
+    z = xs
+    M = z.size
+    y = gamma(z)
 
-    plt.figure(figsize=(8, 8))
-    plt.plot(xs, ys)
+    support_mask = np.zeros(M, dtype=bool)
+    error = y - np.mean(y)  # (M,)
+
+    threshold = tol * np.linalg.norm(y, ord=np.inf)
+    for m in range(max_degree):
+        max_error_index = np.argmax(np.abs(error)).item()
+        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+
+        plt.figure(figsize=(8, 8))
+        plt.plot(xs, ys)
+        plt.plot(xs, y_hat)
+        plt.scatter(z[support_mask], y[support_mask])
+        plt.xlim([-3, 5])
+        plt.ylim([-10, 10])
+        make_cartesian_plane(plt.gca())
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"aaa_gamma_degree_{m:02}.png")
+        # print(w)
+
+        max_abs_error = np.linalg.norm(error, ord=np.inf)
+        print(f"[{m=}] {max_abs_error:.6}")
+        if max_abs_error < threshold:
+            break
 
 
 def main():
@@ -109,7 +167,8 @@ def main():
     # for i in range(1, 20):
     #     plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
 
-    plot_aaa_gamma(gamma, degree=2, filename=f"aaa_gamma_degree_{2:02}")
+    # plot_aaa_log(np.log, degree=2)
+    plot_aaa_gamma(gamma, degree=2)
 
 
 if __name__ == "__main__":
