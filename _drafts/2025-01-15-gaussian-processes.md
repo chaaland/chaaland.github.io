@@ -1,12 +1,12 @@
 ---
 title: "Gaussian Process Intuition"
 categories:
-  - Mathematics
+  - Machine Learning
 date:   2025-01-15 10:57:00 +0100
 mathjax: true
 tags:
-  - Gaussian Processes
   - Regression
+  - Interpolation
 toc: true
 # classes: wide
 # excerpt: ""

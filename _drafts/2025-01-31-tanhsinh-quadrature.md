@@ -1,7 +1,7 @@
 ---
 title: "Tanhsinh Quadrature"
 categories:
-  - Mathematics
+  - Calculus
 date:   2025-01-17 14:33:00 +0100
 mathjax: true
 tags:
@@ -252,7 +252,7 @@ $$
     <figcaption>Figure 8: Left Riemann rectangles of the integrand after the tanhsinh substitution using 20 rectangles between -3 and 3.</figcaption>
 </figure>
 
-A simple python implementation of tanhsinh quadrature is shown below: 
+A simple python implementation of tanhsinh quadrature is shown below:
 
 {% highlight python %}
 def tanh_sinh_points(n, h=0.1):
@@ -299,7 +299,7 @@ We saw how it can be viewed in two different ways
 1. a clever weighting scheme with doubly exponential roll off combined with non-uniformly distributed points with extra points concentrated near the limits of integration.
 2. Riemann rectangles applied to the integral after the substitution $$x=\tanh(\pi/2 \sinh(t))$$
 
-The first corresponds to the view in $$x$$ space and using quadrature. 
+The first corresponds to the view in $$x$$ space and using quadrature.
 The second corresponds to uniform spacing in $$t$$ space and using Riemann rectangles of equal weight.
 
 ## Footnotes
