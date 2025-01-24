@@ -60,17 +60,19 @@ def aaa(f: Callable, z: np.ndarray, tol: float = 1e-9, max_degree: int = 100):
         if max_abs_error < threshold:
             break
 
-    z_support = z[support_mask]
-    return w, z_support
+    support_indices = np.arange(M)[support_mask]
+    return w, support_indices
 
 
-def simple_ols(f, z, m) -> tuple[np.ndarray, np.ndarray]:
+def simple_ols(f: Callable, z: np.ndarray, m: int) -> tuple[np.ndarray, np.ndarray]:
     y = f(z)  # (M,)
     A = np.vander(z, m + 1, increasing=True)  # (M, m+1)
 
-    # f(x_k) = a_0 + a_1 * x_k + ... + a_m * x_k**m - b_1 * f(x_k) * x_k - ... - b_M * f(x_k) * x_k ** m
+    # f(x_k) = a_0 + a_1 * x_k + ... + a_m * x_k**m - b_1 * f(x_k) * x_k - ... - b_m * f(x_k) * x_k ** m
     A = np.concat([A, -y[:, None] * A[:, 1:]], axis=1)  # (M, 2*m + 1)
 
     theta, _, _, _ = np.linalg.lstsq(A, y)
 
-    return theta[: m + 1], theta[m + 1 :]
+    a = theta[: m + 1]
+    b = theta[m + 1 :]
+    return a, b

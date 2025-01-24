@@ -29,36 +29,48 @@ def remove_spines(ax):
 
 
 def plot_gamma():
-    xs = np.concatenate([np.linspace(i, i + 1, 500, endpoint=False) for i in range(-5, 5)])
+    xs = np.concatenate([np.linspace(i, i + 1, 500, endpoint=False) for i in range(-3, 3)])
     ys = gamma(xs)
 
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
-    plt.xlim([-5, 5])
+    plt.xlim([-3, 3])
     plt.ylim([-6, 6])
-    plt.title(r"$\Gamma(x)$", fontsize=14)
     make_cartesian_plane(plt.gca())
     plt.tight_layout()
     plt.savefig(IMAGE_DIR / "gamma_function.png")
 
 
-def plot_simple_ols(f, degree: int, filename: str):
-    xs = np.linspace(0.01, 5, 1000)
-    ys = f(xs)
-
-    a, b = simple_ols(f, xs, m=degree)
+def plot_simple_ols(filename: str):
+    xs = np.linspace(-1 + 0.01, 4, 1000)
+    ys = np.log1p(xs)
 
     plt.figure(figsize=(8, 8))
     plt.plot(xs, ys)
 
-    A = np.vander(xs, degree + 1, increasing=True)
-    numerator = A @ a
-    denominator = A[:, 1:] @ b
-    rational = numerator / (1 + denominator)
+    for m in [1, 2]:
+        x_vals = np.linspace(0, 1, 10)
+        a, b = simple_ols(np.log1p, x_vals, m=m)
+        A = np.vander(xs, m + 1, increasing=True)
+        numerator = A @ a
+        denominator = A[:, 1:] @ b
+        rational = numerator / (1 + denominator)
 
-    plt.plot(xs, rational, "--")
-    plt.xlim([0, 5])
-    plt.ylim([-2, 2])
+        plt.plot(xs, rational, "--", label=f"degree={m}", alpha=0.7)
+        print(f"{a=}")
+        print(f"{b=}")
+
+        x_vals = np.linspace(0, 1, 1000)
+        A = np.vander(x_vals, m + 1, increasing=True)
+        numerator = A @ a
+        denominator = A[:, 1:] @ b
+        rational = numerator / (1 + denominator)
+        max_abs_err = np.max(np.abs(rational - np.log1p(x_vals)))
+        print(f"{max_abs_err=:.6f}")
+
+    plt.xlim([-1, 4])
+    plt.ylim([-1, 2])
+    plt.legend(frameon=False)
     make_cartesian_plane(plt.gca())
     plt.tight_layout()
     plt.savefig(IMAGE_DIR / filename)
@@ -86,7 +98,6 @@ def plot_ols_gamma(f, degree: int, filename: str):
     plt.tight_layout()
     plt.savefig(IMAGE_DIR / filename)
 
-    print(a, b)
     return a, b
 
 
@@ -160,15 +171,15 @@ def plot_aaa_gamma(f, degree: int):
 
 
 def main():
-    # plot_gamma()
-    # for i in range(1, 4):
-    #     plot_simple_ols(np.log, degree=i, filename=f"ols_logarithm_degree_{i}")
+    plot_gamma()
+    # plot_simple_ols("ols_logarithm.png")
 
-    # for i in range(1, 20):
-    #     plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
+    for i in range(1, 12):
+        plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
 
+    # TODO caseyh: figure out to inference AAA after it fits
     # plot_aaa_log(np.log, degree=2)
-    plot_aaa_gamma(gamma, degree=2)
+    # plot_aaa_gamma(gamma, degree=2)
 
 
 if __name__ == "__main__":
