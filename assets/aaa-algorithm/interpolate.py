@@ -33,7 +33,7 @@ def aaa_inference(z, z_support, y_support, w):
 
 def aaa_iter_(z: np.ndarray, y: np.ndarray, max_error_index: int, support_mask: np.ndarray):
     if z.size != y.size:
-        raise ValueError("Expected z and y to be the same size, got `{z.size}` and `{y.size}`.")
+        raise ValueError(f"Expected z and y to be the same size, got `{z.size}` and `{y.size}`.")
 
     support_mask[max_error_index] = True
 

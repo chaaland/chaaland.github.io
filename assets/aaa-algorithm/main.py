@@ -176,15 +176,55 @@ def plot_aaa_gamma(f, degree: int):
             break
 
 
-def main():
-    plot_simple_ols("ols_logarithm.png")
-    plot_gamma()
+def make_splash_image():
+    xs = np.linspace(-0.9 * np.pi / 2, 0.9 * np.pi / 2, 25, endpoint=False)
+    ys = np.tan(xs)
 
-    # for i in range(1, 12):
+    max_degree = 4
+    tol = 1e-9
+    z = xs
+    M = z.size
+    y = np.tan(z)
+
+    support_mask = np.zeros(M, dtype=bool)
+    error = y - np.mean(y)  # (M,)
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(xs, ys)
+
+    threshold = tol * np.linalg.norm(y, ord=np.inf)
+    for m in range(max_degree):
+        max_error_index = np.argmax(np.abs(error)).item()
+        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+
+        if m > 0:
+            plt.plot(xs, y_hat, "--")
+
+        max_abs_error = np.linalg.norm(error, ord=np.inf)
+        print(f"[{m=}] {max_abs_error:.6}")
+        if max_abs_error < threshold:
+            break
+
+    plt.scatter(z[support_mask], y[support_mask])
+    plt.xlim([-1, 1])
+    plt.ylim([-2, 2])
+    make_cartesian_plane(plt.gca())
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    plt.savefig(IMAGE_DIR / "splash_image.png")
+
+
+def main():
+    make_splash_image()
+    # plot_simple_ols("ols_logarithm.png")
+    # plot_gamma()
+
+    # for i in [10, 11]:
     #     plot_ols_gamma(gamma, degree=i, filename=f"ols_gamma_degree_{i:02}")
 
     # TODO caseyh: figure out to inference AAA after it fits
-    plot_aaa_log()
+    # plot_aaa_log()
     # plot_aaa_log(np.log, degree=2)
     # plot_aaa_gamma(gamma, degree=2)
 
