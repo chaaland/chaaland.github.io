@@ -11,7 +11,6 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-#   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_filter: 0.2
 ---
