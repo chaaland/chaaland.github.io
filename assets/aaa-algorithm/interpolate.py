@@ -31,11 +31,9 @@ def aaa_inference(z, z_support, y_support, w):
     return rational
 
 
-def aaa_iter_(z: np.ndarray, y: np.ndarray, max_error_index: int, support_mask: np.ndarray):
+def aaa_iter(z: np.ndarray, y: np.ndarray, support_mask: np.ndarray):
     if z.size != y.size:
         raise ValueError(f"Expected z and y to be the same size, got `{z.size}` and `{y.size}`.")
-
-    support_mask[max_error_index] = True
 
     z_support = z[support_mask]
     y_support = y[support_mask]
@@ -65,7 +63,9 @@ def aaa(f: Callable, z: np.ndarray, tol: float = 1e-9, max_degree: int = 100):
     threshold = tol * np.linalg.norm(y, ord=np.inf)
     for m in range(max_degree):
         max_error_index = np.argmax(np.abs(error)).item()
-        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+        support_mask[max_error_index] = True
+        w, y_hat, error = aaa_iter(z, y, support_mask)
+
         max_abs_error = np.linalg.norm(error, ord=np.inf)
         if max_abs_error < threshold:
             break

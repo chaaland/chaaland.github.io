@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from interpolate import aaa_iter_, simple_ols
+from interpolate import aaa_iter, simple_ols
 from scipy.special import gamma
 
 mpl.use("Agg")
@@ -124,7 +124,8 @@ def plot_aaa_log():
 
     for m in [0, 1, 2]:
         max_error_index = np.argmax(np.abs(error)).item()
-        w, _, error = aaa_iter_(z, y, max_error_index, support_mask)
+        support_mask[max_error_index] = True
+        w, _, error = aaa_iter(z, y, support_mask)
         y_hat = aaa_inference(xs, z[support_mask], y[support_mask], w)
 
         if m == 0:
@@ -157,7 +158,8 @@ def plot_aaa_gamma(f, degree: int):
     threshold = tol * np.linalg.norm(y, ord=np.inf)
     for m in range(max_degree):
         max_error_index = np.argmax(np.abs(error)).item()
-        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+        support_mask[max_error_index] = True
+        w, y_hat, error = aaa_iter(z, y, support_mask)
 
         plt.figure(figsize=(8, 8))
         plt.plot(xs, ys)
@@ -195,7 +197,8 @@ def make_splash_image():
     threshold = tol * np.linalg.norm(y, ord=np.inf)
     for m in range(max_degree):
         max_error_index = np.argmax(np.abs(error)).item()
-        w, y_hat, error = aaa_iter_(z, y, max_error_index, support_mask)
+        support_mask[max_error_index] = True
+        w, y_hat, error = aaa_iter(z, y, support_mask)
 
         if m > 0:
             plt.plot(xs, y_hat, "--")
