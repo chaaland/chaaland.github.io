@@ -64,6 +64,28 @@ def plot_integral_with_asymptote():
     plt.savefig(IMAGE_DIR / "shifted_rsqrt.png")
 
 
+def plot_area_under_curve(image_file):
+    def reciprocal(x):
+        return 1 / x
+
+    xs = np.linspace(0.1, 3, 1000, endpoint=False)
+    x_fill = np.linspace(1, 2, 100, endpoint=False)
+    ys = reciprocal(xs)
+
+    y_fill = reciprocal(x_fill)
+    plt.figure(figsize=(8, 8))
+
+    ax = plt.gca()
+    ax.plot(xs, ys)
+    ax.fill_between(x_fill, y_fill, color="lightblue", alpha=0.5, label="Area Under Curve")
+
+    make_cartesian_plane(ax)
+    plt.xlim([0, 3])
+    plt.ylim([0, 1.5])
+    plt.tight_layout()
+    plt.savefig(image_file)
+
+
 def plot_simple_quadrature(f, a=1, b=2, n=10, quad_type=QuadratureMethod.left_riemann):
     # Define the interval and number of subintervals
     xs = np.linspace(0.1, 3, 1000, endpoint=False)
@@ -139,21 +161,15 @@ def plot_splash_image():
     def cubic(x):
         return x**3 - 6 * x**2 + 9 * x + 2
 
-    # Define the range of the plot and the integration limits
     x = np.linspace(-1, 5, 500)  # Full range for the curve
     x_fill = np.linspace(1, 4, 500)  # Range for the area to be filled
 
-    # Compute the y-values for the curve and the filled area
     y = cubic(x)
     y_fill = cubic(x_fill)
 
-    # Create the plot
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Plot the cubic curve
     ax.plot(x, y, label=r"$f(x) = x^3 - 6x^2 + 9x + 2$", color="purple", linewidth=2)
-
-    # Fill the area under the curve
     ax.fill_between(x_fill, y_fill, color="lightblue", alpha=0.5, label="Area Under Curve")
 
     # Add labels, legend, and title
@@ -321,6 +337,7 @@ def compute_errors():
 def main():
     # misc images
     plot_splash_image()
+    plot_area_under_curve(IMAGE_DIR / "auc.png")
     # plot_tanh_sinh()
 
     # # work with 1 / x
