@@ -226,7 +226,7 @@ Have a look again at the integrand before and after the tanhsinh substitution.
 The figure makes it clear that the the asymptote at 1 disappears!
 What's more, the function decays _extremely_ quickly to 0.
 To get a sense of just how fast this function decays to 0, compare with the standard Gaussian $$e^{-x^2}$$ which is  $$1.23\times 10^{-4}$$ at $$x=-3$$.
-Our integrand down to $$9.60\times 10^{-13}$$ at the same value of $$x$$.
+Our integrand is down to $$9.60\times 10^{-13}$$ at the same value of $$x$$.
 Over eight orders of magnitude smaller!
 
 The exceedingly fast rolloff makes accurate numerical integration much easier since $$f(x_k)$$ will quickly go to 0 and contribute nothing to the sum.
@@ -313,8 +313,8 @@ The second corresponds to uniform spacing in $$t$$ space and using Riemann recta
 
 $$1-x = {2 \over 1+e^{\pi/2 \sinh(t)}}.$$
 
-We then just need to compute $$t_{max} = {1 \over \pi}\text{asinh}(\log\left(2/\epsilon - 1\right))$$.
-For single precision it's about 1.65 and for double it's around 2.31.
+We then just need to compute $$t_{max} = \text{asinh}({1 \over \pi}\log\left(2/\epsilon - 1\right))$$.
+For single precision it's about 4.02 and for double it's around 6.11.
 
 ## References
 

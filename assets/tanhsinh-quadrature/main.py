@@ -338,18 +338,18 @@ def main():
     # misc images
     plot_splash_image()
     plot_area_under_curve(IMAGE_DIR / "auc.png")
-    # plot_tanh_sinh()
+    plot_tanh_sinh()
 
-    # # work with 1 / x
-    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.left_riemann)
-    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.right_riemann)
-    # plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.trapezoid)
+    # work with 1 / x
+    plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.left_riemann)
+    plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.right_riemann)
+    plot_simple_quadrature(lambda x: 1 / x, a=1, b=2, quad_type=QuadratureMethod.trapezoid)
 
-    # # work with 1/ sqrt(1-x)
-    # plot_integral_with_asymptote()
-    # plot_tanhsinh_substitution()
-    # plot_sigmoid_substitution()
-    # plot_tanhsinh_quadrature()
+    # work with 1/ sqrt(1-x)
+    plot_integral_with_asymptote()
+    plot_tanhsinh_substitution()
+    plot_sigmoid_substitution()
+    plot_tanhsinh_quadrature()
 
     riemann_approx = riemann_quadrature(shifted_rsqrt, a=-1, b=1, n=20, side="left")
     print(f"{riemann_approx=:.6}")
