@@ -10,7 +10,7 @@ toc: true
 # classes: wide
 excerpt: ""
 # header: 
-#   overlay_image: assets/images/shakespeare-zipf-param-surface-splash.png
+#   overlay_image: assets/lagrange-duality/images/.png
 #   overlay_filter: 0.2
 ---
 
@@ -29,7 +29,7 @@ $$
 This is an example of a _Quadratically Constrained Quadratic Program_ (QCQP) in primal form. This is just the kind of simple problem that can be solved graphically. In fact, let's do that.
 
 <figure class>
-    <a href="/assets/images/lagrange-duality/primal_toy_problem.png"><img src="/assets/images/lagrange-duality/primal_toy_problem.png"></a>
+    <a href="/assets/lagrange-duality/images/primal_toy_problem.png"><img src="/assets/lagrange-duality/images/primal_toy_problem.png"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
@@ -65,7 +65,7 @@ For this reason, we restrict $$\lambda \ge 0$$. In this way, violations of the c
 The following shows a plot for various positive Lagrange multipliers overlayed on the original optimisation problem. It should be clear from figure 2 that Lagrangians (in purple) are hardly great approximations of the hard constraint formulation (in green) for any value of $$\lambda$$.
 
 <figure class>
-    <a href="/assets/images/lagrange-duality/primal_dual_toy_problem.png"><img src="/assets/images/lagrange-duality/primal_dual_toy_problem.png"></a>
+    <a href="/assets/lagrange-duality/images/primal_dual_toy_problem.png"><img src="/assets/lagrange-duality/images/primal_dual_toy_problem.png"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
  
@@ -125,7 +125,7 @@ $$
 Figure 3 shows the contours of the Lagrangian along with the trajectory (in purple) of $$x$$'s minimising the Lagrangian for various values of $$\lambda$$. It is worth mentioning that the $$x$$ which minimises the Lagrangian need not be primal feasible. Choosing $$\lambda=0$$, gives an argmin occuring at $$x=0$$ which is clearly infeasible (see figure 2).
 
 <figure class>
-    <a href="/assets/images/lagrange-duality/lagrange_infimum.png"><img src="/assets/images/lagrange-duality/lagrange_infimum.png"></a>
+    <a href="/assets/lagrange-duality/images/lagrange_infimum.png"><img src="/assets/lagrange-duality/images/lagrange_infimum.png"></a>
     <figcaption>Figure 3</figcaption>
 </figure>
 
@@ -140,7 +140,7 @@ $$
 
 which is plotted in figure 4.
 <figure class>
-    <a href="/assets/images/lagrange-duality/dual_fn.png"><img src="/assets/images/lagrange-duality/dual_fn.png"></a>
+    <a href="/assets/lagrange-duality/images/dual_fn.png"><img src="/assets/lagrange-duality/images/dual_fn.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 
