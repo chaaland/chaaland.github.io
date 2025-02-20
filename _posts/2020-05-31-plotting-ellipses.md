@@ -11,7 +11,7 @@ toc: true
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/plotting-ellipses/ellipses-concentric.png
+  overlay_image: assets/plotting-ellipses/images/ellipses-concentric.png
   overlay_filter: 0.2
 ---
 
@@ -118,7 +118,7 @@ $$y$$ direction. Equivalently, apply the linear transformation $$D^{-1/2}=\mathb
 The steps in the transformation are illustrated in the animation below 
 
 <figure>
-    <a href="/assets/gifs/plotting-ellipses/ellipse-rotation.gif"><img src="/assets/gifs/plotting-ellipses/ellipse-rotation.gif"></a>
+    <a href="/assets/plotting-ellipses/gifs/ellipse-rotation.gif"><img src="/assets/plotting-ellipses/gifs/ellipse-rotation.gif"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 

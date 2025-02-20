@@ -12,7 +12,7 @@ toc_label:
 # classes: wide
 excerpt: ""
 header: 
-  overlay_image: assets/images/3d-plotting-using-non-rectangular-grids/splash-image.png
+  overlay_image: assets/3d-plotting-using-non-rectangular-grids/images/splash-image.png
   overlay_filter: 0.2
 ---
 
@@ -39,8 +39,8 @@ $$
 Plotting this on a rectangular grid we get a 3D plot like the left image in Figure 1. From the definition of the function, we know the graph should be an upward facing paraboloid. Looking at the figure however, it is not obvious that this is what is plotted. What we would like to see is something more like the image on the right. The rest of this post will explain how this right image is generated.
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-paraboloid.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-paraboloid.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/elliptic-paraboloid.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/elliptic-paraboloid.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-paraboloid.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-paraboloid.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/elliptic-paraboloid.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/elliptic-paraboloid.png"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
@@ -76,12 +76,12 @@ $$
 Figure 2 shows how using this polar transform we can get from a rectangular grid in $$(r,\theta)$$ space to a radially symmetric grid in $$(x,y)$$.
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-horizontal.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-horizontal.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-vertical.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-vertical.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-horizontal.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-horizontal.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-vertical.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-vertical.png"></a>
 </figure>
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/circular-grid-radial.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/circular-grid-radial.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/circular-grid-angular.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/circular-grid-angular.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/circular-grid-radial.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/circular-grid-radial.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/circular-grid-angular.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/circular-grid-angular.png"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 
@@ -122,8 +122,8 @@ $$
 This case is very similar to the circularly symmetric case and requires only a small change in the code. Using the same grid as in the previous figure we see the vertical lines are mapped to concentric ellipses
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/centered-ellipse-radial.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/centered-ellipse-radial.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/centered-ellipse-angular.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/centered-ellipse-angular.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/centered-ellipse-radial.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/centered-ellipse-radial.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/centered-ellipse-angular.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/centered-ellipse-angular.png"></a>
     <figcaption>Figure 3</figcaption>
 </figure>
 
@@ -172,8 +172,8 @@ a & 0\\
 $$
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-rotated-radial.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-rotated-radial.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-rotated-angular.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-rotated-angular.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-rotated-radial.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-rotated-radial.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-rotated-angular.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-rotated-angular.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 
@@ -203,8 +203,8 @@ a & 0\\
 $$
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-offset-radial.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-offset-radial.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-offset-angular.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/ellipse-offset-angular.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-offset-radial.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-offset-radial.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-offset-angular.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/ellipse-offset-angular.png"></a>
     <figcaption>Figure 5</figcaption>
 </figure>
 
@@ -243,8 +243,8 @@ def generate_ellipse_grid(
 The two images of the quadratic form from the beginning of this post are reproduced below, this time each with their respective sampling grids.
 
 <figure class="half">
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-paraboloid-w-scatter.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/rectangular-paraboloid-w-scatter.png"></a>
-    <a href="/assets/images/3d-plotting-using-non-rectangular-grids/elliptic-paraboloid-w-scatter.png"><img src="/assets/images/3d-plotting-using-non-rectangular-grids/elliptic-paraboloid-w-scatter.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-paraboloid-w-scatter.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/rectangular-paraboloid-w-scatter.png"></a>
+    <a href="/assets/3d-plotting-using-non-rectangular-grids/images/elliptic-paraboloid-w-scatter.png"><img src="/assets/3d-plotting-using-non-rectangular-grids/images/elliptic-paraboloid-w-scatter.png"></a>
     <figcaption>Figure 6</figcaption>
 </figure>
 
@@ -257,7 +257,7 @@ This distribution will exhibit elliptic symmetry since the exponent is a quadrat
 
 $$\text{sinc}(r) = \frac{\sin(\pi r)}{\pi r} = \frac{\sin\left(\pi\sqrt{x^2+y^2}\right)}{\pi\sqrt{x^2+y^2}}$$
 
-This too exhibits a radial symmetry, lending itself to the circularly symmetric grids described in the post. More often than not, this method of plotting is overkill and all you need is a rough idea of what the surface looks like. Nevertheless, the above technique is a good tool to have available for the situations you do find it necessary
+This too exhibits a radial symmetry, lending itself to the circularly symmetric grids described in the post. More often than not, this method of plotting is overkill and all you need is a rough idea of what the surface looks like. Nevertheless, the above technique is a good tool to have available for the situations you do find it necessary.
 
 # Footnotes
 <a name="footnote1">1</a>: As with any linear transformation, you can derive this matrix by concatenating the result of rotating each of the standard basis vectors.
