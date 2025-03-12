@@ -81,6 +81,8 @@ def plot_angle_schedule():
     plt.ylabel(r"$\theta$ (degrees)")
     plt.ylim([0, 90])
     plt.legend(frameon=False)
+
+    plt.tight_layout()
     plt.savefig(IMAGE_DIR / "angles.png")
 
 
@@ -90,7 +92,7 @@ def plot_cordic_schedule():
     for n_steps in range(12):
         # assume first quadrant
         v = np.array([1, 0])
-        theta_hat = 0.
+        theta_hat = 0.0
 
         plt.figure(figsize=(8, 8))
 
@@ -125,8 +127,102 @@ def plot_cordic_schedule():
         plt.savefig(IMAGE_DIR / f"cordic_{n_steps:02}.png")
 
 
+def plot_hyperbolic_angles():
+    angles = [0, 0.5, 1, 1.5]
+
+    for i, phi in enumerate(angles):
+        t = np.linspace(-5, 5, 100)
+        xs = np.cosh(t)
+        ys = np.sinh(t)
+
+        plt.figure(figsize=(8, 8))
+        plt.xlim([-1, 5])
+        plt.ylim([-3, 3])
+
+        plt.plot(xs, ys, "tab:blue", label=r"$x^2 - y^2 = 1$")
+
+        x_fill = np.linspace(0, np.cosh(phi), 1000, endpoint=False)
+        y_1 = np.sinh(phi) * np.linspace(0, 1, 1000)
+        y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
+
+        plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2, label=f"φ = {phi:.1f}\nArea = {phi / 2:.2f}")
+        plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1)
+        plt.legend(loc="upper right", frameon=False, fontsize=14)
+        make_cartesian_plane(plt.gca())
+
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"hyperbolic_angle_{i:02d}.png")
+
+
+def plot_circle(radius=1):
+    ts = np.linspace(0, 2 * np.pi, 100)
+    plt.plot(radius * np.cos(ts), radius * np.sin(ts), "k", alpha=0.5)
+
+
+def plot_hyperbola(horizontal=True):
+    ts = np.linspace(-5, 5, 100)
+
+    if horizontal:
+        plt.plot(np.cosh(ts), np.sinh(ts), "k", alpha=0.5)
+        plt.plot(-np.cosh(ts), np.sinh(ts), "k", alpha=0.5)
+    else:
+        plt.plot(np.sinh(ts), np.cosh(ts), "k", alpha=0.5)
+        plt.plot(np.sinh(ts), -np.cosh(ts), "k", alpha=0.5)
+
+
+def plot_rotations():
+    thetas = [0, 0.2, 0.4, 0.6, 0.8, 1]
+
+    for k, theta in enumerate(thetas):
+        circular_rot = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        hyperbolic_rot = np.array([[np.cosh(theta), np.sinh(theta)], [np.sinh(theta), np.cosh(theta)]])
+
+        v1 = [1, 0]
+        v2 = [0, 1]
+        v3 = [-1, 0]
+        v4 = [0, -1]
+        points = [v1, v2, v3, v4]
+
+        plt.figure(figsize=(8, 4))
+
+        plt.subplot(121)
+        plt.xlim([-3, 3])
+        plt.ylim([-3, 3])
+        plot_circle(radius=1)
+
+        rotated_points = []
+        for v in points:
+            rotated_points.append(circular_rot @ v)
+
+        for i, p in enumerate(rotated_points):
+            p_next = rotated_points[(i + 1) % 4]
+            plt.plot([p[0], p_next[0]], [p[1], p_next[1]])
+
+        make_cartesian_plane(plt.gca())
+
+        plt.subplot(122)
+        plt.xlim([-3, 3])
+        plt.ylim([-3, 3])
+        plot_hyperbola()
+
+        rotated_points = []
+        for v in points:
+            rotated_points.append(hyperbolic_rot @ v)
+
+        for i, p in enumerate(rotated_points):
+            p_next = rotated_points[(i + 1) % 4]
+            plt.plot([p[0], p_next[0]], [p[1], p_next[1]])
+
+        make_cartesian_plane(plt.gca())
+
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"rotations_{k:03d}.png")
+
+
 if __name__ == "__main__":
-    plot_angle_schedule()
-    plot_gain()
-    compare_gain_sequence()
-    plot_cordic_schedule()
+    # plot_angle_schedule()
+    # plot_gain()
+    # compare_gain_sequence()
+    # plot_cordic_schedule()
+    # plot_hyperbolic_angles()
+    plot_rotations()
