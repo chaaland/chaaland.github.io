@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import matplotlib as mpl
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from cordic import cordic_iter
@@ -96,7 +97,7 @@ def plot_cordic_schedule():
 
         plt.figure(figsize=(8, 8))
 
-        t = np.linspace(0, 2 * np.pi, 100)
+        t = np.linspace(0, np.pi / 2, 100)
         plt.plot(np.cos(t), np.sin(t))
         plt.quiver(
             [0], [0], [np.cos(target_theta)], [np.sin(target_theta)], angles="xy", scale_units="xy", scale=1, color="r"
@@ -127,6 +128,38 @@ def plot_cordic_schedule():
         plt.savefig(IMAGE_DIR / f"cordic_{n_steps:02}.png")
 
 
+def plot_circle(radius=1):
+    ts = np.linspace(0, 2 * np.pi, 100)
+    plt.plot(radius * np.cos(ts), radius * np.sin(ts), "k", alpha=0.5)
+
+
+def plot_circular_angles():
+    angles = [0, 0.5, 1, 1.5]
+
+    for i, phi in enumerate(angles):
+        plt.figure(figsize=(8, 8))
+        plt.xlim([-1.5, 1.5])
+        plt.ylim([-1.5, 1.5])
+        plot_circle()
+        plt.plot(
+            np.cos(np.linspace(0, 2 * np.pi, 1000)), np.sin(np.linspace(0, 2 * np.pi, 1000)), label=r"$x^2 - y^2 = 1$"
+        )
+
+        x_fill = np.linspace(0, 1, 1000, endpoint=False)
+        y_1 = np.tan(phi) * x_fill
+        y_2 = np.sqrt(1 - x_fill**2)
+
+        y_fill = np.minimum(y_1, y_2)
+
+        plt.fill_between(x_fill, y_fill, color="blue", alpha=0.2, label=f"φ = {phi:.1f}, Area = {phi / 2:.2f}")
+        plt.quiver([0], [0], [np.cos(phi)], [np.sin(phi)], angles="xy", scale_units="xy", scale=1)
+        make_cartesian_plane(plt.gca())
+
+        plt.legend(loc="upper right", frameon=False, fontsize=14)
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"circular_angle_{i:02d}.png")
+
+
 def plot_hyperbolic_angles():
     angles = [0, 0.5, 1, 1.5]
 
@@ -146,17 +179,12 @@ def plot_hyperbolic_angles():
         y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
 
         plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2, label=f"φ = {phi:.1f}\nArea = {phi / 2:.2f}")
-        plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1)
+        plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1, zorder=10)
         plt.legend(loc="upper right", frameon=False, fontsize=14)
         make_cartesian_plane(plt.gca())
 
         plt.tight_layout()
         plt.savefig(IMAGE_DIR / f"hyperbolic_angle_{i:02d}.png")
-
-
-def plot_circle(radius=1):
-    ts = np.linspace(0, 2 * np.pi, 100)
-    plt.plot(radius * np.cos(ts), radius * np.sin(ts), "k", alpha=0.5)
 
 
 def plot_hyperbola(horizontal=True):
@@ -170,7 +198,7 @@ def plot_hyperbola(horizontal=True):
         plt.plot(np.sinh(ts), -np.cosh(ts), "k", alpha=0.5)
 
 
-def plot_rotations():
+def plot_box_rotations():
     thetas = [0, 0.2, 0.4, 0.6, 0.8, 1]
 
     for k, theta in enumerate(thetas):
@@ -186,8 +214,8 @@ def plot_rotations():
         plt.figure(figsize=(8, 4))
 
         plt.subplot(121)
-        plt.xlim([-3, 3])
-        plt.ylim([-3, 3])
+        plt.xlim([-2, 2])
+        plt.ylim([-2, 2])
         plot_circle(radius=1)
 
         rotated_points = []
@@ -201,8 +229,8 @@ def plot_rotations():
         make_cartesian_plane(plt.gca())
 
         plt.subplot(122)
-        plt.xlim([-3, 3])
-        plt.ylim([-3, 3])
+        plt.xlim([-2, 2])
+        plt.ylim([-2, 2])
         plot_hyperbola()
 
         rotated_points = []
@@ -219,10 +247,62 @@ def plot_rotations():
         plt.savefig(IMAGE_DIR / f"rotations_{k:03d}.png")
 
 
+def plot_circle_rotations():
+    thetas = [0, 0.2, 0.4, 0.6, 0.8, 1]
+
+    for k, theta in enumerate(thetas):
+        circular_rot = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        hyperbolic_rot = np.array([[np.cosh(theta), np.sinh(theta)], [np.sinh(theta), np.cosh(theta)]])
+
+        plt.figure(figsize=(8, 4))
+        # Normalize x to the range [0, 1] for color mapping
+        norm = mcolors.Normalize(vmin=0, vmax=1)
+
+        # Create a colormap (rainbow)
+        cmap = plt.cm.rainbow
+
+        plt.subplot(121)
+        plt.xlim([-2, 2])
+        plt.ylim([-2, 2])
+
+        rotated_points = [
+            circular_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, 2 * np.pi, 1000)
+        ]
+        n_points = len(rotated_points)
+        colors = cmap(norm(np.linspace(0, 1, n_points)))
+        xs = [x for x, _ in rotated_points]
+        ys = [y for _, y in rotated_points]
+        for i in range(n_points - 1):
+            plt.gca().plot(xs[i : i + 2], ys[i : i + 2], color=colors[i], linewidth=3)
+
+        make_cartesian_plane(plt.gca())
+
+        plt.subplot(122)
+        plt.xlim([-2, 2])
+        plt.ylim([-2, 2])
+        plot_hyperbola()
+
+        rotated_points = [
+            hyperbolic_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, 2 * np.pi, 1000)
+        ]
+
+        xs = [x for x, _ in rotated_points]
+        ys = [y for _, y in rotated_points]
+        for i in range(n_points - 1):
+            plt.gca().plot(xs[i : i + 2], ys[i : i + 2], color=colors[i], linewidth=3)
+
+        make_cartesian_plane(plt.gca())
+
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"circle_rotations_{k:03d}.png")
+
+
 if __name__ == "__main__":
-    # plot_angle_schedule()
-    # plot_gain()
-    # compare_gain_sequence()
-    # plot_cordic_schedule()
-    # plot_hyperbolic_angles()
-    plot_rotations()
+    plot_angle_schedule()
+    plot_gain()
+    compare_gain_sequence()
+    plot_cordic_schedule()
+    plot_hyperbolic_angles()
+    plot_circular_angles()
+    plot_box_rotations()
+    plot_circle_rotations()
