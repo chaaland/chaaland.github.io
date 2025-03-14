@@ -4,7 +4,7 @@ import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from cordic import cordic_iter
+from cordic import cordic_iter, hyperbolic_cordic_iter
 
 IMAGE_DIR = Path("images")
 IMAGE_DIR.mkdir(exist_ok=True, parents=True)
@@ -128,6 +128,54 @@ def plot_cordic_schedule():
         plt.savefig(IMAGE_DIR / f"cordic_{n_steps:02}.png")
 
 
+def plot_hyperbolic_cordic_schedule():
+    target_theta = np.pi / 5
+
+    for n_steps in range(12):
+        # assume first quadrant
+        v = np.array([1, 0])
+        theta_hat = 0.0
+
+        plt.figure(figsize=(8, 8))
+
+        t = np.linspace(0, np.pi / 2, 100)
+        plt.plot(np.cosh(t), np.sinh(t))
+        plt.quiver(
+            [0],
+            [0],
+            [np.cosh(target_theta)],
+            [np.sinh(target_theta)],
+            angles="xy",
+            scale_units="xy",
+            scale=1,
+            color="r",
+        )
+
+        plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7**n_steps)
+
+        for i in range(n_steps):
+            cosh_theta, sinh_theta = v
+            print(f"[{i=}] {theta_hat=:5f}, {target_theta=:.5f}")
+            if theta_hat == target_theta:
+                return cosh_theta, sinh_theta
+
+            ccw = theta_hat < target_theta
+            if ccw:
+                theta_hat += np.atanh(2 ** -(i + 1))
+            else:
+                theta_hat -= np.atanh(2 ** -(i + 1))
+
+            v = hyperbolic_cordic_iter(i, v, ccw, scale=True)
+            plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7 ** (n_steps - 1 - i))
+
+        plt.title(rf"$\hat{{\theta}}$ = {theta_hat:.5f}, $\theta = {target_theta:.5f}$", fontsize=18)
+        make_cartesian_plane(plt.gca())
+        plt.xlim([0, 1.1])
+        plt.ylim([-0.1, 1.1])
+        plt.tight_layout()
+        plt.savefig(IMAGE_DIR / f"hyperbolic_cordic_{n_steps:02}.png")
+
+
 def plot_circle(radius=1):
     ts = np.linspace(0, 2 * np.pi, 100)
     plt.plot(radius * np.cos(ts), radius * np.sin(ts), "k", alpha=0.5)
@@ -142,7 +190,7 @@ def plot_circular_angles():
         plt.ylim([-1.5, 1.5])
         plot_circle()
         plt.plot(
-            np.cos(np.linspace(0, 2 * np.pi, 1000)), np.sin(np.linspace(0, 2 * np.pi, 1000)), label=r"$x^2 - y^2 = 1$"
+            np.cos(np.linspace(0, 2 * np.pi, 1000)), np.sin(np.linspace(0, 2 * np.pi, 1000)), label=r"$x^2 + y^2 = 1$"
         )
 
         x_fill = np.linspace(0, 1, 1000, endpoint=False)
@@ -298,11 +346,13 @@ def plot_circle_rotations():
 
 
 if __name__ == "__main__":
-    plot_angle_schedule()
-    plot_gain()
-    compare_gain_sequence()
-    plot_cordic_schedule()
-    plot_hyperbolic_angles()
-    plot_circular_angles()
-    plot_box_rotations()
-    plot_circle_rotations()
+    # plot_angle_schedule()
+    # plot_gain()
+    # compare_gain_sequence()
+    # plot_hyperbolic_angles()
+    # plot_circular_angles()
+    # plot_box_rotations()
+    # plot_circle_rotations()
+
+    # plot_cordic_schedule()
+    plot_hyperbolic_cordic_schedule()
