@@ -31,16 +31,16 @@ def hyperbolic_cordic_iter(i: int, v: np.ndarray, ccw: bool, scale: bool = False
 
     if ccw:
         sigma = 1
-        x_coord = v_x - sigma * two_factor * v_y
+        x_coord = v_x + sigma * two_factor * v_y
         y_coord = sigma * v_x * two_factor + v_y
     else:
         sigma = -1
-        x_coord = v_x - sigma * two_factor * v_y
+        x_coord = v_x + sigma * two_factor * v_y
         y_coord = sigma * v_x * two_factor + v_y
 
     v_next = np.array([x_coord, y_coord])
     if scale:
-        k = 1 / (1 - 2 ** (-2 * i)) ** 0.5
+        k = 1 / (1 - 2 ** (-2 * (i + 1))) ** 0.5
         return v_next * k
 
     return v_next
@@ -52,7 +52,7 @@ def get_scale_factor(n_iters: int) -> float:
 
 def get_hyperbolic_scale_factor(n_iters: int) -> float:
     # TODO caseyh: start at 1?
-    return np.exp(sum(-0.5 * np.log(1 - 2 ** (-2 * i))) for i in range(n_iters))
+    return np.exp(sum(-0.5 * np.log(1 - 2 ** (-2 * (i + 1)))) for i in range(n_iters))
 
 
 def cordic(theta: float) -> tuple[float, float]:
@@ -95,7 +95,7 @@ def hyperbolic_cordic(theta: float) -> tuple[float, float]:
         else:
             theta_hat -= delta_theta
 
-        v = hyperbolic_cordic_iter(i, v, ccw, scale=False)
+        v = hyperbolic_cordic_iter(i + 1, v, ccw, scale=False)
 
     v *= get_hyperbolic_scale_factor(n_iters)
     return v[0], v[1]
