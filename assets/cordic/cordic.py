@@ -27,7 +27,7 @@ def cordic_iter(i: int, v: np.ndarray, ccw: bool, scale: bool = False):
 
 def hyperbolic_cordic_iter(i: int, v: np.ndarray, ccw: bool, scale: bool = False):
     v_x, v_y = v
-    two_factor = 2**-i  # need to make this into bit shifting...
+    two_factor = 2 ** -(i + 1)  # need to make this into bit shifting...
 
     if ccw:
         sigma = 1
@@ -56,7 +56,8 @@ def get_hyperbolic_scale_factor(n_iters: int) -> float:
 
 
 def cordic(theta: float) -> tuple[float, float]:
-    # assume first quadrant
+    assert 0 <= theta <= np.pi / 2
+
     v = np.array([1, 0])
     theta_hat = 0
     n_iters = 20

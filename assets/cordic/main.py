@@ -37,7 +37,7 @@ def rotation_mat(theta_val: float) -> np.array:
 
 
 def plot_gain():
-    n_steps = 20
+    n_steps = 15
 
     result = []
     total = 0
@@ -52,7 +52,22 @@ def plot_gain():
     plt.ylim([0.6, 0.75])
     plt.axhline(0.6072593500888125, linestyle="--", alpha=0.5)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "K_gain.png")
+    plt.savefig(IMAGE_DIR / "circular_gain.png")
+
+    result = []
+    total = 0
+    for i in range(n_steps):
+        total += np.log(1 / (1 - 2 ** (-2 * (i + 1))) ** 0.5)
+        result.append(np.exp(total))
+
+    plt.figure(figsize=(8, 8))
+    plt.scatter(range(n_steps), result)
+    remove_spines(plt.gca())
+    plt.ylabel(r"$\prod_{i=1}^{N} \frac{1}{\sqrt{1-2^{-2i}}}$")
+    plt.ylim([1, 1.25])
+    plt.axhline(1.20513636, linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(IMAGE_DIR / "hyperbolic_gain.png")
 
 
 def compare_gain_sequence():
@@ -65,8 +80,8 @@ def compare_gain_sequence():
     plt.scatter(xs, y1, label=r"$\log(1+2^{-2k})$", alpha=0.5)
     plt.scatter(xs, y2, label=r"$2^{-2k}$", alpha=0.5)
     plt.tight_layout()
-    plt.legend(frameon=False, fontsize=14)
-    plt.savefig(IMAGE_DIR / "gain_sequence.png")
+    plt.legend(frameon=False, fontsize=16)
+    plt.savefig(IMAGE_DIR / "gain_sequence_circular.png")
 
 
 def plot_angle_schedule():
@@ -80,8 +95,8 @@ def plot_angle_schedule():
     plt.scatter(range(n_angles), [45 / 2**k for k in range(n_angles)], label=r"$2^{-k}$", alpha=0.7)
     remove_spines(plt.gca())
     plt.ylabel(r"$\theta$ (degrees)")
-    plt.ylim([0, 90])
-    plt.legend(frameon=False)
+    plt.ylim([0, 50])
+    plt.legend(frameon=False, fontsize=16)
 
     plt.tight_layout()
     plt.savefig(IMAGE_DIR / "angles.png")
@@ -112,10 +127,11 @@ def plot_cordic_schedule():
                 return cos_theta, sin_theta
 
             ccw = theta_hat < target_theta
+            delta_theta = np.atan(2**-i)
             if ccw:
-                theta_hat += np.atan(2**-i)
+                theta_hat += delta_theta
             else:
-                theta_hat -= np.atan(2**-i)
+                theta_hat -= delta_theta
 
             v = cordic_iter(i, v, ccw, scale=True)
             plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7 ** (n_steps - 1 - i))
@@ -129,16 +145,16 @@ def plot_cordic_schedule():
 
 
 def plot_hyperbolic_cordic_schedule():
-    target_theta = np.pi / 5
+    target_theta = np.pi / 3.5
 
-    for n_steps in range(12):
+    for n_steps in range(8):
         # assume first quadrant
         v = np.array([1, 0])
         theta_hat = 0.0
 
         plt.figure(figsize=(8, 8))
 
-        t = np.linspace(0, np.pi / 2, 100)
+        t = np.linspace(-np.pi / 2, np.pi / 2, 100)
         plt.plot(np.cosh(t), np.sinh(t))
         plt.quiver(
             [0],
@@ -160,20 +176,24 @@ def plot_hyperbolic_cordic_schedule():
                 return cosh_theta, sinh_theta
 
             ccw = theta_hat < target_theta
+            delta_theta = np.atanh(2 ** -(i + 1))
             if ccw:
-                theta_hat += np.atanh(2 ** -(i + 1))
+                theta_hat += delta_theta
             else:
-                theta_hat -= np.atanh(2 ** -(i + 1))
+                theta_hat -= delta_theta
 
             v = hyperbolic_cordic_iter(i, v, ccw, scale=True)
-            plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7 ** (n_steps - 1 - i))
+            plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.5 ** (n_steps - 1 - i))
 
         plt.title(rf"$\hat{{\theta}}$ = {theta_hat:.5f}, $\theta = {target_theta:.5f}$", fontsize=18)
         make_cartesian_plane(plt.gca())
-        plt.xlim([0, 1.1])
-        plt.ylim([-0.1, 1.1])
+        plt.xlim([-1, 3])
+        plt.ylim([-2, 2])
         plt.tight_layout()
         plt.savefig(IMAGE_DIR / f"hyperbolic_cordic_{n_steps:02}.png")
+
+        print(f"{np.exp(target_theta)}")
+        print(f"{np.sum(v)}")
 
 
 def plot_circle(radius=1):
@@ -208,6 +228,34 @@ def plot_circular_angles():
         plt.savefig(IMAGE_DIR / f"circular_angle_{i:02d}.png")
 
 
+def plot_hyperbola_area():
+    phi = 1.0
+
+    plt.figure(figsize=(8, 8))
+    plt.xlim([-1, 3])
+    plt.ylim([-2, 2])
+
+    t = np.linspace(-5, 5, 100)
+    xs = np.cosh(t)
+    ys = np.sinh(t)
+    plt.plot(xs, ys, "tab:blue", label=r"$x^2 - y^2 = 1$")
+
+    make_cartesian_plane(plt.gca())
+
+    x_fill = np.linspace(0, np.cosh(phi), 1000, endpoint=False)
+    y_1 = np.sinh(phi) * np.linspace(0, 1, 1000)
+    y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
+    plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2)
+    plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1, zorder=10)
+
+    x_fill = np.linspace(1, np.cosh(phi), 1000, endpoint=False)
+    y_1 = (x_fill**2 - 1) ** 0.5
+    plt.fill_between(x_fill, y_1, color="red", alpha=0.2)
+    plt.legend(loc="upper right", frameon=False)
+    plt.tight_layout()
+    plt.savefig(IMAGE_DIR / "area_hypberbola.png")
+
+
 def plot_hyperbolic_angles():
     angles = [0, 0.5, 1, 1.5]
 
@@ -233,6 +281,30 @@ def plot_hyperbolic_angles():
 
         plt.tight_layout()
         plt.savefig(IMAGE_DIR / f"hyperbolic_angle_{i:02d}.png")
+
+
+def plot_alternate_hyperbolic_angles():
+    plt.figure(figsize=(8, 8))
+    plt.xlim([-1, 3])
+    plt.ylim([-1, 3])
+
+    xs = np.linspace(0.1, 5, 1000)
+    ys = 1 / xs
+    plt.plot(xs, ys, "tab:blue")
+
+    make_cartesian_plane(plt.gca())
+
+    x_fill = np.linspace(0, 1, 1000, endpoint=False)
+    y_1 = np.linspace(0, 1, 1000)
+    y_2 = np.minimum(np.linspace(0, 4, 1000), 1 / x_fill)
+    plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2)
+    plt.tight_layout()
+
+    plt.savefig(IMAGE_DIR / "alt_hyperbolic_angles.png")
+    # plt.quiver([0], [0], [1], [1], angles="xy", scale_units="xy", scale=1)
+    # plt.quiver([0], [0], [0.5], [2], angles="xy", scale_units="xy", scale=1)
+
+    # plt.legend(loc="upper right", frameon=False)
 
 
 def plot_hyperbola(horizontal=True):
@@ -346,13 +418,15 @@ def plot_circle_rotations():
 
 
 if __name__ == "__main__":
-    # plot_angle_schedule()
-    # plot_gain()
-    # compare_gain_sequence()
-    # plot_hyperbolic_angles()
-    # plot_circular_angles()
-    # plot_box_rotations()
-    # plot_circle_rotations()
+    plot_angle_schedule()
+    plot_gain()
+    compare_gain_sequence()
+    plot_hyperbola_area()
+    plot_hyperbolic_angles()
+    plot_alternate_hyperbolic_angles()
+    plot_circular_angles()
+    plot_box_rotations()
+    plot_circle_rotations()
 
-    # plot_cordic_schedule()
+    plot_cordic_schedule()
     plot_hyperbolic_cordic_schedule()
