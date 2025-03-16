@@ -19,7 +19,7 @@ Tanhsinh quadrature is a powerful numerical integration technique for handling i
 
 ## Motivation
 
-The fundamental theorem of calculus gives us a deceptively simple method of evaluating a definite integral as the difference of its antiderivate at each end point
+The fundamental theorem of calculus gives us a deceptively simple method of evaluating a definite integral as the difference of its antiderivative at each end point
 
 $$\int_a^b f(x) dx = F(b) - F(a).$$
 
