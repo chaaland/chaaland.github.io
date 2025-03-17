@@ -17,11 +17,12 @@ header:
 ---
 
 # The Problem with Rectangular Grids
-The standard way of creating contour and surface plots of a function $$f:\mathbf{R}^2 \rightarrow \mathbf{R}$$ is first creating a rectangular grid of $$(x,y)$$ coordinates (using something like `meshgrid`), then evaluating the function $$f$$ elementwise at each $$(x,y)$$ pair. For the most part this is fine, but there are some situations where it can really distort your view of the surface's true shape. 
+
+The standard way of creating contour and surface plots of a function $$f:\mathbf{R}^2 \rightarrow \mathbf{R}$$ is first creating a rectangular grid of $$(x,y)$$ coordinates (using something like `meshgrid`), then evaluating the function $$f$$ element-wise at each $$(x,y)$$ pair. For the most part this is fine, but there are some situations where it can really distort your view of the surface's true shape.
 
 Consider graphing the following quadratic form
 
-$$f(x,y) = 
+$$f(x,y) =
 \begin{bmatrix}
 x\\
 y
@@ -44,18 +45,18 @@ Plotting this on a rectangular grid we get a 3D plot like the left image in Figu
     <figcaption>Figure 1</figcaption>
 </figure>
 
-
 # Radially Symmetric Meshes
+
 The traditional `meshgrid` function is only suitable for generating rectangular grids. Given a range of $$x$$ values $$(x_1,\ldots,x_n)$$ and $$y$$ values $$(y_1,\ldots,y_m)$$, two matrices $$X\in\mathbf{R}^{m\times n}$$ and $$Y\in \mathbf{R}^{m\times n}$$ are returned:
 $$
-X = 
+X =
 \begin{bmatrix}
 x_1 & x_2 & \ldots & x_n\\
 x_1 & x_2 & \ldots & x_n\\
 \vdots & \vdots & \ddots & \vdots\\
 x_1 & x_2 & \ldots & x_n\\
 \end{bmatrix},\quad
-Y = 
+Y =
 \begin{bmatrix}
 y_1 & y_1 & \ldots & y_1\\
 y_2 & y_2 & \ldots & y_2\\
@@ -94,15 +95,15 @@ def generate_radial_grid(r_low, r_high, n_r, n_theta):
     r = np.linspace(r_low, r_high, n_r)
     theta = np.linspace(0, 2*np.pi, n_theta)
     r_mesh, theta_mesh = np.meshgrid(r, theta)
-    x_mesh = r_mesh * np.cos(theta_mesh)
+    x_mesh = r_mesh* np.cos(theta_mesh)
     y_mesh = r_mesh * np.sin(theta_mesh)
 
     return x_mesh, y_mesh
 {% endhighlight %}
 
-
 # Elliptic Grid Sampling
-Sampling a radially symmetric grid is useful when the function is _isotropic_. However, in the more general case we would like to sample concentric ellipses of points. First, recall the parametric equations for an axis alligned ellipse centered at the origin are
+
+Sampling a radially symmetric grid is useful when the function is _isotropic_. However, in the more general case we would like to sample concentric ellipses of points. First, recall the parametric equations for an axis aligned ellipse centered at the origin are
 
 $$
 \begin{bmatrix}
@@ -134,8 +135,8 @@ def generate_axis_aligned_ellipse_grid(r_low, r_high, n_r, n_theta, a, b):
     r = np.linspace(r_low, r_high, n_r)
     theta = np.linspace(0, 2*np.pi, n_theta)
     r_mesh, theta_mesh = np.meshgrid(r, theta)
-    x_mesh = a * r_mesh * np.cos(theta_mesh)
-    y_mesh = b * r_mesh * np.sin(theta_mesh)
+    x_mesh = a* r_mesh *np.cos(theta_mesh)
+    y_mesh = b* r_mesh * np.sin(theta_mesh)
 
     return x_mesh, y_mesh
 {% endhighlight %}
@@ -143,7 +144,7 @@ def generate_axis_aligned_ellipse_grid(r_low, r_high, n_r, n_theta, a, b):
 To handle the more general case of ellipses with rotated axes we can use a _rotation matrix_<sup>[1](#footnote1)</sup> . The rotation matrix for rotating by an angle $$\alpha$$ anti-clockwise measured from the positive $$x$$-axis is given by
 
 $$
-R_\alpha = 
+R_\alpha =
 \begin{bmatrix}
 \cos(\alpha) & -\sin(\alpha)\\
 \sin(\alpha) & \cos(\alpha)\\
@@ -187,7 +188,7 @@ y(\theta)\\
 \begin{bmatrix}
 x_c\\
 y_c\\
-\end{bmatrix} + 
+\end{bmatrix} +
 \begin{bmatrix}
 \cos(\alpha) & -\sin(\alpha)\\
 \sin(\alpha) & \cos(\alpha)\\
@@ -212,20 +213,20 @@ $$
 import numpy as np
 
 def generate_ellipse_grid(
-  r_low: float, 
-  r_high: float, 
-  n_r: int, 
-  n_theta: int = 50, 
-  a: float = 1, 
-  b: float = 1, 
-  alpha: float = 0, 
+  r_low: float,
+  r_high: float,
+  n_r: int,
+  n_theta: int = 50,
+  a: float = 1,
+  b: float = 1,
+  alpha: float = 0,
   center: np.ndarray = np.zeros((2,1)),
 ):
     r = np.linspace(r_low, r_high, n_r)
     theta = np.linspace(0, 2*np.pi, n_theta)
     r_mesh, theta_mesh = np.meshgrid(r, theta)
-    x_mesh = a * r_mesh * np.cos(theta_mesh).reshape((-1,1))
-    y_mesh = b * r_mesh * np.sin(theta_mesh).reshape((-1,1))
+    x_mesh = a* r_mesh *np.cos(theta_mesh).reshape((-1,1))
+    y_mesh = b* r_mesh * np.sin(theta_mesh).reshape((-1,1))
 
     xy_stacked = np.hstack([x_mesh, y_mesh]).T 
 
@@ -249,6 +250,7 @@ The two images of the quadratic form from the beginning of this post are reprodu
 </figure>
 
 # Conclusion
+
 When plotting a surface or contour it is of course fastest and easiest to use `meshgrid`. But in applications it often happens the function possesses certain symmetries and it can often be more informative to use this knowledge to generate the grid. We saw the case of plotting a quadratic form as one instance of this but many other examples abound. Consider plotting level sets of a two dimensional Gaussian distribution
 
 $$f(x) = \frac{1}{2\pi\sqrt{|\Sigma|}} e^{-0.5(x-\mu)^T\Sigma^{-1}(x-\mu)}$$
@@ -260,4 +262,5 @@ $$\text{sinc}(r) = \frac{\sin(\pi r)}{\pi r} = \frac{\sin\left(\pi\sqrt{x^2+y^2}
 This too exhibits a radial symmetry, lending itself to the circularly symmetric grids described in the post. More often than not, this method of plotting is overkill and all you need is a rough idea of what the surface looks like. Nevertheless, the above technique is a good tool to have available for the situations you do find it necessary.
 
 # Footnotes
+
 <a name="footnote1">1</a>: As with any linear transformation, you can derive this matrix by concatenating the result of rotating each of the standard basis vectors.
