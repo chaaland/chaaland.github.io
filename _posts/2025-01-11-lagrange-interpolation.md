@@ -187,7 +187,6 @@ We can implement this in just a few lines of python
 {% highlight python %}
 import numpy as np
 
-
 def lagrange_interpolate(x: np.ndarray, pts: list[tuple[int, int]]):
     assert all(len(p) == 2 for p in pts)
 
@@ -221,7 +220,7 @@ Compared to the true value of $$0.300105$$, the relative error is a miniscule 0.
 We can plot the relative error for various values of the logarithm as shown in figure 7.
 Of note are
 
-The error is zero at the table values because the polynomial passes through them exactly. 
+The error is zero at the table values because the polynomial passes through them exactly.
 However, outside the table's range, the polynomial is no longer constrained by the data, leading to significant extrapolation errors.
 
 <figure class>

@@ -196,7 +196,7 @@ $$
 \end{align*}
 $$
 
-With this subsitution, our integral becomes the doubly improper, and rather complicated looking,
+With this substitution, our integral becomes the doubly improper, and rather complicated looking,
 
 $$
 \begin{align*}
@@ -229,7 +229,7 @@ To get a sense of just how fast this function decays to 0, compare with the stan
 Our integrand is down to $$9.60\times 10^{-13}$$ at the same value of $$x$$.
 Over eight orders of magnitude smaller!
 
-The exceedingly fast rolloff makes accurate numerical integration much easier since $$f(x_k)$$ will quickly go to 0 and contribute nothing to the sum.
+The exceedingly fast roll-off makes accurate numerical integration much easier since $$f(x_k)$$ will quickly go to 0 and contribute nothing to the sum.
 This allows us to effectively truncate the summation without very negligible error.
 
 We can now use Riemann sums on this transformed integrand to get an accurate approximation of the original integral. In the case of proper integrals, the number of points explicitly defined the width of the rectangle, but when $$a$$ or $$b$$ are infinite, we have to choose them independently.

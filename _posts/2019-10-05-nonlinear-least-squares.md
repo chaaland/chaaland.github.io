@@ -18,12 +18,13 @@ header:
   overlay_filter: 0.2
 ---
 
-Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren't familiar with nonlinear methods. 
+Fitting linear models using least squares is so ubiquitous you would be hard pressed to find a field in which it has not found application. A large part of the reason ordinary least squares (OLS) is so prevalent is that many simply aren't familiar with nonlinear methods.
 
-Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people's familarity with the methods. As we will see, solving NLLS problems is just as simple as OLS.
+Historically, solving nonlinear least squares (NLLS) problems was computationally expensive, but with modern computing power the barrier is less computation and moreso people's familiarity with the methods. As we will see, solving NLLS problems is just as simple as OLS.
 
 ## Zipf's Law
-Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material. Consider modeling the frequency of a word's appearance in a corpus with vocabulary $$V$$, against its rank (by frequency). For this example, I used the text of Shakespeare's _Hamlet_ which was downloaded using python's `requests` library to get the raw html, then parsed using `BeautifulSoup` as shown in the following script 
+
+Before moving on to the main focus of this post, it helps to have a concrete problem to motivate the material. Consider modeling the frequency of a word's appearance in a corpus with vocabulary $$V$$, against its rank (by frequency). For this example, I used the text of Shakespeare's _Hamlet_ which was downloaded using python's `requests` library to get the raw html, then parsed using `BeautifulSoup` as shown in the following script
 
 {% highlight python %}
 import os
@@ -31,7 +32,6 @@ import re
 import requests
 from bs4 import BeautifulSoup
 pjoin = os.path.join
-
 
 def download_text(url: str) -> str:
     res = requests.get(url)
@@ -41,10 +41,9 @@ def download_text(url: str) -> str:
 
     return text
 
-
 if __name__ == "__main__":
     if "hamlet.txt" not in os.listdir(pjoin("..", "txt")):
-        hamlet_url = "http://shakespeare.mit.edu/hamlet/full.html"
+        hamlet_url = "<http://shakespeare.mit.edu/hamlet/full.html>"
         hamlet_text = download_text(hamlet_url)
         output = ""
         for t in hamlet_text:
@@ -55,11 +54,11 @@ if __name__ == "__main__":
             f.writelines(output)
 {% endhighlight %}
 
-With the text downloaded, we can easily write a function that computes the overall frequencies of each word in the text. Python even has a specialised `dict` called `Counter` in the `collections` module that does almost exactly this (except it gives raw counts instead of frequencies). The code below uses a simple regex to remove non alphanumeric characters then splits the string on whitespace. A specialised library for tokenisation like `nltk` would be better suited for anything other than a simple example like this
+With the text downloaded, we can easily write a function that computes the overall frequencies of each word in the text. Python even has a specialised `dict` called `Counter` in the `collections` module that does almost exactly this (except it gives raw counts instead of frequencies). The code below uses a simple regex to remove non alphanumeric characters, then splits the string on whitespace. A specialised library for tokenisation like `nltk` would be better suited for anything other than a simple example like this
 
 {% highlight python %}
 def word_freqs(topk: int = 25):
-    word_counts = Counter() 
+    word_counts = Counter()
     with open(pjoin("..", "txt", "hamlet.txt"), "rt") as f:
         text = " ".join(f.readlines())
         text = re.sub("[^0-9a-zA-Z ]+", "", text)
@@ -73,7 +72,7 @@ def word_freqs(topk: int = 25):
     return words, np.asarray(freqs)
 {% endhighlight %}
 
-Plotting each word's frequency in the text versus its rank as in Figure 1 gives a good indication that a _power law_ of the form 
+Plotting each word's frequency in the text versus its rank as in Figure 1 gives a good indication that a _power law_ of the form
 
 $$ f(r) = Kr^\alpha $$
 
@@ -85,6 +84,7 @@ As it turns out, this observation is not a specific characteristic of _Hamlet_, 
 Though Zipf's Law gives a parametric form for the model, what remains is to find a suitable $$K$$ and $$\alpha$$ that best fit the data.
 
 ## Ordinary Least Squares
+
 If you've taken any linear algebra, you'll most likely recall the ordinary least squares optimisation problem
 
 $$
@@ -94,6 +94,7 @@ $$
 $$
 
 where $$y\in \mathbf{R}^{m}$$ and $$A\in \mathbf{R}^{m\times n}$$ with $$m \ge n$$ and having _linearly independent_ columns. The vector inside the Euclidean norm is often called the _residual vector_ and denoted $$r \in \mathbf{R}^m$$. Ordinary least squares problems are ideal for a number of reasons such as,
+
 - objective is differentiable
 - objective is _convex_<sup>[1](#footnote1)</sup>
 - closed form solution given by the _normal equations_
@@ -116,9 +117,9 @@ This logarithmic transform moves the data from the $$f-r$$ space to the $$\log f
     <figcaption>Figure 1</figcaption>
 </figure>
 
-Since the logarithm makes the model linear with respect to the parameters $$\log K$$ and $$\alpha$$, we can write this OLS problem in standard form with 
-$$A\in \mathbf{R}^{|V| \times 2}$$, 
-$$x\in\mathbf{R}^2$$, 
+Since the logarithm makes the model linear with respect to the parameters $$\log K$$ and $$\alpha$$, we can write this OLS problem in standard form with
+$$A\in \mathbf{R}^{|V| \times 2}$$,
+$$x\in\mathbf{R}^2$$,
 and $$y\in \mathbf{R}^{|V|}$$ as below.
 
 $$
@@ -129,12 +130,12 @@ A =
 \vdots & \vdots\\
 1 & \log r_{|V|}\\
 \end{bmatrix},\,
-x = 
+x =
 \begin{bmatrix}
 \log K\\
 \alpha \\
 \end{bmatrix}, \,
-y = 
+y =
 \begin{bmatrix}
 \log f_1\\
 \log f_2\\
@@ -173,7 +174,8 @@ def fit_zipf_ols(freq_counts_desc: np.ndarray):
 {% endhighlight %}
 
 ## Nonlinear Least Squares
-In the previous section we conventiently avoided solving the actual problem we wanted to solve
+
+In the previous section we conveniently avoided solving the actual problem we wanted to solve
 
 $$\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{|V|} \left(f_i - Kr_i^\alpha\right)^2$$
 
@@ -185,7 +187,7 @@ by noticing we could solve a transformed version of the problem instead. The dif
     <figcaption>Figure 3</figcaption>
 </figure>
 
-One approach to solving this problem is to set the gradient to 0 and find all the solutions of the system of equations. We could then find the globabl optimum by plugging all solutions into the objective to find the one that yields the lowest value. For our particular problem the system of equations is
+One approach to solving this problem is to set the gradient to 0 and find all the solutions of the system of equations. We could then find the global optimum by plugging all solutions into the objective to find the one that yields the lowest value. For our particular problem the system of equations is
 
 $$
 \nabla J =
@@ -196,23 +198,24 @@ $$
 \begin{bmatrix}
 -2\sum_{i=1}^{|V|} (f_i - Kr_i^\alpha)r_i^\alpha\\
 -2\sum_{i=1}^{|V|} (f_i - Kr_i^\alpha)K(\log r_i) r_i^\alpha\\
-\end{bmatrix} = 
+\end{bmatrix} =
 \begin{bmatrix}
 0\\
 0\\
-\end{bmatrix} 
+\end{bmatrix}
 $$
 
-Far from the simplicity of the normal equations, the above is a nonlinear system of equations, which is hardly more tractable than the original optimisation problem. 
+Far from the simplicity of the normal equations, the above is a nonlinear system of equations, which is hardly more tractable than the original optimisation problem.
 
-Rather than trying to solve the nonlinear system of equations resulting from the stationarity condition of the gradient, most solvers intstead implement the _Levenberg-Marquardt_ algorithm. In fact, this is what's implemented by the `least_squares` function inside of `scipy.optimize`. In order to understand this method, it's easiest to first understand a slight simplification of the algorithm.
+Rather than trying to solve the nonlinear system of equations resulting from the stationarity condition of the gradient, most solvers instead implement the _Levenberg-Marquardt_ algorithm. In fact, this is what's implemented by the `least_squares` function inside of `scipy.optimize`. In order to understand this method, it's easiest to first understand a slight simplification of the algorithm.
 
 ### Gauss-Newton Method
+
 Both the OLS and NLLS problem can be written in the form
 
 $$\underset{x}{\text{minimize}}\quad ||r(x)||^2$$
 
-The only difference between the two is that in OLS the residual function $$r: \mathbf{R}^n \rightarrow \mathbf{R}^{m}$$, is a linear function of $$x$$. For the more general case of nonlinear $$r(x)$$, there is the _Gauss-Newton algorithm_ which reduces the problem to a series of OLS problems. 
+The only difference between the two is that in OLS the residual function $$r: \mathbf{R}^n \rightarrow \mathbf{R}^{m}$$, is a linear function of $$x$$. For the more general case of nonlinear $$r(x)$$, there is the _Gauss-Newton algorithm_ which reduces the problem to a series of OLS problems.
 
 The core idea behind the algorithm is simple, since OLS problems are easily solvable, we can first linearise $$r(x)$$ around a point $$a$$
 
@@ -224,8 +227,7 @@ $$x^\star = \underset{x}{\text{arg min}}\, ||r(a) + Dr(a)(x - a)||^2$$
 
 Using the OLS solution as the next point around which to linearise $$r(x)$$, we can iterate this process of linearising and solving an OLS problem until convergence. More concretely the algorithm is as follows
 
-
-1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$   
+1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$
 2) Linearise $$r(x)$$ about $$x^{(k)}$$:
 
 $$
@@ -244,14 +246,13 @@ k &:= k + 1\\
 \end{align*}
 $$
 
-Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Netwon method using the mean squared error of 
-$$\nabla_x ||r(x)||^2$$ 
+Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Netwon method using the mean squared error of
+$$\nabla_x ||r(x)||^2$$
 as part of the convergence criteria. <sup>[3](#footnote3)</sup>
 
 {% highlight python %}
 import numpy as np
 from scipy.optimize import lsq_linear
-
 
 def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
     """Implements the Gauss-Newton method for NLLS
@@ -283,19 +284,20 @@ def gauss_newton(f, x0, J, atol: float = 1e-4, max_iter: int = 100):
     return iterates, np.asarray(costs)
 {% endhighlight %}
 
-As should be clear from the algorithm, Gauss-Newton requires an initial starting point as input. But since our problem is non-convex, different choices of initial start points can lead to different optima or even non-convergence. In Figure 3, there are several runs of the algorithm to fit the Zipf distribution parameters to our Hamlet data using different starting points. 
+As should be clear from the algorithm, Gauss-Newton requires an initial starting point as input. But since our problem is non-convex, different choices of initial start points can lead to different optima or even non-convergence. In Figure 3, there are several runs of the algorithm to fit the Zipf distribution parameters to our Hamlet data using different starting points.
 
 <figure>
     <a href="/assets/nonlinear-least-squares/images/shakespeare-gauss-newton-fit.png"><img src="/assets/nonlinear-least-squares/images/shakespeare-gauss-newton-fit.png"></a>
     <figcaption>Figure 4</figcaption>
 </figure>
 
-Though the start points in the third and fourth quadrant quickly converge to a solution, the two starting in the first and second quadrant zig-zag back and forth, consistently overshooting the minimum. This behaviour leads to more iterations for convergence, a problem oftern exhibited by the Gauss-Newton method. As a result, you won't often see the method used much in practice. Instead an adapted formulation called _Levenberg-Marquardt_ is preferred.
+Though the start points in the third and fourth quadrant quickly converge to a solution, the two starting in the first and second quadrant zig-zag back and forth, consistently overshooting the minimum. This behaviour leads to more iterations for convergence, a problem often exhibited by the Gauss-Newton method. As a result, you won't often see the method used much in practice. Instead an adapted formulation called _Levenberg-Marquardt_ is preferred.
 
 Also note that despite some initial points converging much quicker to the minimum, all 4 points did eventually reach the same minimum at $$(K^\star, \alpha^\star) = (0.044, -0.607)$$
 
 ### Levenberg-Marquardt Algorithm
-Having understood the Gauss-Netwon method, the Levenberg-Marquardt algorithm is a simple extension of this. The additional insight of the algorithm is that the linearisation of the residual might not be a faithful approximation of the original  $$r(x)$$ (at least outside some neighborhood). 
+
+Having understood the Gauss-Netwon method, the Levenberg-Marquardt algorithm is a simple extension of this. The additional insight of the algorithm is that the linearisation of the residual might not be a faithful approximation of the original  $$r(x)$$ (at least outside some neighborhood).
 
 So in addition to the least squares penalty, we'd also like to ensure the next iterate is not too far from the previous one. We encode the knowledge that our linear approximation only holds near our previous iterate with a regularisation penalty. The objective of the Levenberg-Marquardt algorithm is then
 
@@ -305,7 +307,7 @@ The parameter $$\mu\in \mathbf{R}$$ is typically a function of the iteration sin
 
 $$
 \begin{align*}
-J &= 
+J &=
 \left\|
 \begin{bmatrix}
 Ax -b\\
@@ -327,7 +329,7 @@ $$
 
 In this form, it should be clear that the problem is just a least squares in standard form. So the regularised least squares problem is iteself just another least squares. Aside from this change, the Levenberg-Marquardt algorithm is almost exactly the same as Gauss-Newton. The algorithm is as follows
 
-1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$, $$\mu^{(0)}=1$$   
+1) Initialise: $$k := 0$$, $$x^{(0)} := x_{init}$$, $$\mu^{(0)}=1$$
 2) Linearise $$r(x)$$ about $$x^{(k)}$$:
 
 $$
@@ -341,7 +343,7 @@ $$
 
 $$x^{(k+1)} := \underset{x}{\text{arg min}}\ ||Ax - b||^2 + \mu ||x-x^{(k)}||^2$$
 
-4) If 
+4) If
 $$||f(x^{(k+1)})||^2 < ||f(x^{(k)})||^2$$:
 
 $$
@@ -358,7 +360,6 @@ $$\mu^{k+1} := 2\mu^{k}$$
 {% highlight python %}
 import numpy as np
 from scipy.optimize import lsq_linear
-
 
 def levenberg_marquardt(f, x0, J, max_iter: int = 100):
     """Implements the Levenberg-Marquardt algorithm for NLLS
@@ -404,10 +405,11 @@ In Figure 5, the same initial points are used as in the illustration of the Gaus
     <figcaption>Figure 5</figcaption>
 </figure>
 
-Lastly, note that all 4 starting points converged to the same solution despite the non-convexity of the objective. Furthermore, the solution is identical to that of Gauss-Newton. 
+Lastly, note that all 4 starting points converged to the same solution despite the non-convexity of the objective. Furthermore, the solution is identical to that of Gauss-Newton.
 
 ## Model Comparison
-Having solved both the NLLS and the log space OLS problem, we can compare the models that result. The first thing to notice is that the formulations do not yield the same $$(K^\star, \alpha^\star)$$. Indeed the optimisation problems are genuinely different and not just a simple change of variables (which would leave the optimum unaltered). 
+
+Having solved both the NLLS and the log space OLS problem, we can compare the models that result. The first thing to notice is that the formulations do not yield the same $$(K^\star, \alpha^\star)$$. Indeed the optimisation problems are genuinely different and not just a simple change of variables (which would leave the optimum unaltered).
 
 We can plot both resulting models as in Figure 6 and notice the qualitative differences between them. The model resulting from NLLS does a much better job fitting the first few high ranking word frequencies compared to the OLS model which shows very large errors (as measured by the vertical distance between the point and the graph). In the lower ranking words however, the NLLS model shows a consistent overestimation of the word frequency that the OLS model does not. In log space, this pattern is even more pronounced
 
@@ -418,17 +420,19 @@ We can plot both resulting models as in Figure 6 and notice the qualitative diff
 </figure>
 
 ## Conclusion
-Nonlinear models appear all the time in math and physics. Fitting parameters does not always require a reduction to a linear model (though this may be what you want) and we have seen two methods for handling the nonlinear case. In fact, we have seen the algorithms for nonlinear least squares use linear least squares as a subroutine to iteratively refine the solution. 
 
-Lastly, it is worth noting that even though, we have written an implementation of an NLLS solver, in practice, you should always use something like `scipy.optimize`'s `least_squares` method. Thousands of man hours of work have gone into creating efficient solvers, the result of which is many clever optimisations and corner-case handling on top of the vanilla implementation. 
+Nonlinear models appear all the time in math and physics. Fitting parameters does not always require a reduction to a linear model (though this may be what you want) and we have seen two methods for handling the nonlinear case. In fact, we have seen the algorithms for nonlinear least squares use linear least squares as a subroutine to iteratively refine the solution.
+
+Lastly, it is worth noting that even though, we have written an implementation of an NLLS solver, in practice, you should always use something like `scipy.optimize`'s `least_squares` method. Thousands of man hours of work have gone into creating efficient solvers, the result of which is many clever optimisations and corner-case handling on top of the vanilla implementation.
 
 ## Footnotes
+
 <a name="footnote1">1</a>: A function is convex if $$f(\theta x + (1-\theta)y) \le \theta f(x) + (1-\theta)f(y)$$.  
 <a name="footnote2">2</a>: Since the ranks and frequencies are all positive, the logarithm is well defined.  
 <a name="footnote3">3</a>: Since $$\frac{\partial ||r(x)||^2}{\partial x_j} = \sum_{i=1}^m \frac{\partial}{\partial x_j}(r_i^2(x)) =  \sum_{i=1}^m 2r_i(x)\frac{\partial r_i(x)}{\partial x_j}$$ it follows that $$\nabla_x ||r(x)||^2 = (Dr(x))^Tr(x)$$
 
-
 ## References
+
 1. [Zipf's Law Wikipedia](https://en.wikipedia.org/wiki/Zipf%27s_law)
 2. [Gauss-Newton Algorithm Wikipedia](https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm)
 3. [Stanford's Intro to Linear Dynamical Systems](http://ee263.stanford.edu/)
