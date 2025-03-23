@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import math
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ def plot_gain():
     result = []
     total = 0
     for i in range(n_steps):
-        total += np.log(1 / (1 + 2 ** (-2 * i)) ** 0.5)
+        total += math.log(1 / (1 + 2 ** (-2 * i)) ** 0.5)
         result.append(np.exp(total))
 
     plt.figure(figsize=(8, 8))
@@ -57,8 +57,8 @@ def plot_gain():
     result = []
     total = 0
     for i in range(n_steps):
-        total += np.log(1 / (1 - 2 ** (-2 * (i + 1))) ** 0.5)
-        result.append(np.exp(total))
+        total += math.log(1 / (1 - 2 ** (-2 * (i + 1))) ** 0.5)
+        result.append(math.exp(total))
 
     plt.figure(figsize=(8, 8))
     plt.scatter(range(n_steps), result)
@@ -72,7 +72,7 @@ def plot_gain():
 
 def compare_gain_sequence():
     xs = range(10)
-    y1 = [np.log(1 + 2 ** (-2 * k)) for k in xs]
+    y1 = [math.log(1 + 2 ** (-2 * k)) for k in xs]
     y2 = [2 ** (-2 * k) for k in xs]
 
     plt.figure(figsize=(8, 8))
@@ -103,16 +103,16 @@ def plot_angle_schedule():
 
 
 def plot_cordic_schedule():
-    target_theta = np.pi / 5
+    target_theta = math.pi / 5
 
     for n_steps in range(12):
         # assume first quadrant
-        v = np.array([1, 0])
+        v =[1, 0]
         theta_hat = 0.0
 
         plt.figure(figsize=(8, 8))
 
-        t = np.linspace(0, np.pi / 2, 100)
+        t = np.linspace(0, math.pi / 2, 100)
         plt.plot(np.cos(t), np.sin(t))
         plt.quiver(
             [0], [0], [np.cos(target_theta)], [np.sin(target_theta)], angles="xy", scale_units="xy", scale=1, color="r"
@@ -121,13 +121,13 @@ def plot_cordic_schedule():
         plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7**n_steps)
 
         for i in range(n_steps):
-            cos_theta, sin_theta = v
             print(f"[{i=}] {theta_hat=:5f}, {target_theta=:.5f}")
             if theta_hat == target_theta:
+                cos_theta, sin_theta = v
                 return cos_theta, sin_theta
 
             ccw = theta_hat < target_theta
-            delta_theta = np.atan(2**-i)
+            delta_theta = math.atan(2**-i)
             if ccw:
                 theta_hat += delta_theta
             else:
@@ -145,16 +145,16 @@ def plot_cordic_schedule():
 
 
 def plot_hyperbolic_cordic_schedule():
-    target_theta = np.pi / 3.5
+    target_theta = math.pi / 3.5
 
     for n_steps in range(8):
         # assume first quadrant
-        v = np.array([1, 0])
+        v = [1, 0]
         theta_hat = 0.0
 
         plt.figure(figsize=(8, 8))
 
-        t = np.linspace(-np.pi / 2, np.pi / 2, 100)
+        t = np.linspace(-math.pi / 2, math.pi / 2, 100)
         plt.plot(np.cosh(t), np.sinh(t))
         plt.quiver(
             [0],
@@ -170,9 +170,9 @@ def plot_hyperbolic_cordic_schedule():
         plt.quiver([0], [0], v[0], v[1], angles="xy", scale_units="xy", scale=1, alpha=0.7**n_steps)
 
         for i in range(n_steps):
-            cosh_theta, sinh_theta = v
             print(f"[{i=}] {theta_hat=:5f}, {target_theta=:.5f}")
             if theta_hat == target_theta:
+                cosh_theta, sinh_theta = v
                 return cosh_theta, sinh_theta
 
             ccw = theta_hat < target_theta
@@ -197,14 +197,14 @@ def plot_hyperbolic_cordic_schedule():
 
 
 def plot_circle(radius=1):
-    ts = np.linspace(0, 2 * np.pi, 100)
+    ts = np.linspace(0, math.tau, 100)
     plt.plot(radius * np.cos(ts), radius * np.sin(ts), "k", alpha=0.5)
 
 
 def plot_circular_angles():
     angles = [0, 0.5, 1, 1.5]
 
-    for i, phi in enumerate(angles):
+    for i, theta in enumerate(angles):
         plt.figure(figsize=(8, 8))
         plt.xlim([-1.5, 1.5])
         plt.ylim([-1.5, 1.5])
@@ -214,13 +214,15 @@ def plot_circular_angles():
         )
 
         x_fill = np.linspace(0, 1, 1000, endpoint=False)
-        y_1 = np.tan(phi) * x_fill
+        y_1 = np.tan(theta) * x_fill
         y_2 = np.sqrt(1 - x_fill**2)
 
         y_fill = np.minimum(y_1, y_2)
 
-        plt.fill_between(x_fill, y_fill, color="blue", alpha=0.2, label=f"φ = {phi:.1f}, Area = {phi / 2:.2f}")
-        plt.quiver([0], [0], [np.cos(phi)], [np.sin(phi)], angles="xy", scale_units="xy", scale=1)
+        plt.fill_between(
+            x_fill, y_fill, color="blue", alpha=0.2, label=rf"$\theta$ = {theta:.1f}, Area = {theta / 2:.2f}"
+        )
+        plt.quiver([0], [0], [np.cos(theta)], [np.sin(theta)], angles="xy", scale_units="xy", scale=1)
         make_cartesian_plane(plt.gca())
 
         plt.legend(loc="upper right", frameon=False, fontsize=14)
@@ -229,7 +231,7 @@ def plot_circular_angles():
 
 
 def plot_hyperbola_area():
-    phi = 1.0
+    theta = 1.0
 
     plt.figure(figsize=(8, 8))
     plt.xlim([-1, 3])
@@ -242,24 +244,24 @@ def plot_hyperbola_area():
 
     make_cartesian_plane(plt.gca())
 
-    x_fill = np.linspace(0, np.cosh(phi), 1000, endpoint=False)
-    y_1 = np.sinh(phi) * np.linspace(0, 1, 1000)
+    x_fill = np.linspace(0, np.cosh(theta), 1000, endpoint=False)
+    y_1 = np.sinh(theta) * np.linspace(0, 1, 1000)
     y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
     plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2)
-    plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1, zorder=10)
+    plt.quiver([0], [0], [np.cosh(theta)], [np.sinh(theta)], angles="xy", scale_units="xy", scale=1, zorder=10)
 
-    x_fill = np.linspace(1, np.cosh(phi), 1000, endpoint=False)
+    x_fill = np.linspace(1, np.cosh(theta), 1000, endpoint=False)
     y_1 = (x_fill**2 - 1) ** 0.5
     plt.fill_between(x_fill, y_1, color="red", alpha=0.2)
     plt.legend(loc="upper right", frameon=False)
     plt.tight_layout()
-    plt.savefig(IMAGE_DIR / "area_hypberbola.png")
+    plt.savefig(IMAGE_DIR / "area_hyperbola.png")
 
 
 def plot_hyperbolic_angles():
     angles = [0, 0.5, 1, 1.5]
 
-    for i, phi in enumerate(angles):
+    for i, theta in enumerate(angles):
         t = np.linspace(-5, 5, 100)
         xs = np.cosh(t)
         ys = np.sinh(t)
@@ -270,12 +272,14 @@ def plot_hyperbolic_angles():
 
         plt.plot(xs, ys, "tab:blue", label=r"$x^2 - y^2 = 1$")
 
-        x_fill = np.linspace(0, np.cosh(phi), 1000, endpoint=False)
-        y_1 = np.sinh(phi) * np.linspace(0, 1, 1000)
+        x_fill = np.linspace(0, np.cosh(theta), 1000, endpoint=False)
+        y_1 = np.sinh(theta) * np.linspace(0, 1, 1000)
         y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
 
-        plt.fill_between(x_fill, y_1, y_2, color="blue", alpha=0.2, label=f"φ = {phi:.1f}\nArea = {phi / 2:.2f}")
-        plt.quiver([0], [0], [np.cosh(phi)], [np.sinh(phi)], angles="xy", scale_units="xy", scale=1, zorder=10)
+        plt.fill_between(
+            x_fill, y_1, y_2, color="blue", alpha=0.2, label=rf"$\theta$ = {theta:.1f}\nArea = {theta / 2:.2f}"
+        )
+        plt.quiver([0], [0], [np.cosh(theta)], [np.sinh(theta)], angles="xy", scale_units="xy", scale=1, zorder=10)
         plt.legend(loc="upper right", frameon=False, fontsize=14)
         make_cartesian_plane(plt.gca())
 
@@ -386,7 +390,7 @@ def plot_circle_rotations():
         plt.ylim([-2, 2])
 
         rotated_points = [
-            circular_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, 2 * np.pi, 1000)
+            circular_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, math.tau, 1000)
         ]
         n_points = len(rotated_points)
         colors = cmap(norm(np.linspace(0, 1, n_points)))
@@ -403,7 +407,7 @@ def plot_circle_rotations():
         plot_hyperbola()
 
         rotated_points = [
-            hyperbolic_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, 2 * np.pi, 1000)
+            hyperbolic_rot @ np.array([np.cos(elem), np.sin(elem)]) for elem in np.linspace(0, math.tau, 1000)
         ]
 
         xs = [x for x, _ in rotated_points]
