@@ -87,7 +87,7 @@ def compare_gain_sequence():
 def plot_angle_schedule():
     n_angles = 7
     xs = [2**-i for i in range(n_angles)]
-    theta = [np.rad2deg(np.atan(elem)) for elem in xs]
+    theta = [np.rad2deg(math.atan(elem)) for elem in xs]
 
     print(theta)
     plt.figure(figsize=(8, 8))
@@ -277,7 +277,7 @@ def plot_hyperbolic_angles():
         y_2 = [0 if elem < 1 else np.sinh(np.acosh(elem)) for elem in x_fill]
 
         plt.fill_between(
-            x_fill, y_1, y_2, color="blue", alpha=0.2, label=rf"$\theta$ = {theta:.1f}\nArea = {theta / 2:.2f}"
+            x_fill, y_1, y_2, color="blue", alpha=0.2, label=rf"$\theta$ = {theta:.1f}" + f"\nArea = {theta / 2:.2f}"
         )
         plt.quiver([0], [0], [np.cosh(theta)], [np.sinh(theta)], angles="xy", scale_units="xy", scale=1, zorder=10)
         plt.legend(loc="upper right", frameon=False, fontsize=14)
