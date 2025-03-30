@@ -1,5 +1,6 @@
-from pathlib import Path
 import math
+from pathlib import Path
+
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -107,7 +108,7 @@ def plot_cordic_schedule():
 
     for n_steps in range(12):
         # assume first quadrant
-        v =[1, 0]
+        v = [1, 0]
         theta_hat = 0.0
 
         plt.figure(figsize=(8, 8))
@@ -421,6 +422,20 @@ def plot_circle_rotations():
         plt.savefig(IMAGE_DIR / f"circle_rotations_{k:03d}.png")
 
 
+def make_splash_image():
+    ts = np.linspace(0, 6 * math.pi, 1000)
+    ys_1 = np.cos(ts)
+    ys_2 = np.sin(ts)
+
+    plt.figure(figsize=(8, 8))
+    plt.plot(ts, ys_1)
+    plt.plot(ts, ys_2)
+    make_cartesian_plane(plt.gca())
+    plt.grid(True, which="both")
+    plt.ylim([-5, 5])
+    plt.savefig(IMAGE_DIR / "splash_image.png")
+
+
 if __name__ == "__main__":
     plot_angle_schedule()
     plot_gain()
@@ -434,3 +449,4 @@ if __name__ == "__main__":
 
     plot_cordic_schedule()
     plot_hyperbolic_cordic_schedule()
+    make_splash_image()
