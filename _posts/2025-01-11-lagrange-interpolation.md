@@ -6,7 +6,7 @@ date:   2025-01-11 14:33:00 +0100
 mathjax: true
 tags:
   - Numerical methods
-  - Regression
+  - Interpolation
 toc: true
 # classes: wide
 excerpt: ""
