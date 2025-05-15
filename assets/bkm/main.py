@@ -163,18 +163,32 @@ def plot_log_pi_bkm():
     remove_spines(plt.gca())
 
     plt.tight_layout()
-    remove_spines(plt.gca())
     plt.savefig(IMAGE_DIR / "log_pi.png")
 
 
+def make_splash_image():
+    plt.figure(figsize=(8, 4))
+    xs = np.linspace(-1, 1, 1000)
+
+    for a in [0.5, 1, 1.5]:
+        plt.plot(xs, 1+np.exp(a * xs))
+
+    make_cartesian_plane(plt.gca())
+    plt.grid(True, which="both")
+    plt.xlim([-1, 1])
+    plt.tight_layout()
+    plt.savefig(IMAGE_DIR / "splash_image.png")
+
+
 def main():
-    plot_convergent_product()
-    plot_bkm_vs_log()
-    plot_bkm_vs_exp()
-    plot_bkm_artifacts()
-    plot_bkm_exp_artifacts()
-    # plot_approx_fraction()
-    plot_log_pi_bkm()
+    make_splash_image()
+    # plot_convergent_product()
+    # plot_bkm_vs_log()
+    # plot_bkm_vs_exp()
+    # plot_bkm_artifacts()
+    # plot_bkm_exp_artifacts()
+    # # plot_approx_fraction()
+    # plot_log_pi_bkm()
 
 
 if __name__ == "__main__":
