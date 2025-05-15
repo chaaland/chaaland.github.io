@@ -34,13 +34,14 @@ def log_alt(x: float, n_iters: int = 30) -> float:
 
 
 def exp(x: float, n_iters: int = 30) -> float:
-    log_x = 0
-    exp_approx = 1
+    # y = e^x
+    log_y = 0
+    y_hat = 1
 
     for k in range(n_iters):
-        tmp = log_x + LOGARITHM_LOOKUP[k]
+        tmp = log_y + LOGARITHM_LOOKUP[k]
         if tmp < x:
-            log_x = tmp
-            exp_approx = exp_approx + exp_approx / 2**k  # x * (1 + 2**-k)
+            log_y = tmp
+            y_hat = y_hat + y_hat / 2**k  # x * (1 + 2**-k)
 
-    return exp_approx
+    return y_hat
