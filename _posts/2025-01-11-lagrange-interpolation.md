@@ -1,7 +1,7 @@
 ---
 title: "Lagrange Interpolation"
 categories:
-  - Mathematics
+  - Algorithms
 date:   2025-01-11 14:33:00 +0100
 mathjax: true
 tags:
