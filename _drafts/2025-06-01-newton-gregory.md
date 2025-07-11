@@ -12,7 +12,7 @@ toc: true
 excerpt: ""
 header: 
   overlay_image: assets/newton-gregory/images/splash_image.png
-  overlay_filter: 0.2
+  overlay_filter: 0.6
 ---
 
 This post explores the Newton-Gregory interpolation method, an efficient algorithm for polynomial interpolation that's particularly useful when dealing with equally-spaced data points.
@@ -357,6 +357,17 @@ $$
 Continuing with the higher order terms, we would see that in the limit as $$h$$ approaches 0, the Newton-Gregory formula becomes exactly the Taylor polynomial.
 
 Though Taylor polynomials use derivatives and Newton-Gregory uses finite differences, in the limit as the spacing tends to 0, differences become derivatives!
+
+Figure 1 shows how the Newton-Gregory polynomial approaches the third order Taylor approximation of the logarithm as $$h$$ decreases towards 0.
+<figure class="half">
+    <a href="/assets/newton-gregory/images/taylor_1.png"><img src="/assets/newton-gregory/images/taylor_1.png"></a>
+    <a href="/assets/newton-gregory/images/taylor_2.png"><img src="/assets/newton-gregory/images/taylor_2.png"></a>
+</figure>
+<figure class="half">
+    <a href="/assets/newton-gregory/images/taylor_3.png"><img src="/assets/newton-gregory/images/taylor_3.png"></a>
+    <a href="/assets/newton-gregory/images/taylor_4.png"><img src="/assets/newton-gregory/images/taylor_4.png"></a>
+    <figcaption>Figure 1: As h decrease, the Newton-Gregory polynomial becomes the cubic Taylor approximation.</figcaption>
+</figure>
 
 ## Conclusion
 
