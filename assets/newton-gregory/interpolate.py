@@ -25,9 +25,39 @@ def create_matrix(n: int, h: int) -> np.ndarray:
     return A
 
 
+def compute_newton_gregory_coeffs(ys: np.ndarray, h: float) -> np.ndarray:
+    """Compute the coefficients of the interpolating Newton-Gregory polynomial.
+
+    Args:
+        ys (np.ndarray): y-values to interpolate
+        h (float): spacing of x-values
+
+    Returns:
+        np.ndarray: coefficients of the Newton-Gregory interpolating polynomial
+    """
+    n = len(ys)
+    coeffs = np.empty_like(ys)
+
+    for k in range(n):
+        coeffs[k] = bwd_diff(ys, k, order=k) / (math.factorial(k) * h**k)
+
+    return coeffs
+
+
 def newton_gregory(x: np.ndarray, x_0: float, ys: np.ndarray, h: float) -> np.ndarray:
+    """Perform Newton-Gregory interpolation.
+
+    Args:
+        x (np.ndarray): array to evaluate the interpolated polynomial at
+        x_0 (float): initial x-value
+        ys (np.ndarray): y-values to interpolate
+        h (float): spacing of x-values
+
+    Returns:
+        np.ndarray: polynomial values at x
+    """
     poly_order = len(ys) - 1
-    u = (x - x_0) / h
+    u = (x - x_0) / h  # normalised distance
 
     coeff = 1
     result = np.zeros_like(x)
