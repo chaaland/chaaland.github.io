@@ -2,7 +2,7 @@
 title: "Newton-Gregory Interpolation"
 categories:
   - Mathematics
-date:   2025-06-01 12:30:00 +0100
+date:   2025-07-12 12:30:00 +0100
 mathjax: true
 tags:
   - Numerical methods
