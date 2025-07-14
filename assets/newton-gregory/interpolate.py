@@ -63,6 +63,6 @@ def newton_gregory(x: np.ndarray, x_0: float, ys: np.ndarray, h: float) -> np.nd
     result = np.zeros_like(x)
     for k in range(poly_order + 1):
         result += coeff * bwd_diff(ys, k, order=k)
-        coeff *= (u - k) / (k + 1)
+        coeff *= (u - k) / (k + 1)  # u(u-1)...(u-k)/(k+1)!
 
     return result

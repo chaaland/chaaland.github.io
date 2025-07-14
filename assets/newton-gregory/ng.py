@@ -16,17 +16,25 @@ def _():
 
 
 @app.cell
-def _():
-    def make_cartesian_plane(ax):
-        ax.spines["top"].set_color("none")
-        ax.spines["bottom"].set_position("zero")
-        ax.spines["left"].set_position("zero")
-        ax.spines["right"].set_color("none")
+def _(mo):
+    mo.md(r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$""")
+    return
+
+
+app._unparsable_cell(
+    r"""
+    ![](newton-gregory/public/Screenshot 2025-07-12 at 00.13.11.png)def make_cartesian_plane(ax):
+        ax.spines[\"top\"].set_color(\"none\")
+        ax.spines[\"bottom\"].set_position(\"zero\")
+        ax.spines[\"left\"].set_position(\"zero\")
+        ax.spines[\"right\"].set_color(\"none\")
 
 
     def remove_spines(ax):
-        ax.spines[["right", "top"]].set_visible(False)
-    return (make_cartesian_plane,)
+        ax.spines[[\"right\", \"top\"]].set_visible(False)
+    """,
+    name="_"
+)
 
 
 @app.cell
