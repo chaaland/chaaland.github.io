@@ -17,24 +17,24 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md(r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$""")
+    mo.md(
+        r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$"""
+    )
     return
 
 
-app._unparsable_cell(
-    r"""
-    ![](newton-gregory/public/Screenshot 2025-07-12 at 00.13.11.png)def make_cartesian_plane(ax):
-        ax.spines[\"top\"].set_color(\"none\")
-        ax.spines[\"bottom\"].set_position(\"zero\")
-        ax.spines[\"left\"].set_position(\"zero\")
-        ax.spines[\"right\"].set_color(\"none\")
+@app.cell
+def _():
+    def make_cartesian_plane(ax):
+        ax.spines["top"].set_color("none")
+        ax.spines["bottom"].set_position("zero")
+        ax.spines["left"].set_position("zero")
+        ax.spines["right"].set_color("none")
 
 
     def remove_spines(ax):
-        ax.spines[[\"right\", \"top\"]].set_visible(False)
-    """,
-    name="_"
-)
+        ax.spines[["right", "top"]].set_visible(False)
+    return (make_cartesian_plane,)
 
 
 @app.cell
@@ -75,7 +75,7 @@ def _(
     y_pts,
     ys,
 ):
-    coeffs = compute_newton_gregory_coeffs(y_pts[:n_points_slider.value], h)
+    coeffs = compute_newton_gregory_coeffs(y_pts[: n_points_slider.value], h)
     result = np.zeros_like(ys)
 
     polynomial_label = []
@@ -83,10 +83,10 @@ def _(
         val = np.ones_like(xs)
         if a == 0:
             continue
-        
+
         monomial_label = [f"{a:.4f}"]
         for ell in range(k):
-            val *= (xs - x_pts[ell])
+            val *= xs - x_pts[ell]
             if x_pts[ell] == 0:
                 monomial_label.append("x")
             else:
@@ -101,10 +101,10 @@ def _(
     poly_str = poly_str.replace("+-", "-")
 
     plt.plot(xs, result, "--", label=poly_str, linewidth=2)
-    plt.scatter(x_pts[:n_points_slider.value], y_pts[:n_points_slider.value], alpha=0.5)
+    plt.scatter(x_pts[: n_points_slider.value], y_pts[: n_points_slider.value], alpha=0.5)
     plt.legend(loc="lower right", frameon=False)
     make_cartesian_plane(plt.gca())
-    plt.ylim([-2., 2])
+    plt.ylim([-2.0, 2])
 
     fig = plt.gcf()
     return (fig,)
@@ -119,17 +119,35 @@ def _(fig, mo, n_points_slider):
 @app.cell
 def _(mo):
     slider = mo.ui.slider(0.01, 0.5, 0.01)
-    return (slider,)
+    n_pts_slider = mo.ui.slider(2, 5, 1)
+    return n_pts_slider, slider
 
 
 @app.cell
-def _(make_cartesian_plane, newton_gregory, np, plt, slider, x_0, xs, ys):
-    _x_pts = x_0 + slider.value * np.arange(4)  # np.array([1, 1.5, 2, 2.5])
+def _(
+    make_cartesian_plane,
+    n_pts_slider,
+    newton_gregory,
+    np,
+    plt,
+    slider,
+    x_0,
+    xs,
+    ys,
+):
+    _x_pts = x_0 + slider.value * np.arange(n_pts_slider.value)  # np.array([1, 1.5, 2, 2.5])
     _y_pts = np.log1p(_x_pts)
 
-    plt.figure(figsize=(6,6))
+    plt.figure(figsize=(6, 6))
     plt.plot(xs, ys, label=r"$\log(x)$", linewidth=2)
-    plt.plot(xs, xs - xs**2 / 2 + xs**3 / 3, label=f"Taylor Polynomial degree {len(_y_pts)-1}", linewidth=2)
+
+    _taylor_approx = np.zeros_like(xs)
+    a_i = -1
+    for i in range(1, n_pts_slider.value):
+        a_i *= -xs
+        _taylor_approx += a_i / i
+
+    plt.plot(xs, _taylor_approx, label=f"Taylor Approx degree {len(_y_pts) - 1}", linewidth=2)
 
     _result = newton_gregory(xs, x_0=x_0, ys=_y_pts, h=slider.value)
 
@@ -138,16 +156,59 @@ def _(make_cartesian_plane, newton_gregory, np, plt, slider, x_0, xs, ys):
     plt.ylim([-2.5, 1.5])
     make_cartesian_plane(plt.gca())
 
-    plt.legend(frameon=False)
+    plt.legend(frameon=False, loc="lower right")
 
     taylor_fig = plt.gcf()
     return (taylor_fig,)
 
 
 @app.cell
-def _(mo, slider, taylor_fig):
-    mo.hstack([taylor_fig, mo.md(f"h: {slider}")])
+def _(mo, n_pts_slider, slider, taylor_fig):
+    mo.hstack([taylor_fig, mo.vstack([mo.md(f"h: {slider}"), mo.md(f"N: {n_pts_slider}")])])
+    return
 
+
+@app.cell
+def _(mo):
+    n_pts_slider_2 = mo.ui.slider(2, 6, 1)
+    return (n_pts_slider_2,)
+
+
+@app.cell
+def _(
+    compute_newton_gregory_coeffs,
+    h,
+    make_cartesian_plane,
+    mo,
+    n_pts_slider_2,
+    np,
+    plt,
+    x_0,
+    y_pts,
+):
+    _h = 0.1
+    _x_pts = x_0 + _h * np.arange(n_pts_slider_2.value)
+    _y_pts = np.log1p(_x_pts)
+
+    A = np.vander(_x_pts, N=n_pts_slider_2.value, increasing=True)
+    vander_coeffs = np.linalg.solve(A, _y_pts)
+
+    ng_coeffs = compute_newton_gregory_coeffs(y_pts[: n_pts_slider_2.value], h)
+
+    make_cartesian_plane(plt.gca())
+    plt.scatter(np.arange(n_pts_slider_2.value), vander_coeffs, label="Vandermonde")
+    plt.scatter(np.arange(n_pts_slider_2.value), ng_coeffs, label="Newton-Gregory")
+    plt.xlim([0, 6])
+    plt.ylim([-1, 1])
+
+    plt.legend()
+
+    mo.hstack([plt.gcf(), mo.md(f"N={n_pts_slider_2}")])
+    return
+
+
+@app.cell
+def _():
     return
 
 

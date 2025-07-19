@@ -44,6 +44,17 @@ def compute_newton_gregory_coeffs(ys: np.ndarray, h: float) -> np.ndarray:
     return coeffs
 
 
+def compute_lagrange_coeffs(x_points: np.ndarray, y_points: np.ndarray):
+    coeffs = np.empty_like(x_points)
+    for i, _ in enumerate(x_points):
+        x_i = x_points[i]
+        y_i = y_points[i]
+        denom = np.prod([(x_i - x_j) for j, x_j in enumerate(x_points) if j != i])
+        coeffs[i] = y_i / denom
+
+    return coeffs
+
+
 def newton_gregory(x: np.ndarray, x_0: float, ys: np.ndarray, h: float) -> np.ndarray:
     """Perform Newton-Gregory interpolation.
 
