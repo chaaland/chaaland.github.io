@@ -23,26 +23,30 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
     assert len(y) == len(set(y))
 
     n = x.size
+    rank_x = np.empty_like(x, dtype=int)
+    rank_x[np.argsort(x)] = np.arange(1, n + 1)
 
-    rank_x = np.argsort(x)
-    rank_y = np.argsort(y)
+    rank_y = np.empty_like(y, dtype=int)
+    rank_y[np.argsort(y)] = np.arange(1, n + 1)
+    d = rank_x - rank_y
+    d_sq = d * d
 
-    d_sq = ((rank_x - rank_y) ** 2).sum()
-
-    corr = 1 - d_sq / (n * (n**2 - 1) / 6)
+    corr = 1 - d_sq.sum() / (n * (n**2 - 1) / 6)
 
     return corr
 
 
-def chaterjees_xi(x: np.ndarray, y: np.ndarray) -> float:
+def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
     assert len(x) == len(set(x))
     assert len(y) == len(set(y))
 
     n = x.size
-    rank_x = np.argsort(x)
+    y_ordered_by_x = y[np.argsort(x)]
 
-    y_sorted = y[rank_x]
+    ranks = np.empty_like(x, dtype=int)
+    ranks[np.argsort(y_ordered_by_x)] = np.arange(1, n + 1)
+    abs_rank_diffs = np.abs(np.diff(ranks))
 
-    xi_corr = 1 - np.abs(y_sorted[:-1] - y_sorted[1:]).sum() / ((n**2 - 1) / 3)
+    xi_corr = 1 - abs_rank_diffs.sum() / ((n**2 - 1) / 3)
 
     return xi_corr
