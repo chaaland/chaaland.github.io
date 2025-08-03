@@ -13,8 +13,8 @@ def _():
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from corr import pearson_corr, spearman_corr
-    return mo, mpl, np, pearson_corr, plt, spearman_corr
+    from corr import pearson_corr, spearman_corr, chatterjee_corr
+    return chatterjee_corr, mo, mpl, np, pearson_corr, plt, spearman_corr
 
 
 @app.cell
@@ -75,6 +75,7 @@ def _(generate_correlated_data, make_cartesian_plane, mo, plt):
         plt.subplot(2, 2, _i + 1)
         plt.title(rf"$\rho$={rho}", loc="left")
         plt.scatter(_x, _y, alpha=0.5)
+        plt.grid(alpha=0.4)
         plt.xlim([-2.5, 2.5])
         plt.ylim([-2.5, 2.5])
         make_cartesian_plane(plt.gca())
@@ -93,13 +94,14 @@ def _(mo):
 
 @app.cell
 def _(mo, np, pearson_corr, plt, remove_spines):
-    plt.figure(figsize=(9, 3))
+    plt.figure(figsize=(12, 4))
 
     plt.subplot(131)
     _xs = np.linspace(-1, 1, 20)
     _ys = _xs**2
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
     _rho = pearson_corr(_xs, _ys)
     plt.title(rf"$\rho$={_rho:.2f}")
 
@@ -108,6 +110,8 @@ def _(mo, np, pearson_corr, plt, remove_spines):
     _ys = 1 / (1 + np.exp(-5 * _xs))
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
 
     _rho = pearson_corr(_xs, _ys)
     plt.title(rf"$\rho$={_rho:.2f}")
@@ -117,6 +121,8 @@ def _(mo, np, pearson_corr, plt, remove_spines):
     _ys = np.sin(_xs)
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
 
     _rho = pearson_corr(_xs, _ys)
     plt.title(rf"$\rho$={_rho:.2f}")
@@ -142,6 +148,8 @@ def _(generate_correlated_data, make_cartesian_plane, mo, plt, spearman_corr):
         _tau = spearman_corr(_x, _y)
         plt.title(rf"$\rho={_rho}/\tau$={_tau:.2f}", loc="left")
         plt.scatter(_x, _y, alpha=0.5)
+        plt.grid(alpha=0.4)
+
         plt.xlim([-2.5, 2.5])
         plt.ylim([-2.5, 2.5])
         make_cartesian_plane(plt.gca())
@@ -153,13 +161,14 @@ def _(generate_correlated_data, make_cartesian_plane, mo, plt, spearman_corr):
 
 @app.cell
 def _(mo, np, plt, remove_spines, spearman_corr):
-    plt.figure(figsize=(9, 3))
+    plt.figure(figsize=(12, 4))
 
     plt.subplot(131)
     _xs = np.linspace(-1, 1 - 0.001, 20)
     _ys = _xs**2
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
     _tau = spearman_corr(_xs, _ys)
     plt.title(rf"$\tau$={_tau:.2f}")
 
@@ -168,6 +177,7 @@ def _(mo, np, plt, remove_spines, spearman_corr):
     _ys = 1 / (1 + np.exp(-5 * _xs))
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
     _tau = spearman_corr(_xs, _ys)
     plt.title(rf"$\tau$={_tau:.2f}")
 
@@ -176,6 +186,7 @@ def _(mo, np, plt, remove_spines, spearman_corr):
     _ys = np.sin(_xs)
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
     _tau = spearman_corr(_xs, _ys)
     plt.title(rf"$\tau$={_tau:.2f}")
 
@@ -186,83 +197,81 @@ def _(mo, np, plt, remove_spines, spearman_corr):
 
 
 @app.cell
-def _(IMAGE_DIR, np, plt, remove_spines):
-    def get_linear_data():
-        np.random.seed(42)
-
-        m = 3
-        b = 2
-        n = 20
-
-        x = 2 * np.sort(np.random.rand(n)) - 1
-        y = m * x + b
-
-        return x, y
-
-
-    def get_monotonic_data():
-        np.random.seed(42)
-
-        a = 3
-        b = 2
-        n = 40
-
-        x = 5 * np.sort(np.random.rand(n))
-        y = a * np.tanh(x - 1.5) + b
-
-        return x, y
-
-
-    def get_periodic_data():
-        np.random.seed(42)
-
-        a = 1.5
-        b = 2
-        omega = 1.5
-        n = 50
-
-        x = 8 * np.sort(np.random.rand(n))
-        y = a * np.cos(omega * x) + b
-
-        return x, y
-
-
-    def plot_linear_data():
-        x, y = get_linear_data()
-        plt.figure(figsize=(8, 8))
-        plt.scatter(x, y)
-        remove_spines(plt.gca())
-
-        plt.grid(alpha=0.4)
-        plt.tight_layout()
-        plt.savefig(IMAGE_DIR / "linear.png")
-
-
-    def plot_monotonic_data():
-        x, y = get_monotonic_data()
-
-        plt.figure(figsize=(8, 8))
-        plt.scatter(x, y)
-        remove_spines(plt.gca())
-        plt.grid(alpha=0.4)
-        plt.tight_layout()
-        plt.savefig(IMAGE_DIR / "tanh.png")
-
-
-    def plot_periodic_data():
-        x, y = get_periodic_data()
-        plt.figure(figsize=(8, 8))
-        plt.scatter(x, y)
-        remove_spines(plt.gca())
-
-        plt.grid(alpha=0.4)
-        plt.tight_layout()
-        plt.savefig(IMAGE_DIR / "cosine.png")
+def _(mo):
+    mo.md(r"""# Chatterjee's Correlation""")
     return
 
 
 @app.cell
-def _():
+def _(
+    chatterjee_corr,
+    generate_correlated_data,
+    make_cartesian_plane,
+    mo,
+    plt,
+    spearman_corr,
+):
+    plt.figure(figsize=(6, 6))
+
+    from scipy.stats import chatterjeexi
+
+    for _i, _rho in enumerate([0.25, 0.5, 0.75, 0.95]):
+        _x, _y = generate_correlated_data(n_samples=50, correlation=_rho)
+
+        plt.subplot(2, 2, _i + 1)
+        _tau = spearman_corr(_x, _y)
+        _xi = chatterjee_corr(_x, _y)
+
+        plt.title(rf"$\rho={_rho}/\tau={_tau:.2f}/\xi={_xi:.2f}$", loc="left")
+        plt.scatter(_x, _y, alpha=0.5)
+        plt.grid(alpha=0.4)
+
+        plt.xlim([-2.5, 2.5])
+        plt.ylim([-2.5, 2.5])
+        make_cartesian_plane(plt.gca())
+
+    plt.tight_layout()
+    mo.mpl.interactive(plt.gcf())
+    return
+
+
+@app.cell
+def _(chatterjee_corr, mo, np, plt, remove_spines):
+    plt.figure(figsize=(12, 4))
+
+    plt.subplot(131)
+    _xs = np.linspace(-1, 1 - 0.001, 20)
+    _ys = _xs**2
+    plt.scatter(_xs, _ys)
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
+    _xi = chatterjee_corr(_xs, _ys)
+    plt.title(rf"$\xi$={_xi:.2f}")
+
+    plt.subplot(132)
+    _xs = np.random.randn(20)
+    _ys = 1 / (1 + np.exp(-5 * _xs))
+    plt.scatter(_xs, _ys)
+    plt.grid(alpha=0.4)
+
+    remove_spines(plt.gca())
+    _xi = chatterjee_corr(_xs, _ys)
+    plt.title(rf"$\xi$={_xi:.2f}")
+
+    plt.subplot(133)
+    _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, 30)
+    _ys = np.sin(_xs)
+    plt.scatter(_xs, _ys)
+    plt.grid(alpha=0.4)
+
+    remove_spines(plt.gca())
+    _xi = chatterjee_corr(_xs, _ys)
+    plt.title(rf"$\xi$={_xi:.2f}")
+
+    plt.tight_layout()
+
+    mo.mpl.interactive(plt.gcf())
     return
 
 
