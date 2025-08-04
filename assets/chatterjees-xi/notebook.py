@@ -86,9 +86,43 @@ def _(generate_correlated_data, make_cartesian_plane, mo, plt):
 
 
 @app.cell
-def _(mo):
-    rho_slider = mo.ui.slider(-3, 3, 0.01)
-    intercept_slider = mo.ui.slider(-1, 1, 0.1)
+def _(mo, np, pearson_corr, plt, remove_spines):
+    plt.figure(figsize=(6, 6))
+
+    _xs = np.linspace(-1, 1, 20)
+    _ys = 1 / (1 + np.exp(-20 * _xs))
+    plt.scatter(_xs, _ys)
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
+    _rho = pearson_corr(_xs, _ys)
+    plt.title(rf"$\rho$={_rho:.2f}")
+    plt.tight_layout()
+
+    mo.mpl.interactive(plt.gcf())
+    return
+
+
+@app.cell
+def _(mo, np, pearson_corr, plt, remove_spines):
+    plt.figure(figsize=(6, 6))
+
+    _xs = np.random.rand(20)
+    _ys = 2 * _xs + 0.5
+
+    _xs = np.array(_xs.tolist() + [0.5])
+    _ys = np.array(_ys.tolist() + [10])
+
+    print(_xs.size, _ys.size)
+    plt.scatter(_xs, _ys)
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
+    _rho = pearson_corr(_xs, _ys)
+    plt.title(rf"$\rho$={_rho:.2f}")
+    plt.tight_layout()
+
+    mo.mpl.interactive(plt.gcf())
     return
 
 
@@ -161,38 +195,53 @@ def _(generate_correlated_data, make_cartesian_plane, mo, plt, spearman_corr):
 
 @app.cell
 def _(mo, np, plt, remove_spines, spearman_corr):
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(6, 6))
 
-    plt.subplot(131)
-    _xs = np.linspace(-1, 1 - 0.001, 20)
-    _ys = _xs**2
+    _xs = np.array(np.random.rand(20).tolist())
+    _ys = 2 * _xs + 0.5
+
+    _xs = np.array(_xs.tolist() + [0.5])
+    _ys = np.array(_ys.tolist() + [10])
+
+    print(_xs.size, _ys.size)
     plt.scatter(_xs, _ys)
     remove_spines(plt.gca())
     plt.grid(alpha=0.4)
+
+    print(_xs)
     _tau = spearman_corr(_xs, _ys)
     plt.title(rf"$\tau$={_tau:.2f}")
-
-    plt.subplot(132)
-    _xs = np.random.randn(20)
-    _ys = 1 / (1 + np.exp(-5 * _xs))
-    plt.scatter(_xs, _ys)
-    remove_spines(plt.gca())
-    plt.grid(alpha=0.4)
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
-
-    plt.subplot(133)
-    _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, 30)
-    _ys = np.sin(_xs)
-    plt.scatter(_xs, _ys)
-    remove_spines(plt.gca())
-    plt.grid(alpha=0.4)
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
-
     plt.tight_layout()
 
     mo.mpl.interactive(plt.gcf())
+    return
+
+
+@app.cell
+def _(mo, np, plt, remove_spines, spearman_corr):
+    plt.figure(figsize=(6, 6))
+
+    _xs = np.linspace(-1, 1, 20)
+    _ys = 1 / (1 + np.exp(-20 * _xs))
+    plt.scatter(_xs, _ys)
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+
+    _tau = spearman_corr(_xs, _ys)
+    plt.title(rf"$\tau$={_tau:.2f}")
+    plt.tight_layout()
+
+    mo.mpl.interactive(plt.gcf())
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _():
     return
 
 

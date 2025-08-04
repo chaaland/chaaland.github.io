@@ -28,10 +28,10 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
 
     rank_y = np.empty_like(y, dtype=int)
     rank_y[np.argsort(y)] = np.arange(1, n + 1)
-    d = rank_x - rank_y
-    d_sq = d * d
+    rank_diff = rank_x - rank_y
+    sq_rank_diff = rank_diff * rank_diff
 
-    corr = 1 - d_sq.sum() / (n * (n**2 - 1) / 6)
+    corr = 1 - sq_rank_diff.sum() / (n * (n**2 - 1) / 6)
 
     return corr
 
