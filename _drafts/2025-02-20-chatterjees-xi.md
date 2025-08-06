@@ -20,14 +20,13 @@ In everyday parlance, we often use the words correlation, association, and relat
 When we say "lack of exercise is correlated with bad health outcomes", we mean something like, "there is a relationship between not exercising and having poor health".
 
 In mathematics, the notion of correlation is more precise.
-In this post, we'll see a few different ways correlation is expressed mathematically and how they match or clash with our intuitions.
+In this post, we'll see a few different ways correlation is expressed mathematically and how they match or clash with our everyday use of the word.
 We'll conclude with a recently developed measure of correlation published in 2019.
 
 ## Pearson's Correlation Coefficient
 
-When most people talk about "correlation", they're usually thinking of Pearson's correlation coefficient.
-Pearson's correlation measures the _linear_ relationship between two variables $$x, y\in \mathbf{R}^N$$.
-It is defined as
+When most people talk about "correlation" in a numerical discipline, they're usually talking about Pearson's correlation coefficient.
+Pearson's correlation measures the _linear_ relationship between two variables $$x, y\in \mathbf{R}^N$$ and is defined as
 
 $$ \rho = \mathbf{corr}(x, y) = {\mathbf{cov}(x, y) \over \sqrt{\mathbf{var}(x) \mathbf{var}(y)}}.$$
 
@@ -73,16 +72,18 @@ As the correlation approaches 1, you can see the data begin to lie on a line wit
 </figure>
 
 It is important to emphasise that Pearson's correlation only measures the _linear_ relationship between two vectors.
-Figure 2 shows points following a simple sigmoid pattern.
-Despite there being a simple functional relationship between $$x$$ and $$y$$, the correlation is only 0.9.
+
+Figure 2 shows points following a sigmoid pattern without any noise.
+Despite a simple functional relationship existing between $$x$$ and $$y$$, the correlation is only 0.9.
 
 <figure class>
     <a href="/assets/chatterjees-xi/images/pearson_sigmoid.png"><img src="/assets/chatterjees-xi/images/pearson_sigmoid.png"></a>
     <figcaption>Figure 2: Points with a sigmoidal relationship. </figcaption>
 </figure>
 
-In addition to being unable to capture simple non-linear relationships, Pearson's correlation also suffers in the presence outliers.
-Figure 3 shows points with a simple linear relationship with the presence of a single outlier point
+In addition to being unable to capture simple non-linear relationships, Pearson's correlation also suffers in the presence of outliers.
+
+Figure 3 shows points with a linear relationship with the presence of a single outlier point.
 
 <figure class>
     <a href="/assets/chatterjees-xi/images/pearson_outlier.png"><img src="/assets/chatterjees-xi/images/pearson_outlier.png"></a>
@@ -94,20 +95,16 @@ Is there a notion of correlation that can capture more complicated relationships
 
 ## Spearman's Correlation
 
-Spearman's correlation addresses these issues with Pearon's correlation.
-Rather than measure the _linear_ relationship between $$x$$ and $$y$$, it tries to measure the _monotonicity_ of the variables.<sup>[1](#footnote1)</sup>
-
+Spearman's correlation addresses these limitations with Pearson's correlation.
 Spearman's correlation is defined as
 
 $$\tau = \mathbf{corr}(\mathbf{rank}(x),\, \mathbf{rank}(y)).$$
 
-Rather than work with the data values directly, Spearman's applies Pearson's formula to the _ranks_ of the data which has the added benefit of being robust to outliers.
+Spearman’s correlation applies Pearson’s formula to the _ranks_ of the data instead of the raw values, which makes it naturally robust to outliers.
 
 When there are no ties, Spearman's correlation simplifies to
 
 $$ \tau = 1 - \frac{6\sum_{i=1}^N \left(\mathbf{rank}(x_i) - \mathbf{rank}(y_i)\right)^2}{N(N^2-1)}$$
-
-This makes it clear that when the ordering of $$x$$ and $$y$$ is the same (i.e. there's a monotonic relationship) that Spearman's correlation is 1.
 
 Python code for computing Spearman's correlation with unique data is given below
 
@@ -139,38 +136,37 @@ Figure 4 shows how Pearson and Spearman compare on data from the same distributi
     <figcaption>Figure 4: Though Pearson and Spearman correlations yield different numbers, they are similar.</figcaption>
 </figure>
 
-Computing Spearman's on the sigmoid data gives $$\tau =1$$.
+If we now turn to the sigmoid data from Figure 2, computing Spearman's gives $$\tau =1$$.
 Perfect correlation!
 This is because $$\mathbf{rank}(x_i) = \mathbf{rank}(y_i)$$.
-In fact, this will be the case for any monotonic function
+In fact, this will be the case for any monotonic function so Spearman's can better capture non-linear relationships in data such as square roots, logarithms, or exponentials.
 
-Figure 5, reproduces the same outlier dataset from Figure 3 and this time the
+As already mentioned, Spearman's is also naturally robust to outliers in the data.
+Figure 5 reproduces the same outlier dataset from Figure 3, this time showing Spearman's correlation.
+
 <figure class>
     <a href="/assets/chatterjees-xi/images/spearman_outlier.png"><img src="/assets/chatterjees-xi/images/spearman_outlier.png"></a>
-    <figcaption>Figure 6: Though Pearson and Spearman correlations yield different numbers, they are similar.</figcaption>
+    <figcaption>Figure 5: Spearman's correlation is 0.93 even in the presence of a large outlier.</figcaption>
 </figure>
+
+With $$\tau=0.93$$, it is clear Spearman's correlation is significantly less impacted by the outlier than Pearson's ($$\rho = 0.25$$) and is still able to detect the strong relationship between the variables.
+This is because the correlation calculation doesn't depend on the actual values themselves, only the ranks.
+
+Figure 6 shows Spearman's correlation on noiseless quadratic and sinusoidal data.
 
 <figure class>
     <a href="/assets/chatterjees-xi/images/nonlinear_spearman_corrs.png"><img src="/assets/chatterjees-xi/images/nonlinear_spearman_corrs.png"></a>
-    <figcaption>Figure 3: Spearman's correlation is low on both the quadratic and sine (as it was with Pearson's) but the sigmoid is exactly 1 because it is a monotone function. </figcaption>
+    <figcaption>Figure 6: Spearman's correlation is low on both the quadratic and sine. </figcaption>
 </figure>
 
-Like Pearson's correlation, Spearman's is basically 0 for the quadratic.
-On the sigmoid, however, we get identically 1 even though the points do not have the linear relationship required by Pearson to achieve a correlation of 1.
- how the Spearman correlation is exactly 1 in the case of the sigmoid function, but still fails to capture the fact that in both the quadratic and sine cases, $$y$$ is a noiseless function of $$x$$.
+Even though there is a simple relationship between $$x$$ and $$y$$, Spearman's correlation is low.
+From the definition, we see that in order for Spearman's to be close to 1, each $$x_i$$ needs to be paired comparably ranked $$y_i$$. That is, small $$x_i$$ paired with small $$y_i$$ and large $$x_i$$ paired with large $$y_i$$.
 
-Based on the formula, we can see that when large $$x_i$$ implies large $$y_i$$ (as measured by their ranks in the dataset), Spearman's correlation will be close to 1.
 In the quadratic case, this does **not** hold.
 For example $$x=-0.9$$ and $$x=1$$ both produce similarly ranked $$y$$ values (i.e. 0.81 and 1) yet the ranks of the $$x$$ values are far apart.
 
 Similarly, for the sine wave, both $$x=-2\pi$$ and $$x=2\pi$$ yield the same $$y$$-value of 1.
 Here, $$x=-2\pi$$ is assigned the lowest rank while its corresponding $$y$$-value has its highest rank.
-This leads to a large squared difference and as a result, a low value of the correlation $$\tau$$.
-
-Spearman's correlation is able to capture non-linear relationships, but how does it compare on the original data shown in Figure 1?
-Figure 4 is sampled from the same distribution as Figure 1, but now includes the Spearman correlation as well
-
-We can see from the figure that even when the data is nearly linear (as in the bottom right), the Spearman correlation indicates there is almost no monotonic relationship between these variables.
 
 What if we want to capture more than just monotonic relationships?
 What if we want to measure how likely it is that $$y$$ is a noiseless function of $$x$$?
@@ -179,14 +175,49 @@ Surprisingly, there is a very simple correlation coefficient that does exactly t
 
 ## Chatterjee's Correlation
 
-Chatterjee's Xi coefficient is defined by taking the data and first ordering them by their $$x$$-values (assuming they are unique).
-The correlation is then given by
+Chatterjee's Xi coefficient is defined by taking the data and first ordering them by their $$x$$-values (assuming they are unique) then computing the value
 
-$$\xi = 1 - {3\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over N^2-1},$$
+$$\xi = 1 - {3\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over N^2-1}.$$
 
-where again, the $$y$$-values are assumed to be in increasing order of their corresponding $$x$$-values.
+Let's apply this formula to the dataset below to understand how the coefficient is computed.
 
-The following Python implements this formula in the case of unique $$x$$-values.
+| x        | y          |
+| -------- | ---------  |
+| 3.14     | 0          |
+| 2.36     | 0.70       |  
+| 0.79     | 0.71       |
+| 3.93     | -0.71      |
+| 1.57     | 1.0        |
+
+We first order the data by the $$x$$-values
+
+| x        | y          |
+| -------- | ---------  |
+| 0.79     | 0.71       |
+| 1.57     | 1.0        |
+| 2.36     | 0.70       |  
+| 3.14     | 0          |
+| 3.93     | -0.71      |
+
+Then we compute the ranks of the $$y$$-values
+
+| x        | y          | rank(y) |
+| -------- | ---------  | ------- |
+| 0.79     | 0.71       | 4       |
+| 1.57     | 1.0        | 5       |
+| 2.36     | 0.70       | 3       |
+| 3.14     | 0          | 2       |
+| 3.93     | -0.71      | 1       |
+
+We then compute the sum of the absolute differences in the ranks
+
+$$d = |5 - 4| + |3 - 5| + |2 - 3| + |1 - 2| = 5.$$
+
+Plugging this into the formula, we get
+
+$$\xi = 1 - {3 \cdot 5 \over 5^2 -1} = 0.375$$
+
+The following Python code implements this formula in the case of unique $$x$$-values.
 
 {% highlight python %}
 def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
@@ -209,8 +240,9 @@ def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
 {% endhighlight %}
 
 Similar to Spearman's, the values used to compute Chatterjee's correlation are rank based.
+However, rather than computing the differences in the ranks of $$x$$ and $$y$$, Chatterjee's correlation computes the differences between the ranks of only the $$y$$-values.
 
-The major difference between Spearman's and Chatterjee's correlation coefficient is that  Spearman's relies on differences between the ranks of $$x$$ and $$y$$, while Chatterjee's relies only on differences between the ranks of $$y$$.
+By first ordering the data
 
 ## Footnotes
 
