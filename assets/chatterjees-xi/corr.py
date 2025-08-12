@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def compute_rank(x):
+    n = len(x)
+    rank_x = np.empty_like(x, dtype=int)
+    rank_x[np.argsort(x)] = np.arange(1, n + 1)
+
+    return rank_x
+
+
 def pearson_corr(x: np.ndarray, y: np.ndarray) -> float:
     n = x.size
     x_bar = x.sum() / n

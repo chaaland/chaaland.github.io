@@ -87,7 +87,7 @@ Figure 3 shows points with a linear relationship with the presence of a single o
 
 <figure class>
     <a href="/assets/chatterjees-xi/images/pearson_outlier.png"><img src="/assets/chatterjees-xi/images/pearson_outlier.png"></a>
-    <figcaption>Figure 3: A single outlier point reduces the correlation to 0.64 in a dataset that would otherwise have a correlation of 1. </figcaption>
+    <figcaption>Figure 3: A single outlier point reduces the correlation to 0.25 in a dataset that would otherwise have a correlation of 1. </figcaption>
 </figure>
 
 Is there a more robust notion of correlation?
@@ -173,11 +173,22 @@ What if we want to measure how likely it is that $$y$$ is a noiseless function o
 
 Surprisingly, there is a very simple correlation coefficient that does exactly this.
 
-## Chatterjee's Correlation
+## Chatterjee's Correlation 
 
-Chatterjee's Xi coefficient is defined by taking the data and first ordering them by their $$x$$-values (assuming they are unique) then computing the value
+### Definition
 
-$$\xi = 1 - {3\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over N^2-1}.$$
+Assuming our data is first sorted by their $$x$$-coordinates, Chatterjee's Xi coefficient is defined as
+
+$$\xi(x,y) = 1 - {\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over {(N^2-1)/3}}.$$
+
+Figure 7 shows the same quadratic and sinusoidal data from figure 6 including Pearson's, Spearman's and Chatterjee's correlation values.
+
+<figure class>
+    <a href="/assets/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"><img src="/assets/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"></a>
+    <figcaption>Figure 7: Chatterjee's correlation is 0.72 and 0.63 on the quadratic and sinusoidal data respectively.</figcaption>
+</figure>
+
+From the figure, we can see that Chatterjee's coefficient is much higher than Pearson's and Spearman's, indicating that it succeeds in capturing the association between $$x$$ and $$y$$ even though the relationship is non-linear.
 
 Let's apply this formula to the dataset below to understand how the coefficient is computed.
 
@@ -222,7 +233,6 @@ The following Python code implements this formula in the case of unique $$x$$-va
 {% highlight python %}
 def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
     # assert there are no ties
-
     assert len(x) == len(set(x))
     assert len(y) == len(set(y))
 
@@ -239,14 +249,98 @@ def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
 
 {% endhighlight %}
 
-Similar to Spearman's, the values used to compute Chatterjee's correlation are rank based.
-However, rather than computing the differences in the ranks of $$x$$ and $$y$$, Chatterjee's correlation computes the differences between the ranks of only the $$y$$-values.
+While this section gives us a recipe for computing Chatterjee's xi, we're still missing any actual intuition.
+There is a whole list of questions we could ask at this point
 
-By first ordering the data
+- where does this formula come from?
+- how is it measuring whether $$y$$ is a function of $$x$$?
+- where does the $$(N^2-1)/3$$ in the denominator come from?
+- why don't the $$x$$-values appear in the computation?
+
+### Intuition
+
+The intuition behind Chatterjee's correlation is that if $$y$$ is a function of $$x$$, then we would expect a "small" change in $$x$$ to lead to a "small" change in $$y$$ (for "nice" functions).
+
+Of course, small is a relative term and depends on units of measure and how fast the function is increasing/decreasing.
+To avoid having to choose a particular threshold for how "small" the change in $$x$$ needs to be, we can order our points $$(x_1, y_1), \ldots, (x_n, y_n)$$ by their $$x$$-coordinates.
+
+Letting $$[i]$$ denote the index of the $$i^{th}$$ smallest $$x$$ value, our data becomes reordered as
+
+$$(x_{[1]}, y_{[1]}), (x_{[2]}, y_{[2]}) \ldots, (x_{[N]}, y_{[N]}).$$
+
+Now, a "small change in $$x$$" can just be treated as the neighbouring point's $$x$$-coordinate!
+This is equivalent to defining "a small change" to be the change in the rank of $$x$$ (specifically a change of 1).
+Notice how this choice is completely independent of the magnitude or units of the $$x$$-values.
+
+We're left with the problem of how to mathematically encode the resulting "small change in $$y$$".
+Intuitively, for a nicely behaved function we'd expect going from $$x_{[i]}$$ to $$x_{[i+1]}$$, not to change the corresponding $$y$$-value much.
+In particular, we'd expect both points to have $$y$$-values with similar _rank_.
+Mathematically,
+
+$$\mathbf{rank}(y_{[i]}) \approx \mathbf{rank}(y_{[i+1]}).$$
+
+We don't care if $$y_{[i]}$$ is bigger or smaller than $$y_{[i+1]}$$, just that they are "close" in rank.
+The simplest way to measure this distance is
+
+$$d_i = |\mathbf{rank}(y_{[i]}) - \mathbf{rank}(y_{[i+1]})|.$$
+
+To measure if _all_ the points have neighbours with $$y$$-values similar in rank, we simply take the sum over all neighbouring pairs, of which there are $$N-1$$
+
+$$d = \sum_{i=1}^{N-1} |\mathbf{rank}(y_{[i]}) - \mathbf{rank}(y_{[i+1]})|.$$
+
+The larger the value of $$d$$, the more we suspect $$y$$ is just bouncing around with no relationship to the value of $$x$$.
+But this leaves the question, "what is considered a large value of $$d$$?"
+
+One way to define the size of $$d$$ is to normalise it.
+We can take the ratio of $$d$$ and what we would get, on average, if we computed the sum of absolute rank differences on a randomly shuffled version of $$y$$ (i.e. no relationship to $$x$$).
+
+Since the average absolute rank difference is independent of the position $$i$$ (remember the $$y$$-values are uniformly shuffled), the normalising constant is
+
+$$
+\mathbf{E}[d] = (N-1)\cdot\mathbf{E} \left[|\mathbf{rank}(y_{[1]}) - \mathbf{rank}(y_{[2]})|\right]
+$$
+
+where $$\mathbf{E}[d]$$ means the _expected value_, or average value, of $$d$$.
+
+We can estimate this quantity by taking many uniformly shuffled $$y$$-values and measuring the average absolute rank difference.
+Repeating this experiment for various values of $$N$$ to gives us an idea of what the expected absolute rank difference is as a function of $$N$$.
+
+Figure 7 shows the result of running this for values of $$3\le N\le 25$$, each with 1500 trials to estimate the average.
+
+<figure class>
+    <a href="/assets/chatterjees-xi/images/expected_rank_diff.png"><img src="/assets/chatterjees-xi/images/expected_rank_diff.png"></a>
+    <figcaption>Figure 7: Average absolute rank difference on uniform random data measured for various values of N using 1500 trials each.  </figcaption>
+</figure>
+
+From this figure, we can clearly see that for a single pair of random ranks, the expected absolute difference is
+
+$$\mathbf{E} \left[\lvert\mathbf{rank}(y_{[1]}) - \mathbf{rank}(y_{[2]})\rvert\right] = {N+1 \over 3}$$
+
+The total expected sum for a completely random relationship is
+
+$$\mathbf{E}[d] = (N-1)(N+1)/3 = (N^2-1)/3$$.
+
+Figure 7 shows a sine wave with varying number of points along with the Chatterjee's xi.
+
+<figure class>
+    <a href="/assets/chatterjees-xi/images/chatterjee_corrs.png"><img src="/assets/chatterjees-xi/images/chatterjee_corrs.png"></a>
+    <figcaption>Figure 7: As the number of points increases, Chatterjee's xi approaches 1. </figcaption>
+</figure>
+
+The figure demonstrates the coefficient's ability to detect noiseless relationships between $$x$$ and $$y$$.
+
+One important observation from this figure is that using more points pushes the coefficient to 1.
+In fact, even in the case of 3 points lying on a line, Chatterjee's xi is only 0.25.
+Compare this with Pearson's correlation where these points would have correlation 1.
+
+Since Chatterjee's coefficient is detecting arbitrary relationships $$y=f(x)$$, it needs to see enough points to determine the relationship.
+3 points is not enough to be _sure_ the points lie on a line.
+In general, the more "wiggly" the underlying function is, the more points will be required to get a high Chatterjee's correlation
+
+Also of note is the fact that Chatterjee's xi is not symmetric, unlike Pearson and Spearman.
+This is because $$\xi(x, y)$$ is measuring how much $$y$$ is a deterministic function of $$x$$ but $$\xi(y,x)$$ is measuring how much $$x$$ is a deterministic function of $$y$$.
 
 ## Footnotes
-
-<a name="footnote1">1</a>: Linearity, of course, being a specific type of monotonicity
 
 ## References
 
