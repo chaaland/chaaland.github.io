@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.13.15"
+__generated_with = "0.14.16"
 app = marimo.App(width="medium")
 
 
@@ -17,9 +17,7 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md(
-        r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$"""
-    )
+    mo.md(r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$""")
     return
 
 
@@ -38,22 +36,50 @@ def _():
 
 
 @app.cell
-def _(make_cartesian_plane, mo, np, plt):
-    xs = np.linspace(-0.9, 3, 100)
+def _(mo):
+    x_slider = mo.ui.slider(0.1, 1, 0.01)
+    return (x_slider,)
+
+
+@app.cell
+def _(make_cartesian_plane, newton_gregory, np, plt, x_slider):
+    xs = np.linspace(-0.2, 1.0, 100)
     ys = np.log1p(xs)
 
-    n_pts = 6
-    h = 0.5
+    n_pts = 10
+    h = 0.1
     x_0 = 0
     x_pts = x_0 + h * np.arange(n_pts)  # np.array([1, 1.5, 2, 2.5])
     y_pts = np.log1p(x_pts)
 
-    plt.figure(figsize=(6, 6))
     plt.plot(xs, ys)
     plt.scatter(x_pts, y_pts, alpha=0.5)
+
+    _idx = sorted(np.argsort(np.abs(x_pts - x_slider.value))[:2])
+    lerp_ys = newton_gregory(xs, x_0=x_pts[_idx[0]], ys=y_pts[_idx], h=h)
+    plt.plot(xs, lerp_ys, "--")
+    plt.scatter(x_pts[_idx], y_pts[_idx], zorder=10)
+
+    y_slider_interp_value = newton_gregory(np.array([x_slider.value]), x_0=x_pts[_idx[0]], ys=y_pts[_idx], h=h)
+    plt.scatter(np.array([x_slider.value]), y_slider_interp_value, marker="*", s=150, zorder=20)
+
+    plt.ylim([-0.25, 1])
+
     make_cartesian_plane(plt.gca())
-    mo.mpl.interactive(plt.gca())
-    return h, n_pts, x_0, x_pts, xs, y_pts, ys
+    log_fig = plt.gcf()
+    return h, log_fig, n_pts, x_0, x_pts, xs, y_pts, ys
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""Logarithm LERP approxmation""")
+    return
+
+
+@app.cell
+def _(log_fig, mo, x_slider):
+    mo.hstack([log_fig, mo.md(f"x: {x_slider}")])
+    return
 
 
 @app.cell
@@ -204,11 +230,6 @@ def _(
     plt.legend()
 
     mo.hstack([plt.gcf(), mo.md(f"N={n_pts_slider_2}")])
-    return
-
-
-@app.cell
-def _():
     return
 
 
