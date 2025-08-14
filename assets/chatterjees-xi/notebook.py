@@ -276,7 +276,19 @@ def _(np, plt, remove_spines, spearman_corr):
 
 @app.cell
 def _(mo):
-    mo.md(r"""# Chatterjee's Correlation""")
+    mo.md(
+        r"""
+    # Chatterjee's Correlation
+
+    $\xi(x,y) = 1 - \frac{3\sum_{i=1}^{N-1}|\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)|}{N^2-1}$
+    """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""$$\xi(x,y) = 1 - \frac{3\sum_{i=1}^{N-1}|\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)|}{N^2-1}$$""")
     return
 
 

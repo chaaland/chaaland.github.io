@@ -2,7 +2,7 @@
 title: "Chatterjee's Xi Coefficient"
 categories:
   - Statistics
-date:   2025-01-11 14:33:00 +0100
+date:   2025-08-14 14:33:00 +0100
 mathjax: true
 tags:
   - Statistics
