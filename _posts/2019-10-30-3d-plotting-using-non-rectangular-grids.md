@@ -95,7 +95,7 @@ def generate_radial_grid(r_low, r_high, n_r, n_theta):
     r = np.linspace(r_low, r_high, n_r)
     theta = np.linspace(0, 2*np.pi, n_theta)
     r_mesh, theta_mesh = np.meshgrid(r, theta)
-    x_mesh = r_mesh* np.cos(theta_mesh)
+    x_mesh = r_mesh * np.cos(theta_mesh)
     y_mesh = r_mesh * np.sin(theta_mesh)
 
     return x_mesh, y_mesh
@@ -133,10 +133,10 @@ import numpy as np
 
 def generate_axis_aligned_ellipse_grid(r_low, r_high, n_r, n_theta, a, b):
     r = np.linspace(r_low, r_high, n_r)
-    theta = np.linspace(0, 2*np.pi, n_theta)
+    theta = np.linspace(0, 2 * np.pi, n_theta)
     r_mesh, theta_mesh = np.meshgrid(r, theta)
-    x_mesh = a* r_mesh *np.cos(theta_mesh)
-    y_mesh = b* r_mesh * np.sin(theta_mesh)
+    x_mesh = a * r_mesh * np.cos(theta_mesh)
+    y_mesh = b * r_mesh * np.sin(theta_mesh)
 
     return x_mesh, y_mesh
 {% endhighlight %}
