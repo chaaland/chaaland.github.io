@@ -26,7 +26,7 @@ We'll conclude with a surprisingly recently developed measure of correlation pub
 ## Pearson's Correlation Coefficient
 
 When most people talk about "correlation" in a numerical discipline, they're usually talking about Pearson's correlation coefficient.
-Pearson's correlation measures the _linear_ relationship between two variables $$x, y\in \mathbf{R}^N$$ and is defined as
+Pearson's correlation measures the _linear_ relationship between two sets of observations $$x=(x_1,\ldots,x_N)$$ and $$y=(y_1,\ldots,y_N)$$ and is defined as
 
 $$ \rho = \mathbf{corr}(x, y) = {\mathbf{cov}(x, y) \over \sqrt{\mathbf{var}(x) \mathbf{var}(y)}}.$$
 
@@ -38,12 +38,14 @@ The covariance measures the average product of $$x$$ and $$y$$'s deviations from
 
 The issue with covariance is that it can be large simply because the deviations of $$x$$ and $$y$$ from their means are large.
 For example, we could increase the magnitude of the covariance simply by changing the units of measurement from kilometers to meters (i.e. scaling the variables by 1,000).
-
-The denominator is a normalisation to ensure $$-1 \le \rho \le 1$$.
-This makes Pearson's correlation a unit-less quantity comparable across different data, or even the same data measured in different units.
+To avoid this, we normalise the covariance by the product of the standard deviations, ensuring $$-1 \le \rho \le 1$$.
 
 The following Python code implements Pearson's correlation
 
+<details>
+<summary>
+Click for code
+</summary>
 {% highlight python %}
 def pearson_corr(x: np.ndarray, y: np.ndarray) -> float:
     n = x.size
@@ -62,6 +64,8 @@ def pearson_corr(x: np.ndarray, y: np.ndarray) -> float:
 
     return rho
 {% endhighlight %}
+</details>
+<br>
 
 Figure 1 shows 4 different datasets with increasing correlation.
 As the correlation approaches 1, you can see the data begin to lie on a line with positive slope.
@@ -95,18 +99,22 @@ Is there a notion of correlation that can capture more complicated relationships
 
 ## Spearman's Correlation
 
+
 Spearman's correlation addresses the limitations with Pearson's correlation.
 Spearman's correlation is defined as
 
-$$\tau = \mathbf{corr}(\mathbf{rank}(x),\, \mathbf{rank}(y)).$$
-
-Spearman’s correlation applies Pearson’s formula to the _ranks_ of the data instead of the raw values, which makes it naturally robust to outliers.
+$$r_s = \mathbf{corr}(\mathbf{rank}(x),\, \mathbf{rank}(y)).$$
 
 When there are no ties<sup>[1](#footnote1)</sup>, Spearman's correlation simplifies to
 
-$$ \tau = 1 - \frac{6\sum_{i=1}^N \left(\mathbf{rank}(x_i) - \mathbf{rank}(y_i)\right)^2}{N(N^2-1)}$$
+$$ r_s = 1 - \frac{6\sum_{i=1}^N \left(\mathbf{rank}(x_i) - \mathbf{rank}(y_i)\right)^2}{N(N^2-1)}$$
 
-Python code for computing Spearman's correlation with unique data is given below
+Here’s a simple implementation of Spearman’s correlation for data without ties:
+
+<details>
+<summary>
+Click for code
+</summary>
 
 {% highlight python %}
 
@@ -129,6 +137,9 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
     return corr
 {% endhighlight %}
 
+</details>
+<br>
+
 Figure 4 illustrates how Pearson's and Spearman's compare on data from the same distribution as Figure 1.
 
 <figure class>
@@ -136,13 +147,13 @@ Figure 4 illustrates how Pearson's and Spearman's compare on data from the same 
     <figcaption>Figure 4: Though Pearson and Spearman correlations yield different numbers, they are similar.</figcaption>
 </figure>
 
-If we now turn to the sigmoid data from Figure 2, computing Spearman's gives $$\tau =1$$.
+If we now turn to the sigmoid data from Figure 2, computing Spearman's gives $$r_s =1$$.
 Perfect correlation!
 This is because $$\mathbf{rank}(x_i) = \mathbf{rank}(y_i)$$.
 In fact, this will be the case for any monotonic function.
 This means Spearman's can capture non-linear relationships in data such as square roots, logarithms, and exponentials.
 
-As already mentioned, Spearman's is also naturally robust to outliers in the data.
+Spearman's is also naturally robust to outliers in the data because it uses rank information rather than the values themselves.
 Figure 5 reproduces the same outlier dataset from Figure 3, this time showing Spearman's correlation.
 
 <figure class>
@@ -150,7 +161,7 @@ Figure 5 reproduces the same outlier dataset from Figure 3, this time showing Sp
     <figcaption>Figure 5: Spearman's correlation is 0.93 even in the presence of a large outlier.</figcaption>
 </figure>
 
-With $$\tau=0.93$$, it is clear Spearman's correlation is still able to detect the strong relationship between the variables and is significantly less impacted by the outlier than Pearson's ($$\rho = 0.25$$).
+With $$r_s=0.93$$, it is clear Spearman's correlation is still able to detect the strong relationship between the variables and is significantly less impacted by the outlier than Pearson's ($$\rho = 0.25$$).
 This is because the correlation calculation doesn't depend on the actual values themselves, only the ranks.
 
 However, Spearman's correlation cannot capture more complicated relationships between data.
@@ -179,7 +190,7 @@ Surprisingly, in 2019, a very simple correlation coefficient was introduced that
 
 ### Definition
 
-Assuming our data is first sorted by their $$x$$-coordinates, Chatterjee's Xi coefficient is defined as<sup>[2](#footnote2)</sup>
+If we first sort the data by their $$x$$-coordinates, Chatterjee's Xi coefficient is given by<sup>[2](#footnote2)</sup>
 
 $$\xi(x,y) = 1 - {\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over {(N^2-1)/3}}.$$
 
@@ -223,6 +234,11 @@ $$\xi = 1 - {3 \cdot 5 \over 5^2 -1} = 0.375$$
 
 We can implement this logic in just a few lines of Python code (for the case of unique $$x$$-values).
 
+<details>
+<summary>
+Click for code
+</summary>
+
 {% highlight python %}
 def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
     # assert there are no ties
@@ -241,6 +257,9 @@ def chatterjee_corr(x: np.ndarray, y: np.ndarray) -> float:
     return xi_corr
 
 {% endhighlight %}
+
+</details>
+<br>
 
 While this gives us a recipe for computing Chatterjee's Xi, we're still missing any actual intuition.
 There is a whole list of questions we could ask at this point
@@ -304,7 +323,7 @@ Figure 7 shows the result of running this for values of $$3\le N\le 25$$, each w
     <figcaption>Figure 7: Average absolute rank difference on uniform random data measured for various values of N using 1500 trials each.  </figcaption>
 </figure>
 
-From this figure, we can clearly see that for a single pair of random ranks, the expected absolute difference is
+From this figure, we can see that for a single pair of random ranks, the expected absolute difference is
 
 $$\mathbf{E} \left[\lvert\mathbf{rank}(y_{[1]}) - \mathbf{rank}(y_{[2]})\rvert\right] = {N+1 \over 3}.$$
 
@@ -326,7 +345,7 @@ When there is a perfect functional relationship, the ranks of $$y$$ will change 
 
 ### How well does it work?
 
-With the intuition for xi in place, let's examine its performance on the nonlinear data we've discussed.
+With the intuition for Xi in place, let's examine its performance on the nonlinear data we've discussed.
 
 We'll start by revisiting the non-linear data from figure 6.
 We saw that both Pearson's and Spearman's correlations failed to capture the clear functional relationships in the quadratic and sinusoidal datasets.
@@ -347,7 +366,7 @@ Figure 9 shows a sine wave with varying number of points along with Chatterjee's
 
 <figure class>
     <a href="/assets/chatterjees-xi/images/chatterjee_corrs.png"><img src="/assets/chatterjees-xi/images/chatterjee_corrs.png"></a>
-    <figcaption>Figure 9: As the number of points increases, Chatterjee's xi approaches 1. </figcaption>
+    <figcaption>Figure 9: As the number of points increases, Chatterjee's Xi approaches 1. </figcaption>
 </figure>
 
 As the number of points increases, Chatterjee's Xi approaches 1.
@@ -371,7 +390,7 @@ Finally, over 175 years later, Stanford statistician Sourav Chatterjee introduce
 Chatterjee's Xi provides a mathematical formula for measuring the strength of general deterministic relationships between two variables.
 This measure represents a significant leap forward, aligning the mathematical definition of correlation more closely with our intuitive, everyday understanding of a "relationship" between variables.
 
-The simplicity of the formula for $$\xi(x,y)$$ makes it all the more surprising that it had lain undiscovered until 2019.
+The simplicity of the formula for $$\xi(x,y)$$ makes it all the more surprising that it had remained undiscovered until 2019.
 Chatterjee's coefficient is a truly remarkable example of how, even in a field as established as statistics, there are still simple and powerful ideas waiting to be discovered.
 
 ## Footnotes
