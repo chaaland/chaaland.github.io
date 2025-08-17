@@ -95,7 +95,7 @@ def _(generate_correlated_data, make_cartesian_plane, plt):
 
 
 @app.cell
-def _(np, pearson_corr, plt, remove_spines):
+def _(mo, np, pearson_corr, plt, remove_spines):
     plt.figure(figsize=(6, 6))
 
     _xs = np.linspace(-1, 1, 20)
@@ -108,7 +108,7 @@ def _(np, pearson_corr, plt, remove_spines):
     plt.title(rf"$\rho$={_rho:.2f}")
     plt.tight_layout()
 
-    plt.gcf()
+    mo.mpl.interactive(plt.gcf())
     return
 
 
@@ -188,8 +188,8 @@ def _(generate_correlated_data, make_cartesian_plane, plt, spearman_corr):
         _x, _y = generate_correlated_data(n_samples=50, correlation=_rho)
 
         plt.subplot(2, 2, _i + 1)
-        _tau = spearman_corr(_x, _y)
-        plt.title(rf"$\rho={_rho}/\tau$={_tau:.2f}", loc="left")
+        _rs = spearman_corr(_x, _y)
+        plt.title(rf"$\rho={_rho}/r_s$={_rs:.2f}", loc="left")
         plt.scatter(_x, _y, alpha=0.5)
         plt.grid(alpha=0.4)
 
@@ -203,8 +203,8 @@ def _(generate_correlated_data, make_cartesian_plane, plt, spearman_corr):
 
 
 @app.cell
-def _(np, plt, remove_spines, spearman_corr):
-    plt.figure(figsize=(6, 6))
+def _(mo, np, plt, remove_spines, spearman_corr):
+    plt.figure(figsize=(5, 5))
 
     _xs = np.array(np.random.rand(20).tolist())
     _ys = 2 * _xs + 0.5
@@ -218,17 +218,17 @@ def _(np, plt, remove_spines, spearman_corr):
     plt.grid(alpha=0.4)
 
     print(_xs)
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
+    _rs = spearman_corr(_xs, _ys)
+    plt.title(rf"$r_s$={_rs:.2f}")
     plt.tight_layout()
 
-    plt.gcf()
+    mo.mpl.interactive(plt.gcf())
     return
 
 
 @app.cell
 def _(np, plt, remove_spines, spearman_corr):
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(5, 5))
 
     _xs = np.linspace(-1, 1, 20)
     _ys = 1 / (1 + np.exp(-20 * _xs))
@@ -236,8 +236,8 @@ def _(np, plt, remove_spines, spearman_corr):
     remove_spines(plt.gca())
     plt.grid(alpha=0.4)
 
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
+    _rs = spearman_corr(_xs, _ys)
+    plt.title(rf"$r_s$={_rs:.2f}")
     plt.tight_layout()
 
     plt.gcf()
@@ -255,8 +255,8 @@ def _(np, plt, remove_spines, spearman_corr):
     remove_spines(plt.gca())
     plt.grid(alpha=0.4)
 
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
+    _rs = spearman_corr(_xs, _ys)
+    plt.title(rf"$r_s$={_rs:.2f}")
 
     plt.subplot(122)
     _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, 30)
@@ -265,8 +265,8 @@ def _(np, plt, remove_spines, spearman_corr):
     plt.grid(alpha=0.4)
 
     remove_spines(plt.gca())
-    _tau = spearman_corr(_xs, _ys)
-    plt.title(rf"$\tau$={_tau:.2f}")
+    _rs = spearman_corr(_xs, _ys)
+    plt.title(rf"$r_s$={_rs:.2f}")
 
     plt.tight_layout()
 
@@ -280,7 +280,7 @@ def _(mo):
         r"""
     # Chatterjee's Correlation
 
-    $\xi(x,y) = 1 - \frac{3\sum_{i=1}^{N-1}|\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)|}{N^2-1}$
+    $$\xi(x,y) = 1 - \frac{3\sum_{i=1}^{N-1}|\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)|}{N^2-1}$$
     """
     )
     return
@@ -300,7 +300,7 @@ def _(
     plt,
     spearman_corr,
 ):
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(5, 5))
 
     from scipy.stats import chatterjeexi
 
@@ -310,11 +310,11 @@ def _(
         _x, _y = generate_correlated_data(n_samples=n_points, correlation=_rho)
 
         plt.subplot(2, 2, _i + 1)
-        _tau = spearman_corr(_x, _y)
+        _rs = spearman_corr(_x, _y)
         _xi = chatterjee_corr(_x, _y)
         # print(chatterjeexi(_x,_y))
 
-        plt.title(rf"$N={n_points},\, \xi={_xi:.2f}$", loc="left")
+        plt.title(rf"$\xi={_xi:.2f}\quad (N={n_points})$", loc="left")
         plt.scatter(_x, _y, alpha=0.5)
         plt.grid(alpha=0.4)
 
@@ -328,14 +328,14 @@ def _(
 
 
 @app.cell
-def _(chatterjee_corr, np, plt, remove_spines):
+def _(chatterjee_corr, mo, np, plt, remove_spines):
     plt.figure(figsize=(6, 6))
 
-    for i, n in enumerate([10, 25, 100, 200]):
-        plt.subplot(2, 2, i + 1)
+    for _i, _n in enumerate([10, 25, 100, 200]):
+        plt.subplot(2, 2, _i + 1)
         # _xs = np.linspace(-1, 1 - 0.001, n)
         # _ys = _xs**2
-        _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, n)
+        _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, _n)
         _ys = np.sin(_xs)
 
         plt.scatter(_xs, _ys)
@@ -346,30 +346,7 @@ def _(chatterjee_corr, np, plt, remove_spines):
 
     plt.tight_layout()
 
-    plt.gcf()
-    return
-
-
-@app.cell
-def _(chatterjee_corr, np, plt, remove_spines):
-    plt.figure(figsize=(6, 6))
-
-    for i, n in enumerate([10, 25, 100, 200]):
-        plt.subplot(2, 2, i + 1)
-        # _xs = np.linspace(-1, 1 - 0.001, n)
-        # _ys = _xs**2
-        _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, n)
-        _ys = np.sin(_xs)
-
-        plt.scatter(_xs, _ys)
-        remove_spines(plt.gca())
-        plt.grid(alpha=0.4)
-        _xi = chatterjee_corr(_xs, _ys)
-        plt.title(rf"$\xi$={_xi:.2f}")
-
-    plt.tight_layout()
-
-    plt.gcf()
+    mo.mpl.interactive(plt.gcf())
     return
 
 
@@ -385,9 +362,9 @@ def _(chatterjee_corr, np, pearson_corr, plt, remove_spines, spearman_corr):
     plt.grid(alpha=0.4)
 
     _rho = pearson_corr(_xs, _ys)
-    _tau = spearman_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
     _xi = chatterjee_corr(_xs, _ys)
-    plt.title(rf"$\rho={_rho:.2f},\tau={_tau:.2f}, \xi(x,y)$={_xi:.2f}")
+    plt.title(rf"$\rho={_rho:.2f},r_s={_rs:.2f}, \xi(x,y)$={_xi:.2f}")
 
     plt.subplot(122)
     _xs = np.linspace(-2 * np.pi, 2 * np.pi - 0.0001, 30)
@@ -397,9 +374,9 @@ def _(chatterjee_corr, np, pearson_corr, plt, remove_spines, spearman_corr):
 
     remove_spines(plt.gca())
     _rho = pearson_corr(_xs, _ys)
-    _tau = spearman_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
     _xi = chatterjee_corr(_xs, _ys)
-    plt.title(rf"$\rho={_rho:.2f},\tau={_tau:.2f}, \xi(x,y)$={_xi:.2f}")
+    plt.title(rf"$\rho={_rho:.2f},r_s={_rs:.2f}, \xi(x,y)$={_xi:.2f}")
 
     plt.tight_layout()
 
@@ -410,9 +387,9 @@ def _(chatterjee_corr, np, pearson_corr, plt, remove_spines, spearman_corr):
 @app.cell
 def _(chatterjee_corr, np, plt, remove_spines):
     plt.scatter([0, 1, 2, 3], [0, 5, 4, 6])
-    _tau = chatterjee_corr(np.array([0, 1, 2, 3]), np.array([0, 5, 4, 6]))
+    _rs = chatterjee_corr(np.array([0, 1, 2, 3]), np.array([0, 5, 4, 6]))
     remove_spines(plt.gca())
-    plt.title(rf"$\tau$={_tau}")
+    plt.title(rf"$\tau$={_rs}")
     plt.gcf()
     return
 
@@ -435,8 +412,8 @@ def _(chatterjee_corr, np, plt, remove_spines):
         [lambda x: 5 * x, lambda x: -x + 6, lambda x: 2 * x],
     )
     plt.scatter(_x, _y)
-    _tau = chatterjee_corr(_x, _y)
-    print(_tau)
+    _rs = chatterjee_corr(_x, _y)
+    print(_rs)
 
     remove_spines(plt.gca())
     plt.gcf()
@@ -472,7 +449,74 @@ def _(compute_rank, np, plt, remove_spines):
 
 
 @app.cell
-def _():
+def _(
+    chatterjee_corr,
+    generate_correlated_data,
+    mo,
+    np,
+    pearson_corr,
+    plt,
+    remove_spines,
+    spearman_corr,
+):
+    np.random.seed(3141)
+    plt.figure(figsize=(16, 9))
+    plt.suptitle(r"$\xi(x,y) = 1 - \frac{\sum_{i=1}^{N-1} |\mathbf{rank}(y_{[i+1]}) - \mathbf{rank}(y_{[i]})|}{(N^2-1)/3}$", fontsize=24)
+
+
+    plt.subplot(221)
+    _xs, _ys = generate_correlated_data(n_samples=50, correlation=0.9)
+    _rho = pearson_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
+    _xi = chatterjee_corr(_xs, _ys)
+
+    plt.scatter(_xs, _ys, label=rf"$\xi(x,y)$={_xi:.2f}")
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+    plt.legend(frameon=False, loc="lower right", fontsize=18)
+
+    plt.subplot(222)
+    _xs = np.random.randn(20)
+    _ys = np.exp(_xs) + 0.1 * np.random.randn(20)
+
+    _rho = pearson_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
+    _xi = chatterjee_corr(_xs, _ys)
+
+    plt.scatter(_xs, _ys, label=rf"$\xi(x,y)$={_xi:.2f}")
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+    plt.legend(frameon=False, loc="lower right", fontsize=18)
+
+    plt.subplot(223)
+    _xs = 2 * np.random.rand(30) - 1
+    _ys = _xs**2
+
+    _rho = pearson_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
+    _xi = chatterjee_corr(_xs, _ys)
+
+    plt.scatter(_xs, _ys, label=rf"$\xi(x,y)$={_xi:.2f}")
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+    plt.legend(frameon=False, loc="lower right", fontsize=18)
+
+    plt.subplot(224)
+    _xs = np.linspace(-2 * np.pi, np.pi - 0.0001, 30)
+    _ys = np.sin(_xs)
+
+    _rho = pearson_corr(_xs, _ys)
+    _rs = spearman_corr(_xs, _ys)
+    _xi = chatterjee_corr(_xs, _ys)
+
+    plt.scatter(_xs, _ys, label=rf"$\xi(x,y)$={_xi:.2f}")
+    remove_spines(plt.gca())
+    plt.grid(alpha=0.4)
+    plt.legend(frameon=False, loc="lower right", fontsize=18)
+
+    plt.tight_layout()
+
+    mo.mpl.interactive(plt.gcf())
     return
 
 
