@@ -157,7 +157,7 @@ Consider integrating $${1 \over \sqrt{1-x}}$$ over the interval [-1, 1].
     <figcaption>Figure 4: Function with an asymptote at its right endpoint.</figcaption>
 </figure>
 
-Applying our quadrature methods so far leads summations in which the last term is infinite, completely destroying the approximation.
+Applying our quadrature methods so far leads to summations in which the last term is infinite, completely destroying the approximation.
 
 One thing we _could_ try to do if we were programming a library is to only sum the values of `f(x_k)` which are finite.
 Our approximation is saved from blowing up to infinity but we still lose accuracy.
@@ -223,16 +223,16 @@ Have a look again at the integrand before and after the tanhsinh substitution.
     <figcaption>Figure 7: The left shows the original integrand while the right shows the integrand after the tanhsinh substitution</figcaption>
 </figure>
 
-The figure makes it clear that the the asymptote at 1 disappears!
+The figure makes it clear that the asymptote at 1 disappears!
 What's more, the function decays _extremely_ quickly to 0.
 To get a sense of just how fast this function decays to 0, compare with the standard Gaussian $$e^{-x^2}$$ which is  $$1.23\times 10^{-4}$$ at $$x=-3$$.
 Our integrand is down to $$9.60\times 10^{-13}$$ at the same value of $$x$$.
 Over eight orders of magnitude smaller!
 
 The exceedingly fast roll-off makes accurate numerical integration much easier since $$f(x_k)$$ will quickly go to 0 and contribute nothing to the sum.
-This allows us to effectively truncate the summation without very negligible error.
+This allows us to effectively truncate the summation with very negligible error.
 
-We can now use Riemann sums on this transformed integrand to get an accurate approximation of the original integral. In the case of proper integrals, the number of points explicitly defined the width of the rectangle, but when $$a$$ or $$b$$ are infinite, we have to choose them independently.
+We can now use Riemann sums on this transformed integrand to get an accurate approximation of the original integral. In the case of proper integrals, the number of points is explicitly defined by the width of the rectangle, but when $$a$$ or $$b$$ are infinite, we have to choose them independently.
 Since the integral after the substitution is improper, we need to adapt our quadrature formula slightly:
 
 $$\int_{-1}^1 f(x) dx \approx \sum_{k=-N}^{N-1} w_k f(x_k)$$
@@ -284,10 +284,10 @@ The true value is $$2\sqrt{2}\approx 2.828427$$. Using this code we can approxim
 The code above is actually numerically unstable and will break when $$n*h$$ gets a bit bigger than 3 (using double precision).
 This is because of the rapid saturation of the tanhsinh substitution and the limits of floating point precision.
 The $$x$$ values become indistinguishable from 1 for arguments just larger than 3.
-This causes $$1/\sqrt{1-x}$$ to divide by zero and enters an infinity into the dot summation.
+This causes $$1/\sqrt{1-x}$$ to divide by zero and enters an infinity into the summation.
 
 A more robust implementation of this would find the first value (based on the floating point precision) that becomes identically 1 under the tanhsinh transformation.<sup>[4](#footnote4)</sup>.
-This effectively truncates the infinite summation and allows the user to only specify $$h$$ (since $$a$$ and $$b$$ becomes finite).
+This effectively truncates the infinite summation and allows the user to only specify $$h$$ (since $$a$$ and $$b$$ become finite).
 
 ## Conclusion
 

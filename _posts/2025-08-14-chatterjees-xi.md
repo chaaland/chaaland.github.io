@@ -11,7 +11,7 @@ toc: true
 excerpt: ""
 header: 
   overlay_image: assets/chatterjees-xi/images/splash_image.png
-  overlay_filter: 0.2
+  overlay_filter: 0.5
 ---
 
 ## Motivation
