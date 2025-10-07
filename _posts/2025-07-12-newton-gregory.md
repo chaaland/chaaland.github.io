@@ -327,31 +327,31 @@ $$
 \lim_{h\rightarrow 0} {\Delta y_1 \over h}(x-x_0) = f'(x_0)(x-x_0)
 $$
 
-Using the central difference formulation of the derivative we have
+Using the backward difference formulation of the derivative we have
 
 $$
-f'(x_0) = \lim_{h\rightarrow 0} {f(x + h)- f(x-h) \over 2h}.
+f'(x_0) = \lim_{h\rightarrow 0} {f(x)- f(x-h) \over h}.
 $$
 
 Since the second derivative is simply the derivative of the first derivative
 
 $$
-f''(x_0) = \lim_{h\rightarrow 0} {f'(x_0 + h)- f(x_0 - h) \over 2h}.
+f''(x_0) = \lim_{h\rightarrow 0} {f'(x_0)- f'(x_0 - h) \over h}.
 $$
 
-By applying the backward and forward difference versions to the derivatives at $$x_0 + h$$ and $$x_0 - h$$ respectively, we have
+By applying the backward difference approximation to the derivatives, we have
 
 $$
 \begin{align*}
-f(x_0) &= \lim_{h\rightarrow 0} {1 \over 2h}\left({f(x_0 + h) - f(x_0) \over h} - {f(x_0) - f(x_0 - h) \over h}\right)\\
-&= \lim_{h\rightarrow 0} {f(x_0 + h) - 2f(x_0) + f(x_0 - h) \over 2h^2}.
+f''(x_0) &= \lim_{h\rightarrow 0} {1 \over h}\left({f(x_0) - f(x_0-h) \over h} - {f(x_0-h) - f(x_0 - 2h) \over h}\right)\\
+&= \lim_{h\rightarrow 0} {f(x_0) - 2f(x_0-h) + f(x_0-2h) \over h^2}.
 \end{align*}
 $$
 
 From this formulation of the second derivative, we can see that
 
 $$
-\lim_{h\rightarrow 0} {\Delta^2 y_2 \over 2h^2}(x - x_0)(x - x_0 - h) = f''(x_0)(x - x_0)^2.
+\lim_{h\rightarrow 0} {\Delta^2 y_2 \over 2h^2}(x - x_0)(x - x_0 - h) = {1 \over 2}f''(x_0)(x - x_0)^2.
 $$
 
 Continuing with the higher order terms, we would see that in the limit as $$h$$ approaches 0, the Newton-Gregory formula becomes exactly the Taylor polynomial.
