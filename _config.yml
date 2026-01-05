@@ -5,7 +5,7 @@
 # For technical reasons, this file is *NOT* reloaded automatically when you use
 # `jekyll serve`. If you change this file, please restart the server process.
 
-theme                    : "minimal-mistakes-jekyll"
+remote_theme             : "mmistakes/minimal-mistakes"
 
 minimal_mistakes_skin    : "dark" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
@@ -150,6 +150,7 @@ defaults:
       layout: single
       author_profile: true
       read_time: true
+      show_date: true
       comments: true
       share: true
       related: true
@@ -221,6 +222,7 @@ plugins:
   - jekyll-feed
   - jemoji
   - jekyll-include-cache
+  - jekyll-remote-theme
 
 # mimic GitHub Pages with --safe
 whitelist:
@@ -230,6 +232,7 @@ whitelist:
   - jekyll-feed
   - jemoji
   - jekyll-include-cache
+  - jekyll-remote-theme
 
 
 # Archives
