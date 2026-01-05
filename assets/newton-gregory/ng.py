@@ -116,7 +116,7 @@ def _(
             if x_pts[ell] == 0:
                 monomial_label.append("x")
             else:
-                monomial_label.append(f"(x-{x_pts[ell]})")
+                monomial_label.append(f"(x-{x_pts[ell]:.1f})")
         polynomial_label.append("".join(monomial_label))
         result += a * val
 
@@ -128,9 +128,9 @@ def _(
 
     plt.plot(xs, result, "--", label=poly_str, linewidth=2)
     plt.scatter(x_pts[: n_points_slider.value], y_pts[: n_points_slider.value], alpha=0.5)
-    plt.legend(loc="lower right", frameon=False)
+    plt.legend(loc="upper right", frameon=False)
     make_cartesian_plane(plt.gca())
-    plt.ylim([-2.0, 2])
+    plt.ylim([-0.2, 1])
 
     fig = plt.gcf()
     return (fig,)
@@ -144,7 +144,7 @@ def _(fig, mo, n_points_slider):
 
 @app.cell
 def _(mo):
-    slider = mo.ui.slider(0.01, 0.5, 0.01)
+    slider = mo.ui.slider(0.01, 0.25, 0.01)
     n_pts_slider = mo.ui.slider(2, 5, 1)
     return n_pts_slider, slider
 
@@ -179,10 +179,10 @@ def _(
 
     plt.plot(xs, _result, "--", label=f"Newton-Gregory (n={len(_y_pts)}, h={slider.value})", linewidth=2)
     plt.scatter(_x_pts, _y_pts, alpha=0.5)
-    plt.ylim([-2.5, 1.5])
+    plt.ylim([-0.2, 1.0])
     make_cartesian_plane(plt.gca())
 
-    plt.legend(frameon=False, loc="lower right")
+    plt.legend(frameon=False, loc="upper right")
 
     taylor_fig = plt.gcf()
     return (taylor_fig,)

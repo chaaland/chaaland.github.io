@@ -9,7 +9,7 @@ tags:
   - Interpolation
 toc: true
 # classes: wide
-# excerpt: ""
+excerpt: ""
 header: 
   # make some GP with confidence interval shaded
   overlay_image: assets/gaussian-processes/images/splash_image.png
@@ -17,7 +17,7 @@ header:
 ---
 
 This post is a light introduction to Gaussian Processes (GPs) by focusing on the intuition rather than complicated mathematics and matrix algebra.
-Though some of the formulas seem impenetrable, we'll see that they can be arrived at most though simple dimenionsal analysis.
+Though some of the formulas seem impenetrable, we'll see that they can be arrived at mostly through simple dimensional analysis.
 
 ## GP Intuition
 
