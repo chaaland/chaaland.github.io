@@ -1,0 +1,93 @@
+// ==========================================================================
+// Custom Variables - Override Minimal Mistakes defaults
+// ==========================================================================
+
+// --------------------------------------------------------------------------
+// Typography - Distinctive font choices
+// --------------------------------------------------------------------------
+
+// Import Google Fonts (loaded via _includes/head/custom.html)
+// JetBrains Mono for headings/code, Source Serif Pro for body
+
+$serif: 'Source Serif Pro', Georgia, Times, serif;
+$sans-serif: 'Source Serif Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$monospace: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace;
+
+$global-font-family: $serif;
+$header-font-family: $monospace;
+$caption-font-family: $monospace;
+
+// Font sizes
+$type-size-1: 2.25em;   // Larger h1
+$type-size-2: 1.75em;
+$type-size-3: 1.375em;
+$type-size-4: 1.125em;
+$type-size-5: 1em;
+$type-size-6: 0.85em;
+$type-size-7: 0.75em;
+$type-size-8: 0.65em;
+
+// --------------------------------------------------------------------------
+// Color Palette - Mathematical Precision
+// --------------------------------------------------------------------------
+
+// Core colors
+$background-color: #0d1117;        // Deep ink black
+$surface-color: #161b22;           // Cards, elevated surfaces
+$code-background-color: #0d1117;   // Code blocks
+$border-color: #30363d;            // Subtle borders
+
+// Text colors
+$text-color: #c9d1d9;              // Primary text
+$muted-text-color: #8b949e;        // Secondary text, captions
+$heading-color: #e6edf3;           // Headings - slightly brighter
+
+// Accent colors
+$primary-color: #58a6ff;           // Links, primary interactive
+$secondary-color: #f78166;         // Warnings, emphasis (coral)
+$success-color: #3fb950;           // Success states
+$info-color: #58a6ff;              // Info states
+$warning-color: #d29922;           // Warning states
+$danger-color: #f85149;            // Error states
+
+// Link colors
+$link-color: $primary-color;
+$link-color-hover: lighten($primary-color, 10%);
+$link-color-visited: $primary-color;
+
+// Masthead
+$masthead-link-color: $text-color;
+$masthead-link-color-hover: $primary-color;
+
+// Navigation
+$navicon-link-color-hover: $primary-color;
+
+// Syntax highlighting (code)
+$base00: #0d1117;
+$base01: #161b22;
+$base02: #30363d;
+$base03: #484f58;
+$base04: #8b949e;
+$base05: #c9d1d9;
+$base06: #e6edf3;
+$base07: #ffffff;
+$base08: #f85149;   // Red
+$base09: #f78166;   // Orange (coral)
+$base0a: #d29922;   // Yellow
+$base0b: #3fb950;   // Green
+$base0c: #39c5cf;   // Cyan
+$base0d: #58a6ff;   // Blue
+$base0e: #bc8cff;   // Purple
+$base0f: #ff9bce;   // Pink
+
+// Footer
+$footer-background-color: $background-color;
+
+// --------------------------------------------------------------------------
+// Layout & Spacing
+// --------------------------------------------------------------------------
+
+$border-radius: 6px;
+$padding-small: 0.75rem;
+$padding-medium: 1.5rem;
+$padding-large: 2.5rem;
