@@ -1,0 +1,13 @@
+<figure class="plotly-figure">
+  <iframe
+    src="{{ include.src | relative_url }}"
+    width="{{ include.width | default: '100%' }}"
+    height="{{ include.height | default: '500px' }}"
+    frameborder="0"
+    scrolling="no"
+    style="border: none; display: block; margin: 0 auto;">
+  </iframe>
+  {% if include.caption %}
+  <figcaption>{{ include.caption }}</figcaption>
+  {% endif %}
+</figure>
