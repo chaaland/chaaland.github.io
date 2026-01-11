@@ -6,8 +6,7 @@ date:   2020-04-04 12:00:00 +0000
 mathjax: true
 toc: true
 # classes: wide
-excerpt: ""
-# excerpt: "Implementing a regression tree from scratch with numpy"
+excerpt: "Implement a regression tree from scratch using only numpy."
 header: 
   overlay_image: assets/numpy-regression-trees/images/splash-image.png
   overlay_filter: 0.2

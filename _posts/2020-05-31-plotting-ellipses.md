@@ -9,7 +9,7 @@ tags:
   - python
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Plot ellipses using conic, quadratic, and parametric representations."
 header: 
   overlay_image: assets/plotting-ellipses/images/ellipses-concentric.png
   overlay_filter: 0.2
@@ -63,7 +63,7 @@ y
 \end{align*}
 $$
 
-The constraint $$Q\in \mathbf{S}^2_{++}$$ is a more compact way of saying that $$Q\in \mathbf{R}^{2\times 2}$$, $$Q=Q^T$$, $$\mathbf{det}\, Q > 0$$, and $$\mathbf{trace}\, Q$$.<sup>[1](#footnote3)</sup>
+The constraint $$Q\in \mathbf{S}^2_{++}$$ is a more compact way of saying that $$Q\in \mathbf{R}^{2\times 2}$$, $$Q=Q^T$$, $$\mathbf{det}\, Q > 0$$, and $$\mathbf{trace}\, Q > 0$$.<sup>[1](#footnote3)</sup>
 
 Recall that completing the square for a single variable quadratic $$ax^2+bx+c=0$$ requires adding and subtracting $$\frac{b^2}{4a}$$ in order to eliminate the linear term
 

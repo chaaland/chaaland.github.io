@@ -10,7 +10,7 @@ tags:
 toc: true
 toc_label: 
 # classes: wide
-excerpt: ""
+excerpt: "Create cleaner 3D surface plots using radial and elliptical grids in matplotlib."
 header: 
   overlay_image: assets/3d-plotting-using-non-rectangular-grids/images/splash-image.png
   overlay_filter: 0.2

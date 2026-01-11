@@ -12,7 +12,7 @@ tags:
   - Regression
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Fit nonlinear models using Gauss-Newton and Levenberg-Marquardt algorithms."
 header: 
   overlay_image: assets/nonlinear-least-squares/images/splash-image.png
   overlay_filter: 0.2

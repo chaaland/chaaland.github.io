@@ -6,7 +6,7 @@ date:   2020-01-12 12:00:00 +0000
 mathjax: true
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Solve constrained optimization problems using your favorite unconstrained solver."
 header: 
   overlay_image: assets/quadratic-penalty-algo/images/splash-image.png
   overlay_filter: 0.2
