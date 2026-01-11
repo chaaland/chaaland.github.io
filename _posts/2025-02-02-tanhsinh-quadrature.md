@@ -9,7 +9,7 @@ tags:
   - Integration
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Tackle tricky integrals with endpoint singularities using a clever variable transformation."
 header: 
   overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
   overlay_filter: 0.2

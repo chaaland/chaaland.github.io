@@ -9,7 +9,7 @@ tags:
   - Interpolation
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Approximate functions using polynomial interpolation without solving linear systems."
 header: 
   overlay_image: assets/lagrange-interpolation/images/splash_image.png
   overlay_filter: 0.2

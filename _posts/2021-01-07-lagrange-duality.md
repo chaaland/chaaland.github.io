@@ -6,9 +6,9 @@ date:   2021-01-07 00:30:00 +0000
 mathjax: true
 tags:
   - Optimisation
+excerpt: "Derive and interpret the dual form of an optimization problem."
 toc: true
 # classes: wide
-excerpt: ""
 # header: 
 #   overlay_image: assets/lagrange-duality/images/.png
 #   overlay_filter: 0.2

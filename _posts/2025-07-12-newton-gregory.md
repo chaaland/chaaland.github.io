@@ -9,7 +9,7 @@ tags:
   - Interpolation
 toc: true
 # classes: wide
-excerpt: ""
+excerpt: "Interpolate equally-spaced data efficiently and discover its connection to Taylor series."
 header: 
   overlay_image: assets/newton-gregory/images/splash_image.png
   overlay_filter: 0.6
