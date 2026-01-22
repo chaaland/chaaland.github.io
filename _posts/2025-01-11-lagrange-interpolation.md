@@ -218,7 +218,6 @@ Using this quartic polynomial, we get an estimate of $$\log(1.35) \approx 0.3001
 Compared to the true value of $$0.300105$$, the relative error is a miniscule 0.004% (recall our linear interpolation error of 0.72%).
 
 We can plot the relative error for various values of the logarithm as shown in figure 7.
-Of note are
 
 The error is zero at the table values because the polynomial passes through them exactly.
 However, outside the table's range, the polynomial is no longer constrained by the data, leading to significant extrapolation errors.
