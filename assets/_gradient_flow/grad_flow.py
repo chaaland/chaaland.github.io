@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.18.4"
+__generated_with = "0.19.2"
 app = marimo.App(width="medium")
 
 
@@ -15,7 +15,10 @@ def _():
     from pathlib import Path
     import re
     from collections import Counter
-    return Counter, Path, functools, mo, np, plt, re, scp
+
+    IMAGE_DIR = Path("_gradient_flow/images")
+    IMAGE_DIR.mkdir(exist_ok=True)
+    return Counter, IMAGE_DIR, Path, functools, mo, np, plt, re, scp
 
 
 @app.cell
@@ -33,22 +36,24 @@ def _():
 
 
 @app.cell
-def sharpness_1d(make_cartesian_plane, np, plt):
+def sharpness_1d(IMAGE_DIR, make_cartesian_plane, np, plt):
     def plot_1d_sharpness():
         for _S in [0.5, 1, 2, 5]:
             x = np.linspace(-2, 2, 100)
             y = 0.5 * _S * x**2
-            plt.plot(x, y, label=f"S={_S}")
+            plt.plot(x, y, label=f"{_S}")
 
         make_cartesian_plane(plt.gca())
         plt.xlim([-2, 3])
         plt.ylim([-0.1, 4])
-        plt.legend(frameon=False, loc="upper right")
+        plt.legend(frameon=False, loc="upper right", title="Sharpness")
         plt.title(r"$y=\frac{S}{2} x^2$")
         return plt.gca()
 
 
-    plot_1d_sharpness()
+    _ax = plot_1d_sharpness()
+    _ax.figure.savefig(fname=IMAGE_DIR / "1d-sharpness.png", bbox_inches="tight")
+    _ax
     return
 
 
@@ -59,6 +64,10 @@ def _(mo):
 
     $$x_{k+1} = (1- S\eta) x_k.$$
 
+    Which can be written in closed form as
+
+    $$x_{k+1} = (1- S\eta)^{k+1} x_0.$$
+
     This will fail to converge when
 
     $$|1 - S\eta| \ge 1.$$
@@ -66,6 +75,48 @@ def _(mo):
     Since $S,\eta>0$, this occurs when $\eta \ge 2 / S$
     """)
     return
+
+
+@app.cell
+def _(plt):
+    from matplotlib.animation import FuncAnimation, PillowWriter
+
+
+    def make_gif(update_func, frames, filename="animation.gif", interval=100, figsize=(6, 4), dpi=100):
+        """
+        Create a GIF using matplotlib.
+
+        Parameters
+        ----------
+        update_func : function
+            Function with signature update(frame, ax).
+            It should update the plot for the given frame.
+        frames : int or iterable
+            Number of frames or iterable of frame values.
+        filename : str
+            Output GIF filename.
+        interval : int
+            Delay between frames in milliseconds.
+        figsize : tuple
+            Figure size.
+        dpi : int
+            Resolution of the GIF.
+        """
+
+        fig, ax = plt.subplots(figsize=figsize)
+
+        def _update(frame):
+            ax.clear()
+            update_func(frame, ax)
+            return (ax,)
+
+        anim = FuncAnimation(fig, _update, frames=frames, interval=interval, blit=False)
+
+        writer = PillowWriter(fps=1000 // interval)
+        anim.save(filename, writer=writer, dpi=dpi)
+
+        plt.close(fig)
+    return (make_gif,)
 
 
 @app.cell
@@ -289,6 +340,22 @@ def quadratic_minimize(
         ]
     )
     mo.hstack([_ax1, _ax2, _v])
+    return plot_ellipse_contours, plot_parabaloid_loss
+
+
+@app.cell
+def _(make_gif, np, plot_ellipse_contours, plot_parabaloid_loss):
+    def _update_rotate(frame, ax):
+        _ax1 = plot_ellipse_contours(a=2, b=1, theta=frame * 2 * np.pi / 30, eta=1.7, x0=np.array([-1, 2]))
+        _ax2 = plot_parabaloid_loss(a=2, b=1, theta=frame * 2 * np.pi / 30, eta=1.7, x0=np.array([-1, 2]))
+        # x = np.linspace(0, 2 * np.pi, 200)
+        # y = np.sin(x + frame * 0.2)
+        # ax.plot(x, y)
+        # ax.set_ylim(-1.5, 1.5)
+        # ax.set_title(f"Frame {frame}")
+
+
+    make_gif(update_func=_update_rotate, frames=30, filename="sine_wave.gif", interval=100)
     return
 
 
@@ -532,10 +599,9 @@ def _(
         plt.ylabel("Loss", fontsize=14)
         plt.legend(frameon=False)
 
-
         plt.subplot(212)
         plt.plot(sharpness_vals)
-        plt.gca().axhline(y=2 / eta, color="k", linestyle="--", alpha=0.7, label=rf"$S=2/\eta\approx${2/eta:.2e}")
+        plt.gca().axhline(y=2 / eta, color="k", linestyle="--", alpha=0.7, label=rf"$S=2/\eta\approx${2 / eta:.2e}")
         plt.xlim([0, n_steps])
         plt.title("Sharpness vs Step", fontsize=14)
         remove_spines(plt.gca())
