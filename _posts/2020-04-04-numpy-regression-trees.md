@@ -8,7 +8,7 @@ toc: true
 # classes: wide
 excerpt: "Implement a regression tree from scratch using only numpy."
 header: 
-  overlay_image: assets/numpy-regression-trees/images/splash-image.png
+  overlay_image: assets/2020/numpy-regression-trees/images/splash-image.png
   overlay_filter: 0.2
 tags:
   - Decision Trees
@@ -252,15 +252,15 @@ def _predict_instance(self, x: np.ndarray):
 The first example uses the `RegressionTree` implementation above to fit the nonlinear function $$y = \cos(x^2)$$ called a [chirp](https://en.wikipedia.org/wiki/Chirp). From the animation on the right, it is evident that progressively deeper trees can approximate a chirp signal very well.
 
 <figure class="half">
-    <a href="/assets/numpy-regression-trees/images/1d-chirp.png"><img src="/assets/numpy-regression-trees/images/1d-chirp.png"></a>
-    <a href="/assets/numpy-regression-trees/gifs/1d-regression-tree.gif"><img src="/assets/numpy-regression-trees/gifs/1d-regression-tree.gif"></a>
+    <a href="/assets/2020/numpy-regression-trees/images/1d-chirp.png"><img src="/assets/2020/numpy-regression-trees/images/1d-chirp.png"></a>
+    <a href="/assets/2020/numpy-regression-trees/gifs/1d-regression-tree.gif"><img src="/assets/2020/numpy-regression-trees/gifs/1d-regression-tree.gif"></a>
     <figcaption>Figure 1</figcaption>
 </figure>
 
 The second example shows how a regression tree can be used to approximate functions of two variables as well. Again, the animation illustrates deeper trees can approximate non-linear functions to a high degree of accuracy.
 <figure class="half">
-    <a href="/assets/numpy-regression-trees/images/2d-sinc.png"><img src="/assets/numpy-regression-trees/images/2d-sinc.png"></a>
-    <a href="/assets/numpy-regression-trees/gifs/2d-regression-tree.gif"><img src="/assets/numpy-regression-trees/gifs/2d-regression-tree.gif"></a>
+    <a href="/assets/2020/numpy-regression-trees/images/2d-sinc.png"><img src="/assets/2020/numpy-regression-trees/images/2d-sinc.png"></a>
+    <a href="/assets/2020/numpy-regression-trees/gifs/2d-regression-tree.gif"><img src="/assets/2020/numpy-regression-trees/gifs/2d-regression-tree.gif"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 

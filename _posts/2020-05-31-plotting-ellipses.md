@@ -11,7 +11,7 @@ toc: true
 # classes: wide
 excerpt: "Plot ellipses using conic, quadratic, and parametric representations."
 header: 
-  overlay_image: assets/plotting-ellipses/images/ellipses-concentric.png
+  overlay_image: assets/2020/plotting-ellipses/images/ellipses-concentric.png
   overlay_filter: 0.2
 ---
 
@@ -121,7 +121,7 @@ $$y$$ direction. Equivalently, apply the linear transformation $$D^{-1/2}=\mathb
 The steps in the transformation are illustrated in the animation below
 
 <figure>
-    <a href="/assets/plotting-ellipses/gifs/ellipse-rotation.gif"><img src="/assets/plotting-ellipses/gifs/ellipse-rotation.gif"></a>
+    <a href="/assets/2020/plotting-ellipses/gifs/ellipse-rotation.gif"><img src="/assets/2020/plotting-ellipses/gifs/ellipse-rotation.gif"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 

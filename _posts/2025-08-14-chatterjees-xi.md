@@ -10,7 +10,7 @@ toc: true
 # classes: wide
 excerpt: "Detect nonlinear relationships that Pearson and Spearman miss."
 header: 
-  overlay_image: assets/chatterjees-xi/images/splash_image.png
+  overlay_image: assets/2025/chatterjees-xi/images/splash_image.png
   overlay_filter: 0.5
 ---
 
@@ -71,7 +71,7 @@ Figure 1 shows 4 different datasets with increasing correlation.
 As the correlation approaches 1, you can see the data begin to lie on a line with positive slope.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/pearson_corrs.png"><img src="/assets/chatterjees-xi/images/pearson_corrs.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/pearson_corrs.png"><img src="/assets/2025/chatterjees-xi/images/pearson_corrs.png"></a>
     <figcaption>Figure 1: Scatter plot of data with various Pearson correlations.</figcaption>
 </figure>
 
@@ -81,7 +81,7 @@ Figure 2 shows points following a sigmoid pattern without any noise.
 Despite a simple functional relationship existing between $$x$$ and $$y$$, the correlation is only 0.9.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/pearson_sigmoid.png"><img src="/assets/chatterjees-xi/images/pearson_sigmoid.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/pearson_sigmoid.png"><img src="/assets/2025/chatterjees-xi/images/pearson_sigmoid.png"></a>
     <figcaption>Figure 2: Points with a sigmoidal relationship. </figcaption>
 </figure>
 
@@ -90,7 +90,7 @@ In addition to being unable to capture simple non-linear relationships, Pearson'
 In Figure 3 we see points with a linear relationship containing a single outlier point.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/pearson_outlier.png"><img src="/assets/chatterjees-xi/images/pearson_outlier.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/pearson_outlier.png"><img src="/assets/2025/chatterjees-xi/images/pearson_outlier.png"></a>
     <figcaption>Figure 3: A single outlier point reduces the correlation to 0.25 in a dataset that would otherwise have a correlation of 1. </figcaption>
 </figure>
 
@@ -143,7 +143,7 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
 Figure 4 illustrates how Pearson's and Spearman's compare on data from the same distribution as Figure 1.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/spearman_corrs.png"><img src="/assets/chatterjees-xi/images/spearman_corrs.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/spearman_corrs.png"><img src="/assets/2025/chatterjees-xi/images/spearman_corrs.png"></a>
     <figcaption>Figure 4: Though Pearson and Spearman correlations yield different numbers, they are similar.</figcaption>
 </figure>
 
@@ -157,7 +157,7 @@ Spearman's is also naturally robust to outliers in the data because it uses rank
 Figure 5 reproduces the same outlier dataset from Figure 3, this time showing Spearman's correlation.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/spearman_outlier.png"><img src="/assets/chatterjees-xi/images/spearman_outlier.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/spearman_outlier.png"><img src="/assets/2025/chatterjees-xi/images/spearman_outlier.png"></a>
     <figcaption>Figure 5: Spearman's correlation is 0.93 even in the presence of a large outlier.</figcaption>
 </figure>
 
@@ -168,7 +168,7 @@ However, Spearman's correlation cannot capture more complicated relationships be
 For example, the noiseless quadratic and sinusoidal data shown in figure 6 below.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/nonlinear_spearman_corrs.png"><img src="/assets/chatterjees-xi/images/nonlinear_spearman_corrs.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/nonlinear_spearman_corrs.png"><img src="/assets/2025/chatterjees-xi/images/nonlinear_spearman_corrs.png"></a>
     <figcaption>Figure 6: Spearman's correlation is low on both the quadratic and sine. </figcaption>
 </figure>
 
@@ -319,7 +319,7 @@ Repeating this experiment for various values of $$N$$ gives us an idea of what t
 Figure 7 shows the result of running this for values of $$3\le N\le 25$$, each with 1500 trials to estimate the average.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/expected_rank_diff.png"><img src="/assets/chatterjees-xi/images/expected_rank_diff.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/expected_rank_diff.png"><img src="/assets/2025/chatterjees-xi/images/expected_rank_diff.png"></a>
     <figcaption>Figure 7: Average absolute rank difference on uniform random data measured for various values of N using 1500 trials each.  </figcaption>
 </figure>
 
@@ -352,7 +352,7 @@ We saw that both Pearson's and Spearman's correlations failed to capture the cle
 Figure 8 shows the same data, this time including Chatterjee's correlation.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"><img src="/assets/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"><img src="/assets/2025/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"></a>
     <figcaption>Figure 8: Chatterjee's correlation is 0.72 and 0.63 on the quadratic and sinusoidal data respectively.</figcaption>
 </figure>
 
@@ -365,7 +365,7 @@ For a function with a complex or "wiggly" shape, the coefficient's ability to de
 Figure 9 shows a sine wave with varying number of points along with Chatterjee's Xi.
 
 <figure class>
-    <a href="/assets/chatterjees-xi/images/chatterjee_corrs.png"><img src="/assets/chatterjees-xi/images/chatterjee_corrs.png"></a>
+    <a href="/assets/2025/chatterjees-xi/images/chatterjee_corrs.png"><img src="/assets/2025/chatterjees-xi/images/chatterjee_corrs.png"></a>
     <figcaption>Figure 9: As the number of points increases, Chatterjee's Xi approaches 1. </figcaption>
 </figure>
 

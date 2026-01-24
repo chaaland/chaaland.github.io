@@ -11,7 +11,7 @@ toc: true
 # classes: wide
 excerpt: "Tackle tricky integrals with endpoint singularities using a clever variable transformation."
 header: 
-  overlay_image: assets/tanhsinh-quadrature/images/splash_image.png
+  overlay_image: assets/2025/tanhsinh-quadrature/images/splash_image.png
   overlay_filter: 0.2
 ---
 
@@ -49,7 +49,7 @@ Where each term in the sum represents the area of one of our rectangles.
 The width of each block is $$h={b-a \over N}$$ (the total interval divided into $$n$$ pieces), and the height is $$f\left(a + {b-a \over N} k\right)$$ (the function evaluated at the left edge of each block)<sup>[1](#footnote1)</sup>.
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/left_riemann.png"><img src="/assets/tanhsinh-quadrature/images/left_riemann.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/left_riemann.png"><img src="/assets/2025/tanhsinh-quadrature/images/left_riemann.png"></a>
     <figcaption>Figure 1: Left handed Riemann approximation using 10 rectangles.</figcaption>
 </figure>
 
@@ -60,7 +60,7 @@ $$
 $$
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/right_riemann.png"><img src="/assets/tanhsinh-quadrature/images/right_riemann.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/right_riemann.png"><img src="/assets/2025/tanhsinh-quadrature/images/right_riemann.png"></a>
     <figcaption>Figure 2: Right handed Riemann approximation using 10 rectangles.</figcaption>
 </figure>
 
@@ -78,7 +78,7 @@ $$
 $$
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/trapezoid.png"><img src="/assets/tanhsinh-quadrature/images/trapezoid.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/trapezoid.png"><img src="/assets/2025/tanhsinh-quadrature/images/trapezoid.png"></a>
     <figcaption>Figure 3: Trapezoidal approximation using 10 trapezoids.</figcaption>
 </figure>
 
@@ -153,7 +153,7 @@ But what if the function has an asymptote at one of the endpoints?
 Consider integrating $${1 \over \sqrt{1-x}}$$ over the interval [-1, 1].
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/shifted_rsqrt.png"><img src="/assets/tanhsinh-quadrature/images/shifted_rsqrt.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/shifted_rsqrt.png"><img src="/assets/2025/tanhsinh-quadrature/images/shifted_rsqrt.png"></a>
     <figcaption>Figure 4: Function with an asymptote at its right endpoint.</figcaption>
 </figure>
 
@@ -180,7 +180,7 @@ $$x = \tanh\left(\sinh \left({\pi \over 2} t\right)\right)$$
 This function is plotted in Figure 5 along with the regular hyperbolic tangent.
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/tanhsinh.png"><img src="/assets/tanhsinh-quadrature/images/tanhsinh.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/tanhsinh.png"><img src="/assets/2025/tanhsinh-quadrature/images/tanhsinh.png"></a>
     <figcaption>Figure 5: The tanhsinh function saturates much more quickly than the regular hyperbolic tangent.</figcaption>
 </figure>
 
@@ -211,15 +211,15 @@ In fact, it looks like we may have even made things significantly worse.
 But let's look at what happens to the integrand $${1 \over \sqrt{1-x}}$$ using this substitution.
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"><img src="/assets/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"><img src="/assets/2025/tanhsinh-quadrature/gifs/tanhsinh_transform_inf_loop.gif"></a>
     <figcaption>Figure 6: The original integrand being transformed after the tanhsinh substitution. The colors are just to keep track of where each segment of the original graph gets mapped to in the end.</figcaption>
 </figure>
 
 Have a look again at the integrand before and after the tanhsinh substitution.
 
 <figure class="half">
-    <a href="/assets/tanhsinh-quadrature/images/integrand.png"><img src="/assets/tanhsinh-quadrature/images/integrand.png"></a>
-    <a href="/assets/tanhsinh-quadrature/images/integrand_tanhsinh.png"><img src="/assets/tanhsinh-quadrature/images/integrand_tanhsinh.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/integrand.png"><img src="/assets/2025/tanhsinh-quadrature/images/integrand.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/integrand_tanhsinh.png"><img src="/assets/2025/tanhsinh-quadrature/images/integrand_tanhsinh.png"></a>
     <figcaption>Figure 7: The left shows the original integrand while the right shows the integrand after the tanhsinh substitution</figcaption>
 </figure>
 
@@ -247,7 +247,7 @@ x_k &=f\left(\tanh\left(\sinh \left({\pi \over 2} kh\right)\right)\right)
 $$
 
 <figure class>
-    <a href="/assets/tanhsinh-quadrature/images/tanhsinh_riemann.png"><img src="/assets/tanhsinh-quadrature/images/tanhsinh_riemann.png"></a>
+    <a href="/assets/2025/tanhsinh-quadrature/images/tanhsinh_riemann.png"><img src="/assets/2025/tanhsinh-quadrature/images/tanhsinh_riemann.png"></a>
     <figcaption>Figure 8: Left Riemann rectangles of the integrand after the tanhsinh substitution using 20 rectangles between -3 and 3.</figcaption>
 </figure>
 
