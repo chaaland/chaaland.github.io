@@ -11,7 +11,7 @@ toc: true
 # classes: wide
 excerpt: "Approximate functions using polynomial interpolation without solving linear systems."
 header: 
-  overlay_image: assets/lagrange-interpolation/images/splash_image.png
+  overlay_image: assets/2025/lagrange-interpolation/images/splash_image.png
   overlay_filter: 0.2
 ---
 
@@ -50,7 +50,7 @@ The true value is 0.300105, so this method gives a 0.72% error.
 Figure 1 shows the linear interpolator along with the estimate of $$\log(1.35)$$ (shown as a star).
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/logarithm_lerp.png"><img src="/assets/lagrange-interpolation/images/logarithm_lerp.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/logarithm_lerp.png"><img src="/assets/2025/lagrange-interpolation/images/logarithm_lerp.png"></a>
     <figcaption>Figure 1: Linear interpolation estimate for log(1.35).</figcaption>
 </figure>
 
@@ -62,7 +62,7 @@ Can we do better by using more points from the table?
 Consider trying to fit a quadratic function through the points shown in Figure 2.
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/points.png"><img src="/assets/lagrange-interpolation/images/points.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/points.png"><img src="/assets/2025/lagrange-interpolation/images/points.png"></a>
     <figcaption>Figure 2: Points to be interpolated with a quadratic.</figcaption>
 </figure>
 
@@ -138,7 +138,7 @@ $$
 Figure 3 shows each of these quadratics. Note how each quadratic passes through exactly one of the points and is zero at the abscissa of the two other points.
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/one_point_interpolation.png"><img src="/assets/lagrange-interpolation/images/one_point_interpolation.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/one_point_interpolation.png"><img src="/assets/2025/lagrange-interpolation/images/one_point_interpolation.png"></a>
     <figcaption>Figure 3: Each polynomial passes through one specific data point and is zero at the others.</figcaption>
 </figure>
 
@@ -159,7 +159,7 @@ Figure 4 shows the three different quadratics interpolating pairs of points.
 Notice how each quadratic still has a root at the abscissa of the remaining un-interpolated point.
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/two_point_interpolation.png"><img src="/assets/lagrange-interpolation/images/two_point_interpolation.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/two_point_interpolation.png"><img src="/assets/2025/lagrange-interpolation/images/two_point_interpolation.png"></a>
     <figcaption>Figure 4: Quadratics interpolating pairs of points. Note how each has roots at the unselected point's abscissa.</figcaption>
 </figure>
 
@@ -170,7 +170,7 @@ $$L(x) = y_1 \ell_1(x) + y_2 \ell_2(x) + y_3 \ell_3(x)$$
 Figure 5 shows the resultant quadratic interpolation
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/three_point_interpolation.png"><img src="/assets/lagrange-interpolation/images/three_point_interpolation.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/three_point_interpolation.png"><img src="/assets/2025/lagrange-interpolation/images/three_point_interpolation.png"></a>
     <figcaption>Figure 5: Final quadratic interpolation obtained by taking a linear combination of  all three basis polynomials.</figcaption>
 </figure>
 
@@ -210,7 +210,7 @@ def lagrange_interpolate(x: np.ndarray, pts: list[tuple[int, int]]):
 Returning to our problem of estimating $$\log(1.35)$$, instead of using a linear interpolation, we can use Lagrange interpolation with a polynomial of degree 4 as shown in Figure 6.
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/logarithm_interpolator.png"><img src="/assets/lagrange-interpolation/images/logarithm_interpolator.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/logarithm_interpolator.png"><img src="/assets/2025/lagrange-interpolation/images/logarithm_interpolator.png"></a>
     <figcaption>Figure 6: Quartic Lagrange interpolation of the logarithm</figcaption>
 </figure>
 
@@ -223,7 +223,7 @@ The error is zero at the table values because the polynomial passes through them
 However, outside the table's range, the polynomial is no longer constrained by the data, leading to significant extrapolation errors.
 
 <figure class>
-    <a href="/assets/lagrange-interpolation/images/logarithm_interpolation_error.png"><img src="/assets/lagrange-interpolation/images/logarithm_interpolation_error.png"></a>
+    <a href="/assets/2025/lagrange-interpolation/images/logarithm_interpolation_error.png"><img src="/assets/2025/lagrange-interpolation/images/logarithm_interpolation_error.png"></a>
     <figcaption>Figure 7: Relative error of Lagrange interpolation of the logarithm.</figcaption>
 </figure>
 

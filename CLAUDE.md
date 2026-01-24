@@ -20,11 +20,18 @@ This is a **Jekyll-based technical blog** deployed to GitHub Pages at `chaaland.
 │   ├── _custom-styles.scss     # Component styling
 │   └── _plotly.scss            # Plotly figure styles
 ├── _site/               # Generated output (do not edit directly)
-├── assets/              # Static assets organized by post topic
-│   └── <topic>/         # Each post has its own asset directory
-│       ├── generate_plots.py   # Python scripts for visualizations
-│       ├── plots/              # Generated HTML/PNG plots
-│       └── __marimo__/         # Marimo notebook sessions
+├── assets/              # Static assets organized by year
+│   ├── shared/          # Shared resources (avatar, css, data)
+│   ├── 2019/            # Assets for 2019 posts
+│   ├── 2020/            # Assets for 2020 posts
+│   ├── 2021/            # Assets for 2021 posts
+│   ├── 2025/            # Assets for 2025 posts
+│   ├── 2026/            # Assets for 2026 posts
+│   └── drafts/          # Assets for unpublished draft posts
+│       └── <topic>/     # Each post has its own asset directory
+│           ├── generate_plots.py   # Python scripts for visualizations
+│           ├── plots/              # Generated HTML/PNG plots
+│           └── __marimo__/         # Marimo notebook sessions
 ├── categories/          # Category archive pages
 ├── tags/                # Tag archive pages
 ├── index.html           # Homepage
@@ -78,7 +85,7 @@ excerpt: "Brief description for previews"
 
 ```liquid
 {% include plotly_figure.html
-   src="/assets/<topic>/plots/figure.html"
+   src="/assets/<year>/<topic>/plots/figure.html"
    height="500px"
    caption="Figure caption text"
 %}
@@ -86,7 +93,12 @@ excerpt: "Brief description for previews"
 
 ## Asset Organization
 
-Each post typically has an accompanying asset directory at `assets/<topic>/` containing:
+Assets are organized by year, matching post publication dates:
+- Published posts: `assets/<year>/<topic>/` (e.g., `assets/2025/cordic/`)
+- Draft posts: `assets/drafts/<topic>/`
+- Shared resources: `assets/shared/` (avatar, css, data)
+
+Each post's asset directory typically contains:
 - Python generation scripts (`generate_plots.py`)
 - Generated plots (`plots/` subdirectory)
 - Marimo notebooks (`__marimo__/`)

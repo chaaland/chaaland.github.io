@@ -45,7 +45,7 @@ analytics:
 # Site Author
 author:
   name             : *name # *name is a YAML reference pointing to the &anchor earlier
-  avatar           : "assets/casey.jpg" #"/assets/images/michael-rose.jpg"
+  avatar           : "assets/shared/casey.jpg"
   bio              : "Electrical Engineer / Software Developer / Math Hobbyist"
   location         : "London, UK"
   links:

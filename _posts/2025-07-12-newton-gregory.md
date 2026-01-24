@@ -11,7 +11,7 @@ toc: true
 # classes: wide
 excerpt: "Interpolate equally-spaced data efficiently and discover its connection to Taylor series."
 header: 
-  overlay_image: assets/newton-gregory/images/splash_image.png
+  overlay_image: assets/2025/newton-gregory/images/splash_image.png
   overlay_filter: 0.6
 ---
 
@@ -360,12 +360,12 @@ Though Taylor polynomials use derivatives and Newton-Gregory uses finite differe
 
 Figure 1 shows how the Newton-Gregory polynomial approaches the third order Taylor approximation of the logarithm as $$h$$ decreases towards 0.
 <figure class="half">
-    <a href="/assets/newton-gregory/images/taylor_1.png"><img src="/assets/newton-gregory/images/taylor_1.png"></a>
-    <a href="/assets/newton-gregory/images/taylor_2.png"><img src="/assets/newton-gregory/images/taylor_2.png"></a>
+    <a href="/assets/2025/newton-gregory/images/taylor_1.png"><img src="/assets/2025/newton-gregory/images/taylor_1.png"></a>
+    <a href="/assets/2025/newton-gregory/images/taylor_2.png"><img src="/assets/2025/newton-gregory/images/taylor_2.png"></a>
 </figure>
 <figure class="half">
-    <a href="/assets/newton-gregory/images/taylor_3.png"><img src="/assets/newton-gregory/images/taylor_3.png"></a>
-    <a href="/assets/newton-gregory/images/taylor_4.png"><img src="/assets/newton-gregory/images/taylor_4.png"></a>
+    <a href="/assets/2025/newton-gregory/images/taylor_3.png"><img src="/assets/2025/newton-gregory/images/taylor_3.png"></a>
+    <a href="/assets/2025/newton-gregory/images/taylor_4.png"><img src="/assets/2025/newton-gregory/images/taylor_4.png"></a>
     <figcaption>Figure 1: As h decrease, the Newton-Gregory polynomial becomes the cubic Taylor approximation.</figcaption>
 </figure>
 
