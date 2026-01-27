@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.14.16"
+__generated_with = "0.19.6"
 app = marimo.App(width="medium")
 
 
@@ -17,7 +17,9 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md(r"""$$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$""")
+    mo.md(r"""
+    $$y = y_0 + u \Delta y_1 + {x(x-x_0-h) \over 2h^2} \Delta^2 y_2 + {x(x-x_0-h)(x-x_0-2h) \over 3!h^3} \Delta^3 y_3 + \cdots  $$
+    """)
     return
 
 
@@ -72,7 +74,9 @@ def _(make_cartesian_plane, newton_gregory, np, plt, x_slider):
 
 @app.cell
 def _(mo):
-    mo.md(r"""Logarithm LERP approxmation""")
+    mo.md(r"""
+    Logarithm LERP approxmation
+    """)
     return
 
 
