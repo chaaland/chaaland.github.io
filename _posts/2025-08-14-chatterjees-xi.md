@@ -67,13 +67,35 @@ def pearson_corr(x: np.ndarray, y: np.ndarray) -> float:
 </details>
 <br>
 
-Figure 1 shows 4 different datasets with increasing correlation.
+Figure 1 shows data with varying correlations.
 As the correlation approaches 1, you can see the data begin to lie on a line with positive slope.
+Use the sliders below to explore how Pearson's correlation changes with different correlation values and sample sizes.
 
-<figure class>
-    <a href="/assets/2025/chatterjees-xi/images/pearson_corrs.png"><img src="/assets/2025/chatterjees-xi/images/pearson_corrs.png"></a>
-    <figcaption>Figure 1: Scatter plot of data with various Pearson correlations.</figcaption>
-</figure>
+<div class="pearson-widget" id="pearson-widget">
+  <div class="pearson-controls">
+    <label>
+      Correlation (ρ)
+      <input type="range" min="-1" max="1" value="0.5" step="0.25" data-param="corr">
+      <span class="pearson-readout" data-readout="corr">0.50</span>
+    </label>
+    <label>
+      Points (N)
+      <input type="range" min="20" max="100" value="60" step="20" data-param="npoints">
+      <span class="pearson-readout" data-readout="npoints">60</span>
+    </label>
+    <button type="button" class="pearson-button" id="pearson-reset">Reset</button>
+  </div>
+  <svg class="pearson-plot" id="pearson-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="500" height="400" fill="#0d1117"></rect>
+    <g id="pearson-grid"></g>
+    <g id="pearson-axes"></g>
+    <g id="pearson-points"></g>
+  </svg>
+  <div class="pearson-info" id="pearson-info">
+    ρ = 0.50 | N = 60 | Sample correlation: 0.50
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 1: Scatter plot of data with adjustable Pearson correlation. Adjust the sliders to see how different correlation values and sample sizes affect the scatter pattern.</figcaption>
+</div>
 
 It is important to emphasise that Pearson's correlation only measures the _linear_ relationship between two vectors.
 
@@ -141,11 +163,33 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
 <br>
 
 Figure 4 illustrates how Pearson's and Spearman's compare on data from the same distribution as Figure 1.
+Use the sliders to see how both correlation measures respond to different data configurations.
 
-<figure class>
-    <a href="/assets/2025/chatterjees-xi/images/spearman_corrs.png"><img src="/assets/2025/chatterjees-xi/images/spearman_corrs.png"></a>
-    <figcaption>Figure 4: Though Pearson and Spearman correlations yield different numbers, they are similar.</figcaption>
-</figure>
+<div class="spearman-widget" id="spearman-widget">
+  <div class="spearman-controls">
+    <label>
+      Correlation (ρ)
+      <input type="range" min="-1" max="1" value="0.5" step="0.25" data-param="spearman-corr">
+      <span class="spearman-readout" data-readout="spearman-corr">0.50</span>
+    </label>
+    <label>
+      Points (N)
+      <input type="range" min="20" max="100" value="60" step="20" data-param="spearman-npoints">
+      <span class="spearman-readout" data-readout="spearman-npoints">60</span>
+    </label>
+    <button type="button" class="spearman-button" id="spearman-reset">Reset</button>
+  </div>
+  <svg class="spearman-plot" id="spearman-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="500" height="400" fill="#0d1117"></rect>
+    <g id="spearman-grid"></g>
+    <g id="spearman-axes"></g>
+    <g id="spearman-points"></g>
+  </svg>
+  <div class="spearman-info" id="spearman-info">
+    ρ = 0.50 | N = 60 | Pearson: 0.50 | Spearman: 0.50
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Scatter plot comparing Pearson and Spearman correlations. Though the two yield different numbers, they are typically similar for linear data.</figcaption>
+</div>
 
 If we now turn to the sigmoid data from Figure 2, computing Spearman's gives $$r_s =1$$.
 Perfect correlation!
@@ -351,23 +395,49 @@ We'll start by revisiting the non-linear data from figure 6.
 We saw that both Pearson's and Spearman's correlations failed to capture the clear functional relationships in the quadratic and sinusoidal datasets.
 Figure 8 shows the same data, this time including Chatterjee's correlation.
 
-<figure class>
-    <a href="/assets/2025/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"><img src="/assets/2025/chatterjees-xi/images/chatterjee_nonlinear_corrs.png"></a>
-    <figcaption>Figure 8: Chatterjee's correlation is 0.72 and 0.63 on the quadratic and sinusoidal data respectively.</figcaption>
-</figure>
+<div class="chatterjee-widget" id="chatterjee-widget">
+  <div class="chatterjee-controls">
+    <label>
+      Points (N)
+      <input type="range" min="10" max="100" value="30" step="5" data-param="chatterjee-npoints">
+      <span class="chatterjee-readout" data-readout="chatterjee-npoints">30</span>
+    </label>
+    <button type="button" class="chatterjee-button" id="chatterjee-reset">Reset</button>
+  </div>
+  <div class="chatterjee-plots">
+    <div class="chatterjee-subplot">
+      <svg class="chatterjee-plot" id="chatterjee-svg-quad" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
+        <rect x="0" y="0" width="320" height="280" fill="#0d1117"></rect>
+        <g id="chatterjee-grid-quad"></g>
+        <g id="chatterjee-axes-quad"></g>
+        <g id="chatterjee-points-quad"></g>
+      </svg>
+      <div class="chatterjee-subplot-title">y = x²</div>
+      <div class="chatterjee-info" id="chatterjee-info-quad">
+        <span class="corr-pair">ρ: 0.00</span> | <span class="corr-pair">r<sub>s</sub>: 0.00</span> | <span class="corr-pair">ξ: 0.72</span>
+      </div>
+    </div>
+    <div class="chatterjee-subplot">
+      <svg class="chatterjee-plot" id="chatterjee-svg-sin" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
+        <rect x="0" y="0" width="320" height="280" fill="#0d1117"></rect>
+        <g id="chatterjee-grid-sin"></g>
+        <g id="chatterjee-axes-sin"></g>
+        <g id="chatterjee-points-sin"></g>
+      </svg>
+      <div class="chatterjee-subplot-title">y = sin(x)</div>
+      <div class="chatterjee-info" id="chatterjee-info-sin">
+        <span class="corr-pair">ρ: 0.00</span> | <span class="corr-pair">r<sub>s</sub>: 0.00</span> | <span class="corr-pair">ξ: 0.63</span>
+      </div>
+    </div>
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 8: Chatterjee's Xi successfully detects the functional relationships that Pearson and Spearman miss. As the number of points increases, Chatterjee's Xi approaches 1.</figcaption>
+</div>
 
 From the figure, we can see that Chatterjee's coefficient is significantly higher than Pearson's and Spearman's, indicating that it succeeds in capturing the association between $$x$$ and $$y$$ even though the relationship is non-linear and non-monotonic.
-But why are the correlations _only_ 0.72 and 0.63 when there is a true functional relationship in both cases?
+But why are the correlations so much less than 1 even when there is a true functional relationship in both cases?
 
 One important characteristic of Chatterjee's Xi is its dependence on the sample size, $$N$$.
 For a function with a complex or "wiggly" shape, the coefficient's ability to detect the relationship improves with more data points.
-
-Figure 9 shows a sine wave with varying number of points along with Chatterjee's Xi.
-
-<figure class>
-    <a href="/assets/2025/chatterjees-xi/images/chatterjee_corrs.png"><img src="/assets/2025/chatterjees-xi/images/chatterjee_corrs.png"></a>
-    <figcaption>Figure 9: As the number of points increases, Chatterjee's Xi approaches 1. </figcaption>
-</figure>
 
 As the number of points increases, Chatterjee's Xi approaches 1.
 This is because Chatterjee's coefficient needs to detect arbitrary relationships $$y=f(x)$$<sup>[4](#footnote4)</sup>.
@@ -408,3 +478,948 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
 1. [Chatterjee's original paper introducing Xi](https://arxiv.org/abs/1909.10140)
 2. [Scipy discussion on including Chatterjee's Xi in Scipy 1.15.0](https://discuss.scientific-python.org/t/new-function-scipy-stats-xi-correlation/1498)
 3. [Scipy documentation for chatterjeexi](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chatterjeexi.html)
+
+---
+
+<style>
+.pearson-widget {
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  background: #161b22;
+  margin: 1rem auto 1.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  max-width: 700px;
+}
+
+.pearson-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pearson-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #c9d1d9;
+  line-height: 1.1;
+}
+
+.pearson-controls input[type="range"] {
+  width: 120px;
+  height: 6px;
+  accent-color: #58a6ff;
+}
+
+.pearson-readout {
+  font-variant-numeric: tabular-nums;
+  color: #8b949e;
+  font-size: 0.85rem;
+  min-width: 3em;
+}
+
+.pearson-plot {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+}
+
+.pearson-info {
+  font-size: 0.8rem;
+  color: #8b949e;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(88, 166, 255, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #58a6ff;
+}
+
+.pearson-button {
+  padding: 5px 10px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pearson-button:hover {
+  background: #21262d;
+  border-color: #58a6ff;
+}
+
+@media (max-width: 600px) {
+  .pearson-controls input[type="range"] {
+    width: 90px;
+  }
+}
+
+/* Spearman widget styles */
+.spearman-widget {
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  background: #161b22;
+  margin: 1rem auto 1.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  max-width: 700px;
+}
+
+.spearman-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.spearman-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #c9d1d9;
+  line-height: 1.1;
+}
+
+.spearman-controls input[type="range"] {
+  width: 120px;
+  height: 6px;
+  accent-color: #58a6ff;
+}
+
+.spearman-readout {
+  font-variant-numeric: tabular-nums;
+  color: #8b949e;
+  font-size: 0.85rem;
+  min-width: 3em;
+}
+
+.spearman-plot {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+}
+
+.spearman-info {
+  font-size: 0.8rem;
+  color: #8b949e;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(88, 166, 255, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #58a6ff;
+}
+
+.spearman-button {
+  padding: 5px 10px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spearman-button:hover {
+  background: #21262d;
+  border-color: #58a6ff;
+}
+
+@media (max-width: 600px) {
+  .spearman-controls input[type="range"] {
+    width: 90px;
+  }
+}
+
+/* Chatterjee widget styles */
+.chatterjee-widget {
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  background: #161b22;
+  margin: 1rem auto 1.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  max-width: 700px;
+}
+
+.chatterjee-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.chatterjee-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #c9d1d9;
+  line-height: 1.1;
+}
+
+.chatterjee-controls input[type="range"] {
+  width: 150px;
+  height: 6px;
+  accent-color: #58a6ff;
+}
+
+.chatterjee-readout {
+  font-variant-numeric: tabular-nums;
+  color: #8b949e;
+  font-size: 0.85rem;
+  min-width: 2.5em;
+}
+
+.chatterjee-plots {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chatterjee-subplot {
+  flex: 1;
+  min-width: 280px;
+  max-width: 340px;
+}
+
+.chatterjee-plot {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+}
+
+.chatterjee-subplot-title {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #c9d1d9;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.chatterjee-info {
+  font-size: 0.8rem;
+  color: #8b949e;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(88, 166, 255, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #58a6ff;
+}
+
+.chatterjee-info .corr-pair {
+  white-space: nowrap;
+}
+
+.chatterjee-button {
+  padding: 5px 10px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chatterjee-button:hover {
+  background: #21262d;
+  border-color: #58a6ff;
+}
+
+@media (max-width: 600px) {
+  .chatterjee-controls input[type="range"] {
+    width: 100px;
+  }
+  .chatterjee-plots {
+    flex-direction: column;
+    align-items: center;
+  }
+  .chatterjee-subplot {
+    max-width: 100%;
+  }
+}
+</style>
+
+<script>
+(function() {
+  const W = 500, H = 400;
+  const margin = { left: 50, right: 30, top: 30, bottom: 40 };
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  const xMin = -3.5, xMax = 3.5;
+  const yMin = -3.5, yMax = 3.5;
+
+  const gridG = document.getElementById('pearson-grid');
+  const axesG = document.getElementById('pearson-axes');
+  const pointsG = document.getElementById('pearson-points');
+  const infoDiv = document.getElementById('pearson-info');
+
+  function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
+  function toSvgY(y) { return margin.top + (yMax - y) / (yMax - yMin) * plotH; }
+
+  // Seeded random number generator (Mulberry32)
+  function mulberry32(seed) {
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // Box-Muller transform for normal distribution
+  function normalRandom(rng) {
+    const u1 = rng();
+    const u2 = rng();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  }
+
+  // Generate correlated data: y = rho * x + sqrt(1 - rho^2) * noise
+  function generateData(n, rho, seed) {
+    const rng = mulberry32(seed);
+    const xs = [];
+    const ys = [];
+
+    for (let i = 0; i < n; i++) {
+      const x = normalRandom(rng);
+      const noise = normalRandom(rng);
+      const y = rho * x + Math.sqrt(1 - rho * rho) * noise;
+      xs.push(x);
+      ys.push(y);
+    }
+
+    return { xs, ys };
+  }
+
+  // Calculate sample Pearson correlation
+  function pearsonCorr(xs, ys) {
+    const n = xs.length;
+    const xMean = xs.reduce((a, b) => a + b, 0) / n;
+    const yMean = ys.reduce((a, b) => a + b, 0) / n;
+
+    let covXY = 0, varX = 0, varY = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - xMean;
+      const dy = ys[i] - yMean;
+      covXY += dx * dy;
+      varX += dx * dx;
+      varY += dy * dy;
+    }
+
+    return covXY / Math.sqrt(varX * varY);
+  }
+
+  function drawGrid() {
+    gridG.innerHTML = '';
+    for (let v = -3; v <= 3; v += 1) {
+      const sx = toSvgX(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', sx); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', sx); line.setAttribute('y2', H - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (let v = -3; v <= 3; v += 1) {
+      const sy = toSvgY(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', sy);
+      line.setAttribute('x2', W - margin.right); line.setAttribute('y2', sy);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  function drawAxes() {
+    axesG.innerHTML = '';
+    // X axis
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', W - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+
+    // Y axis
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', toSvgX(0)); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', toSvgX(0)); yAxis.setAttribute('y2', H - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+
+    // X axis labels
+    for (let v = -3; v <= 3; v += 1) {
+      if (v === 0) continue;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(v)); label.setAttribute('y', H - margin.bottom + 18);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '11');
+      label.setAttribute('text-anchor', 'middle');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // Y axis labels
+    for (let v = -3; v <= 3; v += 1) {
+      if (v === 0) continue;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 10); label.setAttribute('y', toSvgY(v) + 4);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '11');
+      label.setAttribute('text-anchor', 'end');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // Axis labels
+    const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xLabel.setAttribute('x', W / 2); xLabel.setAttribute('y', H - 5);
+    xLabel.setAttribute('fill', '#8b949e'); xLabel.setAttribute('font-size', '13');
+    xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.textContent = 'x';
+    axesG.appendChild(xLabel);
+
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yLabel.setAttribute('x', 12); yLabel.setAttribute('y', H / 2);
+    yLabel.setAttribute('fill', '#8b949e'); yLabel.setAttribute('font-size', '13');
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('transform', `rotate(-90, 12, ${H/2})`);
+    yLabel.textContent = 'y';
+    axesG.appendChild(yLabel);
+  }
+
+  function update() {
+    const rho = parseFloat(document.querySelector('[data-param="corr"]').value);
+    const nPoints = parseInt(document.querySelector('[data-param="npoints"]').value);
+
+    document.querySelector('[data-readout="corr"]').textContent = rho.toFixed(2);
+    document.querySelector('[data-readout="npoints"]').textContent = nPoints;
+
+    // Use a fixed seed for reproducibility (changes with rho and n)
+    const seed = Math.abs(Math.round(rho * 1000)) + nPoints * 7;
+    const { xs, ys } = generateData(nPoints, rho, seed);
+
+    // Draw points
+    pointsG.innerHTML = '';
+    for (let i = 0; i < xs.length; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', toSvgX(xs[i]));
+      circle.setAttribute('cy', toSvgY(ys[i]));
+      circle.setAttribute('r', 5);
+      circle.setAttribute('fill', '#58a6ff');
+      circle.setAttribute('fill-opacity', '0.7');
+      pointsG.appendChild(circle);
+    }
+
+    // Calculate sample correlation
+    const sampleCorr = pearsonCorr(xs, ys);
+    infoDiv.innerHTML = `ρ = ${rho.toFixed(2)} | N = ${nPoints} | Sample correlation: ${sampleCorr.toFixed(2)}`;
+  }
+
+  drawGrid();
+  drawAxes();
+  update();
+
+  document.querySelector('[data-param="corr"]').addEventListener('input', update);
+  document.querySelector('[data-param="npoints"]').addEventListener('input', update);
+  document.getElementById('pearson-reset').addEventListener('click', () => {
+    document.querySelector('[data-param="corr"]').value = 0.5;
+    document.querySelector('[data-param="npoints"]').value = 60;
+    update();
+  });
+})();
+
+// Spearman widget
+(function() {
+  const W = 500, H = 400;
+  const margin = { left: 50, right: 30, top: 30, bottom: 40 };
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  const xMin = -3.5, xMax = 3.5;
+  const yMin = -3.5, yMax = 3.5;
+
+  const gridG = document.getElementById('spearman-grid');
+  const axesG = document.getElementById('spearman-axes');
+  const pointsG = document.getElementById('spearman-points');
+  const infoDiv = document.getElementById('spearman-info');
+
+  function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
+  function toSvgY(y) { return margin.top + (yMax - y) / (yMax - yMin) * plotH; }
+
+  // Seeded random number generator (Mulberry32)
+  function mulberry32(seed) {
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // Box-Muller transform for normal distribution
+  function normalRandom(rng) {
+    const u1 = rng();
+    const u2 = rng();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  }
+
+  // Generate correlated data: y = rho * x + sqrt(1 - rho^2) * noise
+  function generateData(n, rho, seed) {
+    const rng = mulberry32(seed);
+    const xs = [];
+    const ys = [];
+
+    for (let i = 0; i < n; i++) {
+      const x = normalRandom(rng);
+      const noise = normalRandom(rng);
+      const y = rho * x + Math.sqrt(1 - rho * rho) * noise;
+      xs.push(x);
+      ys.push(y);
+    }
+
+    return { xs, ys };
+  }
+
+  // Calculate sample Pearson correlation
+  function pearsonCorr(xs, ys) {
+    const n = xs.length;
+    const xMean = xs.reduce((a, b) => a + b, 0) / n;
+    const yMean = ys.reduce((a, b) => a + b, 0) / n;
+
+    let covXY = 0, varX = 0, varY = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - xMean;
+      const dy = ys[i] - yMean;
+      covXY += dx * dy;
+      varX += dx * dx;
+      varY += dy * dy;
+    }
+
+    return covXY / Math.sqrt(varX * varY);
+  }
+
+  // Calculate ranks (1-based)
+  function ranks(arr) {
+    const indexed = arr.map((v, i) => ({ v, i }));
+    indexed.sort((a, b) => a.v - b.v);
+    const r = new Array(arr.length);
+    for (let rank = 1; rank <= indexed.length; rank++) {
+      r[indexed[rank - 1].i] = rank;
+    }
+    return r;
+  }
+
+  // Calculate Spearman's rank correlation
+  function spearmanCorr(xs, ys) {
+    const n = xs.length;
+    const rankX = ranks(xs);
+    const rankY = ranks(ys);
+
+    let sumSqDiff = 0;
+    for (let i = 0; i < n; i++) {
+      const d = rankX[i] - rankY[i];
+      sumSqDiff += d * d;
+    }
+
+    return 1 - (6 * sumSqDiff) / (n * (n * n - 1));
+  }
+
+  function drawGrid() {
+    gridG.innerHTML = '';
+    for (let v = -3; v <= 3; v += 1) {
+      const sx = toSvgX(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', sx); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', sx); line.setAttribute('y2', H - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (let v = -3; v <= 3; v += 1) {
+      const sy = toSvgY(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', sy);
+      line.setAttribute('x2', W - margin.right); line.setAttribute('y2', sy);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  function drawAxes() {
+    axesG.innerHTML = '';
+    // X axis
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', W - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+
+    // Y axis
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', toSvgX(0)); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', toSvgX(0)); yAxis.setAttribute('y2', H - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+
+    // X axis labels
+    for (let v = -3; v <= 3; v += 1) {
+      if (v === 0) continue;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(v)); label.setAttribute('y', H - margin.bottom + 18);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '11');
+      label.setAttribute('text-anchor', 'middle');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // Y axis labels
+    for (let v = -3; v <= 3; v += 1) {
+      if (v === 0) continue;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 10); label.setAttribute('y', toSvgY(v) + 4);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '11');
+      label.setAttribute('text-anchor', 'end');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // Axis labels
+    const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xLabel.setAttribute('x', W / 2); xLabel.setAttribute('y', H - 5);
+    xLabel.setAttribute('fill', '#8b949e'); xLabel.setAttribute('font-size', '13');
+    xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.textContent = 'x';
+    axesG.appendChild(xLabel);
+
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yLabel.setAttribute('x', 12); yLabel.setAttribute('y', H / 2);
+    yLabel.setAttribute('fill', '#8b949e'); yLabel.setAttribute('font-size', '13');
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('transform', `rotate(-90, 12, ${H/2})`);
+    yLabel.textContent = 'y';
+    axesG.appendChild(yLabel);
+  }
+
+  function update() {
+    const rho = parseFloat(document.querySelector('[data-param="spearman-corr"]').value);
+    const nPoints = parseInt(document.querySelector('[data-param="spearman-npoints"]').value);
+
+    document.querySelector('[data-readout="spearman-corr"]').textContent = rho.toFixed(2);
+    document.querySelector('[data-readout="spearman-npoints"]').textContent = nPoints;
+
+    // Use a fixed seed for reproducibility (changes with rho and n)
+    const seed = Math.abs(Math.round(rho * 1000)) + nPoints * 7 + 12345;
+    const { xs, ys } = generateData(nPoints, rho, seed);
+
+    // Draw points
+    pointsG.innerHTML = '';
+    for (let i = 0; i < xs.length; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', toSvgX(xs[i]));
+      circle.setAttribute('cy', toSvgY(ys[i]));
+      circle.setAttribute('r', 5);
+      circle.setAttribute('fill', '#58a6ff');
+      circle.setAttribute('fill-opacity', '0.7');
+      pointsG.appendChild(circle);
+    }
+
+    // Calculate both correlations
+    const samplePearson = pearsonCorr(xs, ys);
+    const sampleSpearman = spearmanCorr(xs, ys);
+    infoDiv.innerHTML = `ρ = ${rho.toFixed(2)} | N = ${nPoints} | Pearson: ${samplePearson.toFixed(2)} | Spearman: ${sampleSpearman.toFixed(2)}`;
+  }
+
+  drawGrid();
+  drawAxes();
+  update();
+
+  document.querySelector('[data-param="spearman-corr"]').addEventListener('input', update);
+  document.querySelector('[data-param="spearman-npoints"]').addEventListener('input', update);
+  document.getElementById('spearman-reset').addEventListener('click', () => {
+    document.querySelector('[data-param="spearman-corr"]').value = 0.5;
+    document.querySelector('[data-param="spearman-npoints"]').value = 60;
+    update();
+  });
+})();
+
+// Chatterjee widget
+(function() {
+  const W = 320, H = 280;
+  const margin = { left: 45, right: 20, top: 20, bottom: 35 };
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  // Quadratic plot bounds
+  const quadXMin = -1.2, quadXMax = 1.2;
+  const quadYMin = -0.2, quadYMax = 1.3;
+
+  // Sinusoidal plot bounds
+  const sinXMin = -7, sinXMax = 7;
+  const sinYMin = -1.3, sinYMax = 1.3;
+
+  // Coordinate transforms for quadratic
+  function toSvgXQuad(x) { return margin.left + (x - quadXMin) / (quadXMax - quadXMin) * plotW; }
+  function toSvgYQuad(y) { return margin.top + (quadYMax - y) / (quadYMax - quadYMin) * plotH; }
+
+  // Coordinate transforms for sinusoidal
+  function toSvgXSin(x) { return margin.left + (x - sinXMin) / (sinXMax - sinXMin) * plotW; }
+  function toSvgYSin(y) { return margin.top + (sinYMax - y) / (sinYMax - sinYMin) * plotH; }
+
+  // Generate evenly spaced array
+  function linspace(start, end, n) {
+    const step = (end - start) / (n - 1);
+    return Array.from({length: n}, (_, i) => start + i * step);
+  }
+
+  // Calculate ranks (1-based)
+  function ranks(arr) {
+    const indexed = arr.map((v, i) => ({ v, i }));
+    indexed.sort((a, b) => a.v - b.v);
+    const r = new Array(arr.length);
+    for (let rank = 1; rank <= indexed.length; rank++) {
+      r[indexed[rank - 1].i] = rank;
+    }
+    return r;
+  }
+
+  // Pearson correlation
+  function pearsonCorr(xs, ys) {
+    const n = xs.length;
+    const xMean = xs.reduce((a, b) => a + b, 0) / n;
+    const yMean = ys.reduce((a, b) => a + b, 0) / n;
+
+    let covXY = 0, varX = 0, varY = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - xMean;
+      const dy = ys[i] - yMean;
+      covXY += dx * dy;
+      varX += dx * dx;
+      varY += dy * dy;
+    }
+
+    if (varX === 0 || varY === 0) return 0;
+    return covXY / Math.sqrt(varX * varY);
+  }
+
+  // Spearman correlation
+  function spearmanCorr(xs, ys) {
+    const n = xs.length;
+    const rankX = ranks(xs);
+    const rankY = ranks(ys);
+
+    let sumSqDiff = 0;
+    for (let i = 0; i < n; i++) {
+      const d = rankX[i] - rankY[i];
+      sumSqDiff += d * d;
+    }
+
+    return 1 - (6 * sumSqDiff) / (n * (n * n - 1));
+  }
+
+  // Chatterjee's Xi correlation
+  function chatterjeeCorr(xs, ys) {
+    const n = xs.length;
+
+    // Sort by x values
+    const indexed = xs.map((x, i) => ({ x, y: ys[i] }));
+    indexed.sort((a, b) => a.x - b.x);
+    const ysSorted = indexed.map(p => p.y);
+
+    // Get ranks of y values (after sorting by x)
+    const yRanks = ranks(ysSorted);
+
+    // Sum of absolute rank differences
+    let sumAbsDiff = 0;
+    for (let i = 0; i < n - 1; i++) {
+      sumAbsDiff += Math.abs(yRanks[i + 1] - yRanks[i]);
+    }
+
+    const expected = (n * n - 1) / 3;
+    return 1 - sumAbsDiff / expected;
+  }
+
+  // Draw grid
+  function drawGrid(gridG, toSvgX, toSvgY, xTicks, yTicks) {
+    gridG.innerHTML = '';
+    for (const v of xTicks) {
+      const sx = toSvgX(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', sx); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', sx); line.setAttribute('y2', H - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (const v of yTicks) {
+      const sy = toSvgY(v);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', sy);
+      line.setAttribute('x2', W - margin.right); line.setAttribute('y2', sy);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  // Draw axes with labels
+  function drawAxes(axesG, toSvgX, toSvgY, xTicks, yTicks, xLabel, yLabel) {
+    axesG.innerHTML = '';
+
+    // X axis (at y=0)
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', W - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+
+    // Y axis (at x=0)
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', toSvgX(0)); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', toSvgX(0)); yAxis.setAttribute('y2', H - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+
+    // X axis tick labels
+    for (const v of xTicks) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(v)); label.setAttribute('y', H - margin.bottom + 15);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '10');
+      label.setAttribute('text-anchor', 'middle');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // Y axis tick labels
+    for (const v of yTicks) {
+      if (v === 0) continue;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 8); label.setAttribute('y', toSvgY(v) + 3);
+      label.setAttribute('fill', '#6e7681'); label.setAttribute('font-size', '10');
+      label.setAttribute('text-anchor', 'end');
+      label.textContent = v;
+      axesG.appendChild(label);
+    }
+
+    // X axis label
+    const xLabelEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xLabelEl.setAttribute('x', W / 2); xLabelEl.setAttribute('y', H - 5);
+    xLabelEl.setAttribute('fill', '#8b949e'); xLabelEl.setAttribute('font-size', '11');
+    xLabelEl.setAttribute('text-anchor', 'middle');
+    xLabelEl.textContent = xLabel;
+    axesG.appendChild(xLabelEl);
+
+    // Y axis label
+    const yLabelEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yLabelEl.setAttribute('x', 10); yLabelEl.setAttribute('y', H / 2);
+    yLabelEl.setAttribute('fill', '#8b949e'); yLabelEl.setAttribute('font-size', '11');
+    yLabelEl.setAttribute('text-anchor', 'middle');
+    yLabelEl.setAttribute('transform', `rotate(-90, 10, ${H/2})`);
+    yLabelEl.textContent = yLabel;
+    axesG.appendChild(yLabelEl);
+  }
+
+  // Convert to SVG path
+  function toPath(xs, ys, toSvgX, toSvgY) {
+    let d = '';
+    for (let i = 0; i < xs.length; i++) {
+      const sx = toSvgX(xs[i]);
+      const sy = toSvgY(ys[i]);
+      if (i === 0) {
+        d = `M ${sx} ${sy}`;
+      } else {
+        d += ` L ${sx} ${sy}`;
+      }
+    }
+    return d;
+  }
+
+  // Draw sample points
+  function drawPoints(pointsG, xs, ys, toSvgX, toSvgY) {
+    pointsG.innerHTML = '';
+    for (let i = 0; i < xs.length; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', toSvgX(xs[i]));
+      circle.setAttribute('cy', toSvgY(ys[i]));
+      circle.setAttribute('r', 5);
+      circle.setAttribute('fill', '#58a6ff');
+      circle.setAttribute('fill-opacity', '0.7');
+      pointsG.appendChild(circle);
+    }
+  }
+
+  // Initialize grids and axes
+  const quadGridG = document.getElementById('chatterjee-grid-quad');
+  const quadAxesG = document.getElementById('chatterjee-axes-quad');
+  const quadPointsG = document.getElementById('chatterjee-points-quad');
+  const quadInfoDiv = document.getElementById('chatterjee-info-quad');
+
+  const sinGridG = document.getElementById('chatterjee-grid-sin');
+  const sinAxesG = document.getElementById('chatterjee-axes-sin');
+  const sinPointsG = document.getElementById('chatterjee-points-sin');
+  const sinInfoDiv = document.getElementById('chatterjee-info-sin');
+
+  // Draw static elements
+  drawGrid(quadGridG, toSvgXQuad, toSvgYQuad, [-1, 0, 1], [0, 0.5, 1]);
+  drawAxes(quadAxesG, toSvgXQuad, toSvgYQuad, [-1, 0, 1], [0, 0.5, 1], 'x', 'y');
+
+  drawGrid(sinGridG, toSvgXSin, toSvgYSin, [-6, -3, 0, 3, 6], [-1, 0, 1]);
+  drawAxes(sinAxesG, toSvgXSin, toSvgYSin, [-6, -3, 0, 3, 6], [-1, 0, 1], 'x', 'y');
+
+  function update() {
+    const nPoints = parseInt(document.querySelector('[data-param="chatterjee-npoints"]').value);
+    document.querySelector('[data-readout="chatterjee-npoints"]').textContent = nPoints;
+
+    // Generate sample points for quadratic
+    const quadXs = linspace(-1, 1, nPoints);
+    const quadYs = quadXs.map(x => x * x);
+
+    // Generate sample points for sinusoidal
+    const sinXs = linspace(-2 * Math.PI, 2 * Math.PI, nPoints);
+    const sinYs = sinXs.map(x => Math.sin(x));
+
+    // Draw points
+    drawPoints(quadPointsG, quadXs, quadYs, toSvgXQuad, toSvgYQuad);
+    drawPoints(sinPointsG, sinXs, sinYs, toSvgXSin, toSvgYSin);
+
+    // Calculate correlations for quadratic
+    const quadPearson = pearsonCorr(quadXs, quadYs);
+    const quadSpearman = spearmanCorr(quadXs, quadYs);
+    const quadXi = chatterjeeCorr(quadXs, quadYs);
+
+    // Calculate correlations for sinusoidal
+    const sinPearson = pearsonCorr(sinXs, sinYs);
+    const sinSpearman = spearmanCorr(sinXs, sinYs);
+    const sinXi = chatterjeeCorr(sinXs, sinYs);
+
+    // Update info displays
+    quadInfoDiv.innerHTML = `<span class="corr-pair">ρ: ${quadPearson.toFixed(2)}</span> | <span class="corr-pair">r<sub>s</sub>: ${quadSpearman.toFixed(2)}</span> | <span class="corr-pair">ξ: ${quadXi.toFixed(2)}</span>`;
+    sinInfoDiv.innerHTML = `<span class="corr-pair">ρ: ${sinPearson.toFixed(2)}</span> | <span class="corr-pair">r<sub>s</sub>: ${sinSpearman.toFixed(2)}</span> | <span class="corr-pair">ξ: ${sinXi.toFixed(2)}</span>`;
+  }
+
+  update();
+
+  document.querySelector('[data-param="chatterjee-npoints"]').addEventListener('input', update);
+  document.getElementById('chatterjee-reset').addEventListener('click', () => {
+    document.querySelector('[data-param="chatterjee-npoints"]').value = 30;
+    update();
+  });
+})();
+</script>
