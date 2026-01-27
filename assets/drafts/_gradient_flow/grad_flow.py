@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.2"
+__generated_with = "0.19.6"
 app = marimo.App(width="medium")
 
 
@@ -16,9 +16,9 @@ def _():
     import re
     from collections import Counter
 
-    IMAGE_DIR = Path("_gradient_flow/images")
-    IMAGE_DIR.mkdir(exist_ok=True)
-    return Counter, IMAGE_DIR, Path, functools, mo, np, plt, re, scp
+    # IMAGE_DIR = Path("_gradient_flow/images")
+    # IMAGE_DIR.mkdir(exist_ok=True)
+    return Counter, Path, functools, mo, np, plt, re, scp
 
 
 @app.cell
@@ -36,7 +36,7 @@ def _():
 
 
 @app.cell
-def sharpness_1d(IMAGE_DIR, make_cartesian_plane, np, plt):
+def sharpness_1d(make_cartesian_plane, np, plt):
     def plot_1d_sharpness():
         for _S in [0.5, 1, 2, 5]:
             x = np.linspace(-2, 2, 100)
@@ -52,7 +52,7 @@ def sharpness_1d(IMAGE_DIR, make_cartesian_plane, np, plt):
 
 
     _ax = plot_1d_sharpness()
-    _ax.figure.savefig(fname=IMAGE_DIR / "1d-sharpness.png", bbox_inches="tight")
+    # _ax.figure.savefig(fname=IMAGE_DIR / "1d-sharpness.png", bbox_inches="tight")
     _ax
     return
 
