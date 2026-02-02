@@ -144,142 +144,36 @@ For quadratic functions, gradient flow always converges while gradient descent r
 
 Explore gradient descent dynamics with this interactive widget. Adjust the quadratic's shape (semi-axes $$a$$ and $$b$$), rotation angle $$\theta$$, starting point, and learning rate to see how they affect convergence.
 
-<style>
-.gd-widget {
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  background: #161b22;
-  margin: 1rem auto 1.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  max-width: 900px;
-}
-
-.gd-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.gd-controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.1;
-}
-
-.gd-controls input[type="range"] {
-  width: 80px;
-  height: 6px;
-  accent-color: #58a6ff;
-}
-
-.gd-readout {
-  font-variant-numeric: tabular-nums;
-  color: #8b949e;
-  font-size: 0.85rem;
-  min-width: 3.5em;
-}
-
-.gd-plot {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 4px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-}
-
-.gd-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 10px;
-  font-size: 0.82rem;
-  color: #8b949e;
-}
-
-.gd-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gd-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.gd-button {
-  padding: 5px 10px;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 0.85rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.gd-button:hover {
-  background: #21262d;
-  border-color: #58a6ff;
-}
-
-.gd-info {
-  font-size: 0.8rem;
-  color: #8b949e;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border-radius: 4px;
-  border-left: 3px solid #58a6ff;
-}
-
-@media (max-width: 600px) {
-  .gd-controls input[type="range"] {
-    width: 80px;
-  }
-}
-</style>
-
-<div class="gd-widget" id="gd-widget">
-  <div class="gd-controls">
+<div class="widget-container" id="gd-widget" style="max-width: 900px;">
+  <div class="widget-controls">
     <label>
       a
       <input type="range" min="0.3" max="0.75" value="0.5" step="0.05" data-param="a">
-      <span class="gd-readout" data-readout="a">1.00</span>
+      <span class="widget-readout" data-readout="a">1.00</span>
     </label>
     <label>
       b
       <input type="range" min="0.3" max="0.75" value="0.5" step="0.05" data-param="b">
-      <span class="gd-readout" data-readout="b">0.50</span>
+      <span class="widget-readout" data-readout="b">0.50</span>
     </label>
     <label>
       θ
       <input type="range" min="0" max="90" value="30" step="5" data-param="theta">
-      <span class="gd-readout" data-readout="theta">30°</span>
+      <span class="widget-readout" data-readout="theta">30°</span>
     </label>
     <label>
       η
       <input type="range" min="0.01" max="0.5" value="0.15" step="0.01" data-param="lr">
-      <span class="gd-readout" data-readout="lr">0.15</span>
+      <span class="widget-readout" data-readout="lr">0.15</span>
     </label>
     <label>
       steps
       <input type="range" min="5" max="100" value="30" step="1" data-param="steps">
-      <span class="gd-readout" data-readout="steps">30</span>
+      <span class="widget-readout" data-readout="steps">30</span>
     </label>
-    <button type="button" class="gd-button" id="gd-reset">Reset</button>
+    <button type="button" class="widget-button" id="gd-reset">Reset</button>
   </div>
-  <svg class="gd-plot" id="gd-svg" viewBox="0 0 880 420" preserveAspectRatio="xMidYMid meet">
+  <svg class="widget-plot" id="gd-svg" viewBox="0 0 880 420" preserveAspectRatio="xMidYMid meet">
     <rect x="0" y="0" width="880" height="420" fill="#0d1117"></rect>
     <!-- Left plot: Contours -->
     <g id="gd-left-plot">
@@ -302,12 +196,12 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
       <text id="loss-xlabel" x="670" y="405" fill="#8b949e" font-size="13" text-anchor="middle">Step</text>
     </g>
   </svg>
-  <div class="gd-legend">
-    <span class="gd-chip"><span class="gd-dot" style="background:#58a6ff"></span>Gradient flow</span>
-    <span class="gd-chip"><span class="gd-dot" style="background:#f78166"></span>Gradient descent</span>
-    <span class="gd-chip"><span class="gd-dot" style="background:#3fb950"></span>Start</span>
+  <div class="widget-legend">
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#58a6ff"></span>Gradient flow</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#f78166"></span>Gradient descent</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#3fb950"></span>Start</span>
   </div>
-  <div class="gd-info" id="gd-info">
+  <div class="widget-info" id="gd-info">
     λ<sub>max</sub> = <span id="gd-lambda">4.00</span> &nbsp;|&nbsp;
     η<sub>crit</sub> = 2/λ<sub>max</sub> = <span id="gd-eta-crit">0.50</span> &nbsp;|&nbsp;
     <span id="gd-status" style="color:#3fb950">Converging</span>
@@ -693,7 +587,7 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
   update();
 
   // Event listeners for sliders
-  document.querySelectorAll('.gd-widget input[type="range"]').forEach(input => {
+  document.querySelectorAll('#gd-widget input[type="range"]').forEach(input => {
     input.addEventListener('input', update);
   });
 

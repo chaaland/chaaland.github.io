@@ -1,0 +1,228 @@
+// ==========================================================================
+// Widget Base Styles - Shared styles for interactive SVG widgets
+// ==========================================================================
+// These styles are consolidated from inline CSS in blog posts.
+// Usage: Apply .widget-* classes instead of post-specific prefixes.
+// ==========================================================================
+
+// --------------------------------------------------------------------------
+// Widget Container
+// --------------------------------------------------------------------------
+
+.widget-container {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 12px;
+  background: $surface-color;
+  margin: 1rem auto 1.5rem;
+  font-family: $monospace;
+  max-width: 700px;
+}
+
+// --------------------------------------------------------------------------
+// Widget Controls (Sliders, Buttons, Labels)
+// --------------------------------------------------------------------------
+
+.widget-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.widget-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: $text-color;
+  line-height: 1.1;
+}
+
+.widget-controls input[type="range"] {
+  width: 120px;
+  height: 6px;
+  accent-color: $primary-color;
+}
+
+.widget-controls select {
+  background: $background-color;
+  color: $text-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: $monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $primary-color;
+  }
+}
+
+// --------------------------------------------------------------------------
+// Widget Readouts (Slider values, live displays)
+// --------------------------------------------------------------------------
+
+.widget-readout {
+  font-variant-numeric: tabular-nums;
+  color: $muted-text-color;
+  font-size: 0.85rem;
+  min-width: 2em;
+}
+
+// --------------------------------------------------------------------------
+// Widget Plot Area (SVG container)
+// --------------------------------------------------------------------------
+
+.widget-plot {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  background: $background-color;
+  border: 1px solid $border-color;
+}
+
+// --------------------------------------------------------------------------
+// Widget Footer (Stats, results display)
+// --------------------------------------------------------------------------
+
+.widget-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: $text-color;
+  padding: 8px 12px;
+  background: rgba($primary-color, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid $primary-color;
+}
+
+.widget-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.widget-value {
+  color: $primary-color;
+  font-weight: 500;
+}
+
+.widget-error {
+  color: $muted-text-color;
+  font-size: 0.8rem;
+}
+
+// --------------------------------------------------------------------------
+// Widget Info Box (Detailed stats, descriptions)
+// --------------------------------------------------------------------------
+
+.widget-info {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba($primary-color, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid $primary-color;
+  font-size: 0.85rem;
+  color: $text-color;
+}
+
+.widget-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.widget-info-row + .widget-info-row {
+  border-top: 1px solid rgba($border-color, 0.5);
+}
+
+.widget-info-label {
+  color: $muted-text-color;
+}
+
+.widget-info-value {
+  color: $primary-color;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+// --------------------------------------------------------------------------
+// Widget Buttons
+// --------------------------------------------------------------------------
+
+.widget-button {
+  background: $surface-color;
+  color: $text-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: $monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba($primary-color, 0.1);
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// --------------------------------------------------------------------------
+// Widget Legend
+// --------------------------------------------------------------------------
+
+.widget-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: $muted-text-color;
+  padding: 6px 10px;
+  background: rgba($border-color, 0.3);
+  border-radius: 4px;
+}
+
+.widget-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.widget-legend-swatch {
+  width: 12px;
+  height: 3px;
+  border-radius: 1px;
+}
+
+// --------------------------------------------------------------------------
+// Responsive Adjustments
+// --------------------------------------------------------------------------
+
+@media (max-width: 600px) {
+  .widget-controls input[type="range"] {
+    width: 100px;
+  }
+
+  .widget-footer {
+    gap: 6px 16px;
+  }
+
+  .widget-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}

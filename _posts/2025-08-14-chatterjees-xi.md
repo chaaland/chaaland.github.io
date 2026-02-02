@@ -71,27 +71,27 @@ Figure 1 shows data with varying correlations.
 As the correlation approaches 1, you can see the data begin to lie on a line with positive slope.
 Use the sliders below to explore how Pearson's correlation changes with different correlation values and sample sizes.
 
-<div class="pearson-widget" id="pearson-widget">
-  <div class="pearson-controls">
+<div class="widget-container" id="pearson-widget">
+  <div class="widget-controls">
     <label>
       Correlation (ρ)
       <input type="range" min="-1" max="1" value="0.5" step="0.25" data-param="corr">
-      <span class="pearson-readout" data-readout="corr">0.50</span>
+      <span class="widget-readout" data-readout="corr">0.50</span>
     </label>
     <label>
       Points (N)
       <input type="range" min="20" max="100" value="60" step="20" data-param="npoints">
-      <span class="pearson-readout" data-readout="npoints">60</span>
+      <span class="widget-readout" data-readout="npoints">60</span>
     </label>
-    <button type="button" class="pearson-button" id="pearson-reset">Reset</button>
+    <button type="button" class="widget-button" id="pearson-reset">Reset</button>
   </div>
-  <svg class="pearson-plot" id="pearson-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
+  <svg class="widget-plot" id="pearson-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
     <rect x="0" y="0" width="500" height="400" fill="#0d1117"></rect>
     <g id="pearson-grid"></g>
     <g id="pearson-axes"></g>
     <g id="pearson-points"></g>
   </svg>
-  <div class="pearson-info" id="pearson-info">
+  <div class="widget-info" id="pearson-info">
     ρ = 0.50 | N = 60 | Sample correlation: 0.50
   </div>
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 1: Scatter plot of data with adjustable Pearson correlation. Adjust the sliders to see how different correlation values and sample sizes affect the scatter pattern.</figcaption>
@@ -165,27 +165,27 @@ def spearman_corr(x: np.ndarray, y: np.ndarray) -> float:
 Figure 4 illustrates how Pearson's and Spearman's compare on data from the same distribution as Figure 1.
 Use the sliders to see how both correlation measures respond to different data configurations.
 
-<div class="spearman-widget" id="spearman-widget">
-  <div class="spearman-controls">
+<div class="widget-container" id="spearman-widget">
+  <div class="widget-controls">
     <label>
       Correlation (ρ)
       <input type="range" min="-1" max="1" value="0.5" step="0.25" data-param="spearman-corr">
-      <span class="spearman-readout" data-readout="spearman-corr">0.50</span>
+      <span class="widget-readout" data-readout="spearman-corr">0.50</span>
     </label>
     <label>
       Points (N)
       <input type="range" min="20" max="100" value="60" step="20" data-param="spearman-npoints">
-      <span class="spearman-readout" data-readout="spearman-npoints">60</span>
+      <span class="widget-readout" data-readout="spearman-npoints">60</span>
     </label>
-    <button type="button" class="spearman-button" id="spearman-reset">Reset</button>
+    <button type="button" class="widget-button" id="spearman-reset">Reset</button>
   </div>
-  <svg class="spearman-plot" id="spearman-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
+  <svg class="widget-plot" id="spearman-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
     <rect x="0" y="0" width="500" height="400" fill="#0d1117"></rect>
     <g id="spearman-grid"></g>
     <g id="spearman-axes"></g>
     <g id="spearman-points"></g>
   </svg>
-  <div class="spearman-info" id="spearman-info">
+  <div class="widget-info" id="spearman-info">
     ρ = 0.50 | N = 60 | Pearson: 0.50 | Spearman: 0.50
   </div>
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Scatter plot comparing Pearson and Spearman correlations. Though the two yield different numbers, they are typically similar for linear data.</figcaption>
@@ -395,37 +395,45 @@ We'll start by revisiting the non-linear data from figure 6.
 We saw that both Pearson's and Spearman's correlations failed to capture the clear functional relationships in the quadratic and sinusoidal datasets.
 Figure 8 shows the same data, this time including Chatterjee's correlation.
 
-<div class="chatterjee-widget" id="chatterjee-widget">
-  <div class="chatterjee-controls">
+<style>
+/* Chatterjee-specific layout for side-by-side plots */
+.chatterjee-plots { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.chatterjee-subplot { flex: 1; min-width: 280px; max-width: 340px; }
+.chatterjee-subplot-title { text-align: center; font-size: 0.85rem; color: #c9d1d9; margin-top: 6px; font-style: italic; }
+@media (max-width: 600px) { .chatterjee-plots { flex-direction: column; align-items: center; } .chatterjee-subplot { max-width: 100%; } }
+</style>
+
+<div class="widget-container" id="chatterjee-widget">
+  <div class="widget-controls">
     <label>
       Points (N)
       <input type="range" min="10" max="100" value="30" step="5" data-param="chatterjee-npoints">
-      <span class="chatterjee-readout" data-readout="chatterjee-npoints">30</span>
+      <span class="widget-readout" data-readout="chatterjee-npoints">30</span>
     </label>
-    <button type="button" class="chatterjee-button" id="chatterjee-reset">Reset</button>
+    <button type="button" class="widget-button" id="chatterjee-reset">Reset</button>
   </div>
   <div class="chatterjee-plots">
     <div class="chatterjee-subplot">
-      <svg class="chatterjee-plot" id="chatterjee-svg-quad" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
+      <svg class="widget-plot" id="chatterjee-svg-quad" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
         <rect x="0" y="0" width="320" height="280" fill="#0d1117"></rect>
         <g id="chatterjee-grid-quad"></g>
         <g id="chatterjee-axes-quad"></g>
         <g id="chatterjee-points-quad"></g>
       </svg>
       <div class="chatterjee-subplot-title">y = x²</div>
-      <div class="chatterjee-info" id="chatterjee-info-quad">
+      <div class="widget-info" id="chatterjee-info-quad">
         <span class="corr-pair">ρ: 0.00</span> | <span class="corr-pair">r<sub>s</sub>: 0.00</span> | <span class="corr-pair">ξ: 0.72</span>
       </div>
     </div>
     <div class="chatterjee-subplot">
-      <svg class="chatterjee-plot" id="chatterjee-svg-sin" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
+      <svg class="widget-plot" id="chatterjee-svg-sin" viewBox="0 0 320 280" preserveAspectRatio="xMidYMid meet">
         <rect x="0" y="0" width="320" height="280" fill="#0d1117"></rect>
         <g id="chatterjee-grid-sin"></g>
         <g id="chatterjee-axes-sin"></g>
         <g id="chatterjee-points-sin"></g>
       </svg>
       <div class="chatterjee-subplot-title">y = sin(x)</div>
-      <div class="chatterjee-info" id="chatterjee-info-sin">
+      <div class="widget-info" id="chatterjee-info-sin">
         <span class="corr-pair">ρ: 0.00</span> | <span class="corr-pair">r<sub>s</sub>: 0.00</span> | <span class="corr-pair">ξ: 0.63</span>
       </div>
     </div>
@@ -481,288 +489,7 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
 
 ---
 
-<style>
-.pearson-widget {
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  background: #161b22;
-  margin: 1rem auto 1.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  max-width: 700px;
-}
-
-.pearson-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.pearson-controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.1;
-}
-
-.pearson-controls input[type="range"] {
-  width: 120px;
-  height: 6px;
-  accent-color: #58a6ff;
-}
-
-.pearson-readout {
-  font-variant-numeric: tabular-nums;
-  color: #8b949e;
-  font-size: 0.85rem;
-  min-width: 3em;
-}
-
-.pearson-plot {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 4px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-}
-
-.pearson-info {
-  font-size: 0.8rem;
-  color: #8b949e;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border-radius: 4px;
-  border-left: 3px solid #58a6ff;
-}
-
-.pearson-button {
-  padding: 5px 10px;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.pearson-button:hover {
-  background: #21262d;
-  border-color: #58a6ff;
-}
-
-@media (max-width: 600px) {
-  .pearson-controls input[type="range"] {
-    width: 90px;
-  }
-}
-
-/* Spearman widget styles */
-.spearman-widget {
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  background: #161b22;
-  margin: 1rem auto 1.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  max-width: 700px;
-}
-
-.spearman-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.spearman-controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.1;
-}
-
-.spearman-controls input[type="range"] {
-  width: 120px;
-  height: 6px;
-  accent-color: #58a6ff;
-}
-
-.spearman-readout {
-  font-variant-numeric: tabular-nums;
-  color: #8b949e;
-  font-size: 0.85rem;
-  min-width: 3em;
-}
-
-.spearman-plot {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 4px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-}
-
-.spearman-info {
-  font-size: 0.8rem;
-  color: #8b949e;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border-radius: 4px;
-  border-left: 3px solid #58a6ff;
-}
-
-.spearman-button {
-  padding: 5px 10px;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.spearman-button:hover {
-  background: #21262d;
-  border-color: #58a6ff;
-}
-
-@media (max-width: 600px) {
-  .spearman-controls input[type="range"] {
-    width: 90px;
-  }
-}
-
-/* Chatterjee widget styles */
-.chatterjee-widget {
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  background: #161b22;
-  margin: 1rem auto 1.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  max-width: 700px;
-}
-
-.chatterjee-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.chatterjee-controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.1;
-}
-
-.chatterjee-controls input[type="range"] {
-  width: 150px;
-  height: 6px;
-  accent-color: #58a6ff;
-}
-
-.chatterjee-readout {
-  font-variant-numeric: tabular-nums;
-  color: #8b949e;
-  font-size: 0.85rem;
-  min-width: 2.5em;
-}
-
-.chatterjee-plots {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.chatterjee-subplot {
-  flex: 1;
-  min-width: 280px;
-  max-width: 340px;
-}
-
-.chatterjee-plot {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 4px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-}
-
-.chatterjee-subplot-title {
-  text-align: center;
-  font-size: 0.85rem;
-  color: #c9d1d9;
-  margin-top: 6px;
-  font-style: italic;
-}
-
-.chatterjee-info {
-  font-size: 0.8rem;
-  color: #8b949e;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border-radius: 4px;
-  border-left: 3px solid #58a6ff;
-}
-
-.chatterjee-info .corr-pair {
-  white-space: nowrap;
-}
-
-.chatterjee-button {
-  padding: 5px 10px;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chatterjee-button:hover {
-  background: #21262d;
-  border-color: #58a6ff;
-}
-
-@media (max-width: 600px) {
-  .chatterjee-controls input[type="range"] {
-    width: 100px;
-  }
-  .chatterjee-plots {
-    flex-direction: column;
-    align-items: center;
-  }
-  .chatterjee-subplot {
-    max-width: 100%;
-  }
-}
-</style>
-
+{% include widget-scripts.html %}
 <script>
 (function() {
   const W = 500, H = 400;
@@ -781,22 +508,10 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
   function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
   function toSvgY(y) { return margin.top + (yMax - y) / (yMax - yMin) * plotH; }
 
-  // Seeded random number generator (Mulberry32)
-  function mulberry32(seed) {
-    return function() {
-      let t = seed += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-
-  // Box-Muller transform for normal distribution
-  function normalRandom(rng) {
-    const u1 = rng();
-    const u2 = rng();
-    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-  }
+  // Shared utilities
+  const mulberry32 = WidgetUtils.mulberry32;
+  const normalRandom = WidgetUtils.normalRandom;
+  const pearsonCorr = WidgetUtils.pearsonCorr;
 
   // Generate correlated data: y = rho * x + sqrt(1 - rho^2) * noise
   function generateData(n, rho, seed) {
@@ -813,24 +528,6 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
     }
 
     return { xs, ys };
-  }
-
-  // Calculate sample Pearson correlation
-  function pearsonCorr(xs, ys) {
-    const n = xs.length;
-    const xMean = xs.reduce((a, b) => a + b, 0) / n;
-    const yMean = ys.reduce((a, b) => a + b, 0) / n;
-
-    let covXY = 0, varX = 0, varY = 0;
-    for (let i = 0; i < n; i++) {
-      const dx = xs[i] - xMean;
-      const dy = ys[i] - yMean;
-      covXY += dx * dy;
-      varX += dx * dx;
-      varY += dy * dy;
-    }
-
-    return covXY / Math.sqrt(varX * varY);
   }
 
   function drawGrid() {
@@ -967,22 +664,12 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
   function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
   function toSvgY(y) { return margin.top + (yMax - y) / (yMax - yMin) * plotH; }
 
-  // Seeded random number generator (Mulberry32)
-  function mulberry32(seed) {
-    return function() {
-      let t = seed += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-
-  // Box-Muller transform for normal distribution
-  function normalRandom(rng) {
-    const u1 = rng();
-    const u2 = rng();
-    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-  }
+  // Shared utilities
+  const mulberry32 = WidgetUtils.mulberry32;
+  const normalRandom = WidgetUtils.normalRandom;
+  const pearsonCorr = WidgetUtils.pearsonCorr;
+  const ranks = WidgetUtils.ranks;
+  const spearmanCorr = WidgetUtils.spearmanCorr;
 
   // Generate correlated data: y = rho * x + sqrt(1 - rho^2) * noise
   function generateData(n, rho, seed) {
@@ -999,50 +686,6 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
     }
 
     return { xs, ys };
-  }
-
-  // Calculate sample Pearson correlation
-  function pearsonCorr(xs, ys) {
-    const n = xs.length;
-    const xMean = xs.reduce((a, b) => a + b, 0) / n;
-    const yMean = ys.reduce((a, b) => a + b, 0) / n;
-
-    let covXY = 0, varX = 0, varY = 0;
-    for (let i = 0; i < n; i++) {
-      const dx = xs[i] - xMean;
-      const dy = ys[i] - yMean;
-      covXY += dx * dy;
-      varX += dx * dx;
-      varY += dy * dy;
-    }
-
-    return covXY / Math.sqrt(varX * varY);
-  }
-
-  // Calculate ranks (1-based)
-  function ranks(arr) {
-    const indexed = arr.map((v, i) => ({ v, i }));
-    indexed.sort((a, b) => a.v - b.v);
-    const r = new Array(arr.length);
-    for (let rank = 1; rank <= indexed.length; rank++) {
-      r[indexed[rank - 1].i] = rank;
-    }
-    return r;
-  }
-
-  // Calculate Spearman's rank correlation
-  function spearmanCorr(xs, ys) {
-    const n = xs.length;
-    const rankX = ranks(xs);
-    const rankY = ranks(ys);
-
-    let sumSqDiff = 0;
-    for (let i = 0; i < n; i++) {
-      const d = rankX[i] - rankY[i];
-      sumSqDiff += d * d;
-    }
-
-    return 1 - (6 * sumSqDiff) / (n * (n * n - 1));
   }
 
   function drawGrid() {
@@ -1185,56 +828,11 @@ Chatterjee's coefficient is a truly remarkable example of how, even in a field a
   function toSvgXSin(x) { return margin.left + (x - sinXMin) / (sinXMax - sinXMin) * plotW; }
   function toSvgYSin(y) { return margin.top + (sinYMax - y) / (sinYMax - sinYMin) * plotH; }
 
-  // Generate evenly spaced array
-  function linspace(start, end, n) {
-    const step = (end - start) / (n - 1);
-    return Array.from({length: n}, (_, i) => start + i * step);
-  }
-
-  // Calculate ranks (1-based)
-  function ranks(arr) {
-    const indexed = arr.map((v, i) => ({ v, i }));
-    indexed.sort((a, b) => a.v - b.v);
-    const r = new Array(arr.length);
-    for (let rank = 1; rank <= indexed.length; rank++) {
-      r[indexed[rank - 1].i] = rank;
-    }
-    return r;
-  }
-
-  // Pearson correlation
-  function pearsonCorr(xs, ys) {
-    const n = xs.length;
-    const xMean = xs.reduce((a, b) => a + b, 0) / n;
-    const yMean = ys.reduce((a, b) => a + b, 0) / n;
-
-    let covXY = 0, varX = 0, varY = 0;
-    for (let i = 0; i < n; i++) {
-      const dx = xs[i] - xMean;
-      const dy = ys[i] - yMean;
-      covXY += dx * dy;
-      varX += dx * dx;
-      varY += dy * dy;
-    }
-
-    if (varX === 0 || varY === 0) return 0;
-    return covXY / Math.sqrt(varX * varY);
-  }
-
-  // Spearman correlation
-  function spearmanCorr(xs, ys) {
-    const n = xs.length;
-    const rankX = ranks(xs);
-    const rankY = ranks(ys);
-
-    let sumSqDiff = 0;
-    for (let i = 0; i < n; i++) {
-      const d = rankX[i] - rankY[i];
-      sumSqDiff += d * d;
-    }
-
-    return 1 - (6 * sumSqDiff) / (n * (n * n - 1));
-  }
+  // Shared utilities
+  const linspace = WidgetUtils.linspace;
+  const ranks = WidgetUtils.ranks;
+  const pearsonCorr = WidgetUtils.pearsonCorr;
+  const spearmanCorr = WidgetUtils.spearmanCorr;
 
   // Chatterjee's Xi correlation
   function chatterjeeCorr(xs, ys) {

@@ -360,133 +360,21 @@ Though Taylor polynomials use derivatives and Newton-Gregory uses finite differe
 
 The widget below shows how the Newton-Gregory polynomial approaches the Taylor approximation of $$\log(1+x)$$ as $$h$$ decreases towards 0.
 
-<style>
-.ng-widget {
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  background: #161b22;
-  margin: 1rem auto 1.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  max-width: 700px;
-}
-
-.ng-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.ng-controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.1;
-}
-
-.ng-controls input[type="range"] {
-  width: 100px;
-  height: 6px;
-  accent-color: #58a6ff;
-}
-
-.ng-readout {
-  font-variant-numeric: tabular-nums;
-  color: #8b949e;
-  font-size: 0.85rem;
-  min-width: 3em;
-}
-
-.ng-plot {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 4px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-}
-
-.ng-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 10px;
-  font-size: 0.82rem;
-  color: #8b949e;
-}
-
-.ng-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ng-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.ng-line {
-  width: 20px;
-  height: 3px;
-  display: inline-block;
-}
-
-.ng-info {
-  font-size: 0.8rem;
-  color: #8b949e;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border-radius: 4px;
-  border-left: 3px solid #58a6ff;
-}
-
-.ng-button {
-  padding: 5px 10px;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.ng-button:hover {
-  background: #21262d;
-  border-color: #58a6ff;
-}
-
-@media (max-width: 600px) {
-  .ng-controls input[type="range"] {
-    width: 80px;
-  }
-}
-</style>
-
-<div class="ng-widget" id="ng-widget">
-  <div class="ng-controls">
+<div class="widget-container" id="ng-widget">
+  <div class="widget-controls">
     <label>
       h (spacing)
       <input type="range" min="0.01" max="0.2" value="0.10" step="0.01" data-param="h">
-      <span class="ng-readout" data-readout="h">0.10</span>
+      <span class="widget-readout" data-readout="h">0.10</span>
     </label>
     <label>
       N (degree)
       <input type="range" min="2" max="6" value="3" step="1" data-param="n">
-      <span class="ng-readout" data-readout="n">3</span>
+      <span class="widget-readout" data-readout="n">3</span>
     </label>
-    <button type="button" class="ng-button" id="ng-reset">Reset</button>
+    <button type="button" class="widget-button" id="ng-reset">Reset</button>
   </div>
-  <svg class="ng-plot" id="ng-svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet">
+  <svg class="widget-plot" id="ng-svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet">
     <rect x="0" y="0" width="600" height="400" fill="#0d1117"></rect>
     <g id="ng-grid"></g>
     <g id="ng-axes"></g>
@@ -495,13 +383,13 @@ The widget below shows how the Newton-Gregory polynomial approaches the Taylor a
     <path id="ng-interp-path" fill="none" stroke="#7ee787" stroke-width="3" stroke-linecap="round" stroke-dasharray="10,5"></path>
     <g id="ng-sample-points"></g>
   </svg>
-  <div class="ng-legend">
-    <span class="ng-chip"><span class="ng-line" style="background:#58a6ff"></span>log(1+x)</span>
-    <span class="ng-chip"><span class="ng-line" style="background:#f78166; background-image: repeating-linear-gradient(90deg, #f78166 0, #f78166 4px, transparent 4px, transparent 7px);"></span>Taylor</span>
-    <span class="ng-chip"><span class="ng-line" style="background:#7ee787; background-image: repeating-linear-gradient(90deg, #7ee787 0, #7ee787 8px, transparent 8px, transparent 12px);"></span>Newton-Gregory</span>
-    <span class="ng-chip"><span class="ng-dot" style="background:#7ee787"></span>Sample points</span>
+  <div class="widget-legend">
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#58a6ff"></span>log(1+x)</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#f78166; background-image: repeating-linear-gradient(90deg, #f78166 0, #f78166 4px, transparent 4px, transparent 7px);"></span>Taylor</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#7ee787; background-image: repeating-linear-gradient(90deg, #7ee787 0, #7ee787 8px, transparent 8px, transparent 12px);"></span>Newton-Gregory</span>
+    <span class="widget-legend-item"><span style="width:10px;height:10px;border-radius:50%;display:inline-block;background:#7ee787"></span>Sample points</span>
   </div>
-  <div class="ng-info" id="ng-info">
+  <div class="widget-info" id="ng-info">
     As h → 0, Newton-Gregory converges to the Taylor polynomial
   </div>
 </div>
@@ -516,6 +404,7 @@ The Newton-Gregory method is useful when
 
 In addition, Newton-Gregory interpolation provides a connection between discrete and continuous functions.
 
+{% include widget-scripts.html %}
 <script>
 (function() {
   // Layout constants
@@ -600,10 +489,8 @@ In addition, Newton-Gregory interpolation provides a connection between discrete
   }
 
   // Generate evenly spaced array
-  function linspace(start, end, n) {
-    const step = (end - start) / (n - 1);
-    return Array.from({length: n}, (_, i) => start + i * step);
-  }
+  // Use shared linspace utility
+  const linspace = WidgetUtils.linspace;
 
   // log(1+x)
   function log1p(x) {

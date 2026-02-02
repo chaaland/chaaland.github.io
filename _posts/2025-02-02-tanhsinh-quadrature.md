@@ -48,10 +48,32 @@ $$
 Where each term in the sum represents the area of one of our rectangles.
 The width of each block is $$h={b-a \over N}$$ (the total interval divided into $$n$$ pieces), and the height is $$f\left(a + {b-a \over N} k\right)$$ (the function evaluated at the left edge of each block)<sup>[1](#footnote1)</sup>.
 
-<figure class>
-    <a href="/assets/2025/tanhsinh-quadrature/images/left_riemann.png"><img src="/assets/2025/tanhsinh-quadrature/images/left_riemann.png"></a>
-    <figcaption>Figure 1: Left handed Riemann approximation using 10 rectangles.</figcaption>
-</figure>
+<div class="widget-container" id="riemann-widget">
+  <div class="widget-controls">
+    <label>
+      Rectangles
+      <input type="range" min="1" max="50" value="10" step="1" id="riemann-n-slider">
+      <span class="widget-readout" id="riemann-n-readout">10</span>
+    </label>
+  </div>
+  <svg class="widget-plot" id="riemann-svg" viewBox="0 0 450 440" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="450" height="440" fill="#0d1117"></rect>
+    <g id="riemann-grid"></g>
+    <g id="riemann-axes"></g>
+    <g id="riemann-rects"></g>
+    <path id="riemann-curve" fill="none" stroke="#58a6ff" stroke-width="2.5"></path>
+    <g id="riemann-labels"></g>
+  </svg>
+  <div class="widget-footer">
+    <span>Approximate area: <span class="widget-value" id="riemann-approx">0.7188</span></span>
+    <span>Exact area (ln 2): <span class="widget-value" id="riemann-exact">0.6931</span></span>
+    <span class="widget-error">Error: <span id="riemann-error">3.70%</span></span>
+  </div>
+</div>
+
+<figcaption style="text-align: center; font-size: 0.9rem; color: #8b949e; margin-top: 0.5rem;">
+Figure 1: Interactive left Riemann approximation.
+</figcaption>
 
 We can also approximate the area with rectangles measured from the top right corner just by incrementing the indices of summation.
 
@@ -59,10 +81,32 @@ $$
 \int_a^b f(x)dx \approx \sum_{k=1}^{N} hf\left(a + hk\right)
 $$
 
-<figure class>
-    <a href="/assets/2025/tanhsinh-quadrature/images/right_riemann.png"><img src="/assets/2025/tanhsinh-quadrature/images/right_riemann.png"></a>
-    <figcaption>Figure 2: Right handed Riemann approximation using 10 rectangles.</figcaption>
-</figure>
+<div class="widget-container" id="right-riemann-widget">
+  <div class="widget-controls">
+    <label>
+      Rectangles
+      <input type="range" min="1" max="50" value="10" step="1" id="right-riemann-n-slider">
+      <span class="widget-readout" id="right-riemann-n-readout">10</span>
+    </label>
+  </div>
+  <svg class="widget-plot" id="right-riemann-svg" viewBox="0 0 450 440" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="450" height="440" fill="#0d1117"></rect>
+    <g id="right-riemann-grid"></g>
+    <g id="right-riemann-axes"></g>
+    <g id="right-riemann-rects"></g>
+    <path id="right-riemann-curve" fill="none" stroke="#58a6ff" stroke-width="2.5"></path>
+    <g id="right-riemann-labels"></g>
+  </svg>
+  <div class="widget-footer">
+    <span>Approximate area: <span class="widget-value" id="right-riemann-approx">0.6688</span></span>
+    <span>Exact area (ln 2): <span class="widget-value" id="right-riemann-exact">0.6931</span></span>
+    <span class="widget-error">Error: <span id="right-riemann-error">3.52%</span></span>
+  </div>
+</div>
+
+<figcaption style="text-align: center; font-size: 0.9rem; color: #8b949e; margin-top: 0.5rem;">
+Figure 2: Interactive right Riemann approximation.
+</figcaption>
 
 We can think of Riemann sums as approximating the function as piecewise constant<sup>[2](#footnote2)</sup>.
 
@@ -77,10 +121,32 @@ $$
 \int_a^b f(x)dx \approx \sum_{k=0}^{N-1} {h \over 2}\left[f\left(a + hk\right) + f\left(a + h(k+1)\right)\right].
 $$
 
-<figure class>
-    <a href="/assets/2025/tanhsinh-quadrature/images/trapezoid.png"><img src="/assets/2025/tanhsinh-quadrature/images/trapezoid.png"></a>
-    <figcaption>Figure 3: Trapezoidal approximation using 10 trapezoids.</figcaption>
-</figure>
+<div class="widget-container" id="trapezoid-widget">
+  <div class="widget-controls">
+    <label>
+      Trapezoids
+      <input type="range" min="1" max="50" value="10" step="1" id="trapezoid-n-slider">
+      <span class="widget-readout" id="trapezoid-n-readout">10</span>
+    </label>
+  </div>
+  <svg class="widget-plot" id="trapezoid-svg" viewBox="0 0 450 440" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="450" height="440" fill="#0d1117"></rect>
+    <g id="trapezoid-grid"></g>
+    <g id="trapezoid-axes"></g>
+    <g id="trapezoid-shapes"></g>
+    <path id="trapezoid-curve" fill="none" stroke="#58a6ff" stroke-width="2.5"></path>
+    <g id="trapezoid-labels"></g>
+  </svg>
+  <div class="widget-footer">
+    <span>Approximate area: <span class="widget-value" id="trapezoid-approx">0.6938</span></span>
+    <span>Exact area (ln 2): <span class="widget-value" id="trapezoid-exact">0.6931</span></span>
+    <span class="widget-error">Error: <span id="trapezoid-error">0.09%</span></span>
+  </div>
+</div>
+
+<figcaption style="text-align: center; font-size: 0.9rem; color: #8b949e; margin-top: 0.5rem;">
+Figure 3: Interactive trapezoidal approximation.
+</figcaption>
 
 ## Quadrature
 
@@ -321,3 +387,394 @@ For single precision it's about 4.02 and for double it's around 6.11.
 1. [Scipy 1.15.0 release notes](https://docs.scipy.org/doc/scipy/release/1.15.0-notes.html)
 2. [Wikipedia](https://en.wikipedia.org/wiki/Tanh-sinh_quadrature)
 3. [Original paper](https://ems.press/content/serial-article-files/41766)
+
+<!-- Widget Scripts -->
+{% include widget-scripts.html %}
+<script>
+// Left Riemann Widget
+(function() {
+  const width = 450, height = 440;
+  const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+  const xMin = 0.8, xMax = 2.2, yMin = 0, yMax = 1.3;
+  const a = 1, b = 2;
+  const exactArea = Math.log(2);
+
+  const slider = document.getElementById('riemann-n-slider');
+  const readout = document.getElementById('riemann-n-readout');
+  const gridG = document.getElementById('riemann-grid');
+  const axesG = document.getElementById('riemann-axes');
+  const rectsG = document.getElementById('riemann-rects');
+  const curvePath = document.getElementById('riemann-curve');
+  const labelsG = document.getElementById('riemann-labels');
+  const approxSpan = document.getElementById('riemann-approx');
+  const exactSpan = document.getElementById('riemann-exact');
+  const errorSpan = document.getElementById('riemann-error');
+
+  function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
+  function toSvgY(y) { return margin.top + (1 - (y - yMin) / (yMax - yMin)) * plotH; }
+  function f(x) { return 1 / x; }
+
+  function drawGrid() {
+    gridG.innerHTML = '';
+    for (let x = 1; x <= 2; x += 0.5) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', toSvgX(x)); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', toSvgX(x)); line.setAttribute('y2', height - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (let y = 0; y <= 1.2; y += 0.2) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', toSvgY(y));
+      line.setAttribute('x2', width - margin.right); line.setAttribute('y2', toSvgY(y));
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  function drawAxes() {
+    axesG.innerHTML = '';
+    labelsG.innerHTML = '';
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', width - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', height - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+    for (let x = 1; x <= 2; x += 0.5) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(x)); label.setAttribute('y', height - margin.bottom + 20);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'middle'); label.textContent = x.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    for (let y = 0.2; y <= 1.2; y += 0.2) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 10); label.setAttribute('y', toSvgY(y) + 4);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'end'); label.textContent = y.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xTitle.setAttribute('x', width / 2); xTitle.setAttribute('y', height - 10);
+    xTitle.setAttribute('fill', '#8b949e'); xTitle.setAttribute('font-size', '14');
+    xTitle.setAttribute('text-anchor', 'middle'); xTitle.textContent = 'x';
+    labelsG.appendChild(xTitle);
+    const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yTitle.setAttribute('x', 20); yTitle.setAttribute('y', height / 2);
+    yTitle.setAttribute('fill', '#8b949e'); yTitle.setAttribute('font-size', '14');
+    yTitle.setAttribute('text-anchor', 'middle');
+    yTitle.setAttribute('transform', `rotate(-90, 20, ${height / 2})`);
+    yTitle.textContent = 'f(x) = 1/x';
+    labelsG.appendChild(yTitle);
+  }
+
+  function drawCurve() {
+    const points = [];
+    for (let x = xMin + 0.01; x <= xMax; x += 0.01) points.push([x, f(x)]);
+    let d = `M ${toSvgX(points[0][0])} ${toSvgY(points[0][1])}`;
+    for (let i = 1; i < points.length; i++) d += ` L ${toSvgX(points[i][0])} ${toSvgY(points[i][1])}`;
+    curvePath.setAttribute('d', d);
+  }
+
+  function drawRectangles(n) {
+    rectsG.innerHTML = '';
+    const dx = (b - a) / n;
+    let approxArea = 0;
+    for (let i = 0; i < n; i++) {
+      const xLeft = a + i * dx;
+      const h = f(xLeft);
+      approxArea += dx * h;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', toSvgX(xLeft));
+      rect.setAttribute('y', toSvgY(h));
+      rect.setAttribute('width', toSvgX(xLeft + dx) - toSvgX(xLeft));
+      rect.setAttribute('height', toSvgY(0) - toSvgY(h));
+      rect.setAttribute('fill', 'rgba(88, 166, 255, 0.3)');
+      rect.setAttribute('stroke', '#58a6ff');
+      rect.setAttribute('stroke-width', 1);
+      rectsG.appendChild(rect);
+    }
+    return approxArea;
+  }
+
+  function update() {
+    const n = parseInt(slider.value);
+    readout.textContent = n;
+    const approxArea = drawRectangles(n);
+    const error = Math.abs((approxArea - exactArea) / exactArea) * 100;
+    approxSpan.textContent = approxArea.toFixed(4);
+    exactSpan.textContent = exactArea.toFixed(4);
+    errorSpan.textContent = error.toFixed(2) + '%';
+  }
+
+  drawGrid(); drawAxes(); drawCurve(); update();
+  slider.addEventListener('input', update);
+})();
+
+// Right Riemann Widget
+(function() {
+  const width = 450, height = 440;
+  const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+  const xMin = 0.8, xMax = 2.2, yMin = 0, yMax = 1.3;
+  const a = 1, b = 2;
+  const exactArea = Math.log(2);
+
+  const slider = document.getElementById('right-riemann-n-slider');
+  const readout = document.getElementById('right-riemann-n-readout');
+  const gridG = document.getElementById('right-riemann-grid');
+  const axesG = document.getElementById('right-riemann-axes');
+  const rectsG = document.getElementById('right-riemann-rects');
+  const curvePath = document.getElementById('right-riemann-curve');
+  const labelsG = document.getElementById('right-riemann-labels');
+  const approxSpan = document.getElementById('right-riemann-approx');
+  const exactSpan = document.getElementById('right-riemann-exact');
+  const errorSpan = document.getElementById('right-riemann-error');
+
+  function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
+  function toSvgY(y) { return margin.top + (1 - (y - yMin) / (yMax - yMin)) * plotH; }
+  function f(x) { return 1 / x; }
+
+  function drawGrid() {
+    gridG.innerHTML = '';
+    for (let x = 1; x <= 2; x += 0.5) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', toSvgX(x)); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', toSvgX(x)); line.setAttribute('y2', height - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (let y = 0; y <= 1.2; y += 0.2) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', toSvgY(y));
+      line.setAttribute('x2', width - margin.right); line.setAttribute('y2', toSvgY(y));
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  function drawAxes() {
+    axesG.innerHTML = '';
+    labelsG.innerHTML = '';
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', width - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', height - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+    for (let x = 1; x <= 2; x += 0.5) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(x)); label.setAttribute('y', height - margin.bottom + 20);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'middle'); label.textContent = x.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    for (let y = 0.2; y <= 1.2; y += 0.2) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 10); label.setAttribute('y', toSvgY(y) + 4);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'end'); label.textContent = y.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xTitle.setAttribute('x', width / 2); xTitle.setAttribute('y', height - 10);
+    xTitle.setAttribute('fill', '#8b949e'); xTitle.setAttribute('font-size', '14');
+    xTitle.setAttribute('text-anchor', 'middle'); xTitle.textContent = 'x';
+    labelsG.appendChild(xTitle);
+    const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yTitle.setAttribute('x', 20); yTitle.setAttribute('y', height / 2);
+    yTitle.setAttribute('fill', '#8b949e'); yTitle.setAttribute('font-size', '14');
+    yTitle.setAttribute('text-anchor', 'middle');
+    yTitle.setAttribute('transform', `rotate(-90, 20, ${height / 2})`);
+    yTitle.textContent = 'f(x) = 1/x';
+    labelsG.appendChild(yTitle);
+  }
+
+  function drawCurve() {
+    const points = [];
+    for (let x = xMin + 0.01; x <= xMax; x += 0.01) points.push([x, f(x)]);
+    let d = `M ${toSvgX(points[0][0])} ${toSvgY(points[0][1])}`;
+    for (let i = 1; i < points.length; i++) d += ` L ${toSvgX(points[i][0])} ${toSvgY(points[i][1])}`;
+    curvePath.setAttribute('d', d);
+  }
+
+  function drawRectangles(n) {
+    rectsG.innerHTML = '';
+    const dx = (b - a) / n;
+    let approxArea = 0;
+    for (let i = 0; i < n; i++) {
+      const xLeft = a + i * dx;
+      const xRight = xLeft + dx;
+      const h = f(xRight);
+      approxArea += dx * h;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', toSvgX(xLeft));
+      rect.setAttribute('y', toSvgY(h));
+      rect.setAttribute('width', toSvgX(xRight) - toSvgX(xLeft));
+      rect.setAttribute('height', toSvgY(0) - toSvgY(h));
+      rect.setAttribute('fill', 'rgba(88, 166, 255, 0.3)');
+      rect.setAttribute('stroke', '#58a6ff');
+      rect.setAttribute('stroke-width', 1);
+      rectsG.appendChild(rect);
+    }
+    return approxArea;
+  }
+
+  function update() {
+    const n = parseInt(slider.value);
+    readout.textContent = n;
+    const approxArea = drawRectangles(n);
+    const error = Math.abs((approxArea - exactArea) / exactArea) * 100;
+    approxSpan.textContent = approxArea.toFixed(4);
+    exactSpan.textContent = exactArea.toFixed(4);
+    errorSpan.textContent = error.toFixed(2) + '%';
+  }
+
+  drawGrid(); drawAxes(); drawCurve(); update();
+  slider.addEventListener('input', update);
+})();
+
+// Trapezoidal Widget
+(function() {
+  const width = 450, height = 440;
+  const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+  const xMin = 0.8, xMax = 2.2, yMin = 0, yMax = 1.3;
+  const a = 1, b = 2;
+  const exactArea = Math.log(2);
+
+  const slider = document.getElementById('trapezoid-n-slider');
+  const readout = document.getElementById('trapezoid-n-readout');
+  const gridG = document.getElementById('trapezoid-grid');
+  const axesG = document.getElementById('trapezoid-axes');
+  const shapesG = document.getElementById('trapezoid-shapes');
+  const curvePath = document.getElementById('trapezoid-curve');
+  const labelsG = document.getElementById('trapezoid-labels');
+  const approxSpan = document.getElementById('trapezoid-approx');
+  const exactSpan = document.getElementById('trapezoid-exact');
+  const errorSpan = document.getElementById('trapezoid-error');
+
+  function toSvgX(x) { return margin.left + (x - xMin) / (xMax - xMin) * plotW; }
+  function toSvgY(y) { return margin.top + (1 - (y - yMin) / (yMax - yMin)) * plotH; }
+  function f(x) { return 1 / x; }
+
+  function drawGrid() {
+    gridG.innerHTML = '';
+    for (let x = 1; x <= 2; x += 0.5) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', toSvgX(x)); line.setAttribute('y1', margin.top);
+      line.setAttribute('x2', toSvgX(x)); line.setAttribute('y2', height - margin.bottom);
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+    for (let y = 0; y <= 1.2; y += 0.2) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', margin.left); line.setAttribute('y1', toSvgY(y));
+      line.setAttribute('x2', width - margin.right); line.setAttribute('y2', toSvgY(y));
+      line.setAttribute('stroke', '#21262d'); line.setAttribute('stroke-width', 1);
+      gridG.appendChild(line);
+    }
+  }
+
+  function drawAxes() {
+    axesG.innerHTML = '';
+    labelsG.innerHTML = '';
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', toSvgY(0));
+    xAxis.setAttribute('x2', width - margin.right); xAxis.setAttribute('y2', toSvgY(0));
+    xAxis.setAttribute('stroke', '#484f58'); xAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(xAxis);
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', height - margin.bottom);
+    yAxis.setAttribute('stroke', '#484f58'); yAxis.setAttribute('stroke-width', 1.5);
+    axesG.appendChild(yAxis);
+    for (let x = 1; x <= 2; x += 0.5) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', toSvgX(x)); label.setAttribute('y', height - margin.bottom + 20);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'middle'); label.textContent = x.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    for (let y = 0.2; y <= 1.2; y += 0.2) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', margin.left - 10); label.setAttribute('y', toSvgY(y) + 4);
+      label.setAttribute('fill', '#8b949e'); label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'end'); label.textContent = y.toFixed(1);
+      labelsG.appendChild(label);
+    }
+    const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xTitle.setAttribute('x', width / 2); xTitle.setAttribute('y', height - 10);
+    xTitle.setAttribute('fill', '#8b949e'); xTitle.setAttribute('font-size', '14');
+    xTitle.setAttribute('text-anchor', 'middle'); xTitle.textContent = 'x';
+    labelsG.appendChild(xTitle);
+    const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yTitle.setAttribute('x', 20); yTitle.setAttribute('y', height / 2);
+    yTitle.setAttribute('fill', '#8b949e'); yTitle.setAttribute('font-size', '14');
+    yTitle.setAttribute('text-anchor', 'middle');
+    yTitle.setAttribute('transform', `rotate(-90, 20, ${height / 2})`);
+    yTitle.textContent = 'f(x) = 1/x';
+    labelsG.appendChild(yTitle);
+  }
+
+  function drawCurve() {
+    const points = [];
+    for (let x = xMin + 0.01; x <= xMax; x += 0.01) points.push([x, f(x)]);
+    let d = `M ${toSvgX(points[0][0])} ${toSvgY(points[0][1])}`;
+    for (let i = 1; i < points.length; i++) d += ` L ${toSvgX(points[i][0])} ${toSvgY(points[i][1])}`;
+    curvePath.setAttribute('d', d);
+  }
+
+  function drawTrapezoids(n) {
+    shapesG.innerHTML = '';
+    const dx = (b - a) / n;
+    let approxArea = 0;
+    for (let i = 0; i < n; i++) {
+      const xLeft = a + i * dx;
+      const xRight = xLeft + dx;
+      const hLeft = f(xLeft);
+      const hRight = f(xRight);
+      approxArea += (dx / 2) * (hLeft + hRight);
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      const points = [
+        `${toSvgX(xLeft)},${toSvgY(0)}`,
+        `${toSvgX(xLeft)},${toSvgY(hLeft)}`,
+        `${toSvgX(xRight)},${toSvgY(hRight)}`,
+        `${toSvgX(xRight)},${toSvgY(0)}`
+      ].join(' ');
+      poly.setAttribute('points', points);
+      poly.setAttribute('fill', 'rgba(88, 166, 255, 0.3)');
+      poly.setAttribute('stroke', '#58a6ff');
+      poly.setAttribute('stroke-width', 1);
+      shapesG.appendChild(poly);
+    }
+    return approxArea;
+  }
+
+  function update() {
+    const n = parseInt(slider.value);
+    readout.textContent = n;
+    const approxArea = drawTrapezoids(n);
+    const error = Math.abs((approxArea - exactArea) / exactArea) * 100;
+    approxSpan.textContent = approxArea.toFixed(4);
+    exactSpan.textContent = exactArea.toFixed(4);
+    errorSpan.textContent = error.toFixed(2) + '%';
+  }
+
+  drawGrid(); drawAxes(); drawCurve(); update();
+  slider.addEventListener('input', update);
+})();
+</script>
