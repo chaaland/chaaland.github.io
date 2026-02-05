@@ -1,12 +1,13 @@
 ---
 title: "Tanhsinh Quadrature"
 categories:
-  - Calculus
+  - Algorithms
 date:   2025-01-17 14:33:00 +0100
 mathjax: true
 tags:
   - Numerical methods
-  - Integration
+  - Numerical integration
+  - Quadrature
 toc: true
 # classes: wide
 excerpt: "Tackle tricky integrals with endpoint singularities using a clever variable transformation."

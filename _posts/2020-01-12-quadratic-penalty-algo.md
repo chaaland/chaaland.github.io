@@ -1,7 +1,7 @@
 ---
 title: "Quadratic Penalty Algo"
 categories:
-  - Mathematics
+  - Optimization
 date:   2020-01-12 12:00:00 +0000
 mathjax: true
 toc: true
@@ -11,7 +11,8 @@ header:
   overlay_image: assets/2020/quadratic-penalty-algo/images/splash-image.png
   overlay_filter: 0.2
 tags:
-  - Optimisation
+  - Optimization
+  - Constrained optimization
 ---
 
 Many problems in data science and machine learning can be formulated as _unconstrained_ optimisation problems. The most well known example is ordinary least squares (OLS) which takes the form

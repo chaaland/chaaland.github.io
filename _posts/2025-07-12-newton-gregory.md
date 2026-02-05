@@ -1,12 +1,14 @@
 ---
 title: "Newton-Gregory Interpolation"
 categories:
-  - Mathematics
+  - Algorithms
 date:   2025-07-12 12:30:00 +0100
 mathjax: true
 tags:
-  - Numerical methods
   - Interpolation
+  - Numerical methods
+  - Finite differences
+  - Approximation theory
 toc: true
 # classes: wide
 excerpt: "Interpolate equally-spaced data efficiently and discover its connection to Taylor series."

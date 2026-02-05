@@ -5,8 +5,9 @@ categories:
 date:   2025-01-11 14:33:00 +0100
 mathjax: true
 tags:
-  - Numerical methods
   - Interpolation
+  - Numerical methods
+  - Approximation theory
 toc: true
 # classes: wide
 excerpt: "Approximate functions using polynomial interpolation without solving linear systems."

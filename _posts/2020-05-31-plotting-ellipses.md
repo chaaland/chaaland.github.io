@@ -1,12 +1,14 @@
 ---
 title: "Plotting Ellipses"
 categories:
-  - Mathematics
+  - Visualization
 date:   2020-05-30 12:09:00 +0100
 mathjax: true
 tags:
-  - matplotlib
-  - python
+  - Visualization
+  - Linear algebra
+  - Python
+  - Matplotlib
 toc: true
 # classes: wide
 excerpt: "Plot ellipses using conic, quadratic, and parametric representations."

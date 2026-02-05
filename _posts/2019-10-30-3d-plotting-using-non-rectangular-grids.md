@@ -1,12 +1,13 @@
 ---
 title: "3D Plotting using Non-Rectangular Grids"
 categories:
-  - Mathematics
+  - Visualization
 date:   2019-10-30 23:48:45 +0100
 mathjax: true
 tags:
-  - matplotlib
-  - python
+  - Visualization
+  - Python
+  - Matplotlib
 toc: true
 toc_label: 
 # classes: wide

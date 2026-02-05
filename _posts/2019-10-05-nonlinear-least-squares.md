@@ -1,15 +1,14 @@
 ---
 title: "Nonlinear Least Squares"
 categories:
-  - Mathematics
+  - Optimization
 date:   2019-10-05 10:57:00 +0100
 mathjax: true
 tags:
-  - Optimisation
-  - Nonlinear modeling  
-  - Gauss-Newton
-  - Least Squares
+  - Optimization
+  - Least squares
   - Regression
+  - Iterative methods
 toc: true
 # classes: wide
 excerpt: "Fit nonlinear models using Gauss-Newton and Levenberg-Marquardt algorithms."
@@ -246,7 +245,7 @@ k &:= k + 1\\
 \end{align*}
 $$
 
-Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Netwon method using the mean squared error of
+Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Newton method using the mean squared error of
 $$\nabla_x ||r(x)||^2$$
 as part of the convergence criteria. <sup>[3](#footnote3)</sup>
 
