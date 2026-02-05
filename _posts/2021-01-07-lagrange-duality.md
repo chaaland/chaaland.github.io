@@ -1,11 +1,13 @@
 ---
 title: "Lagrange Duality"
 categories:
-  - Mathematics
+  - Optimization
 date:   2021-01-07 00:30:00 +0000
 mathjax: true
 tags:
-  - Optimisation
+  - Optimization
+  - Constrained optimization
+  - Duality
 excerpt: "Derive and interpret the dual form of an optimization problem."
 toc: true
 # classes: wide

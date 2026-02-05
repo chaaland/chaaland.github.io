@@ -1,7 +1,7 @@
 ---
 title: "Numpy Regression Trees"
 categories:
-  - Mathematics
+  - Machine Learning
 date:   2020-04-04 12:00:00 +0000
 mathjax: true
 toc: true
@@ -11,9 +11,9 @@ header:
   overlay_image: assets/2020/numpy-regression-trees/images/splash-image.png
   overlay_filter: 0.2
 tags:
-  - Decision Trees
-  - Numpy
-  - Machine Learning
+  - Machine learning
+  - Decision trees
+  - Python
 ---
 
 Decision trees are ubiquitous in machine learning with packages like [LightGBM](https://github.com/microsoft/LightGBM), [XGBoost](https://github.com/dmlc/xgboost), and [CatBoost](https://github.com/catboost/catboost) enabling training on millions of data points with hundreds of features in just a few hours. This post will walk through how a basic implementation of a regression tree using `numpy` might be implemented. It is assumed the reader is already familiar with classification and regression trees, just not the implementation details.

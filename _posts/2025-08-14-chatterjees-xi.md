@@ -6,6 +6,8 @@ date:   2025-08-14 14:33:00 +0100
 mathjax: true
 tags:
   - Statistics
+  - Correlation
+  - Nonparametric methods
 toc: true
 # classes: wide
 excerpt: "Detect nonlinear relationships that Pearson and Spearman miss."
