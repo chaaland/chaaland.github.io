@@ -130,7 +130,7 @@
     const mouseX = e.clientX - svgRect.left;
 
     // Convert to SVG coordinates (accounting for viewBox scaling)
-    const viewBoxWidth = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+    const viewBoxWidth = getViewBoxScale();
     const scale = viewBoxWidth / svgRect.width;
     const svgMouseX = mouseX * scale;
 
@@ -149,6 +149,56 @@
   }
 
   /**
+   * Handle touch start on draggable point
+   */
+  function handleTouchStart(e) {
+    isDragging = true;
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    e.preventDefault();
+  }
+
+  /**
+   * Handle touch move while dragging
+   */
+  function handleTouchMove(e) {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+    const svgRect = svg.getBoundingClientRect();
+    const touchX = touch.clientX - svgRect.left;
+
+    // Convert to SVG coordinates (accounting for viewBox scaling)
+    const viewBoxWidth = getViewBoxScale();
+    const scale = viewBoxWidth / svgRect.width;
+    const svgTouchX = touchX * scale;
+
+    // Clamp position within bar bounds
+    currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgTouchX - BAR_X));
+    update();
+  }
+
+  /**
+   * Handle touch end to stop dragging
+   */
+  function handleTouchEnd() {
+    isDragging = false;
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
+  }
+
+  /**
+   * Get viewBox width with safe parsing
+   */
+  function getViewBoxScale() {
+    const viewBox = svg.getAttribute('viewBox');
+    if (!viewBox) return 600; // Default matches SVG viewBox
+    const parts = viewBox.split(' ');
+    const viewBoxWidth = parseFloat(parts[2]);
+    return isNaN(viewBoxWidth) ? 600 : viewBoxWidth;
+  }
+
+  /**
    * Reset widget to initial state (middle position)
    */
   function reset() {
@@ -158,8 +208,19 @@
 
   // Initialize event listeners
   point.addEventListener('mousedown', handleMouseDown);
+  point.addEventListener('touchstart', handleTouchStart);
   resetBtn.addEventListener('click', reset);
 
   // Initial update
   update();
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', function() {
+    if (isDragging) {
+      handleMouseUp();
+    }
+    point.removeEventListener('mousedown', handleMouseDown);
+    point.removeEventListener('touchstart', handleTouchStart);
+    resetBtn.removeEventListener('click', reset);
+  });
 })();
