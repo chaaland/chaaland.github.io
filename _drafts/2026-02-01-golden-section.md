@@ -125,3 +125,6 @@ Intuitively,
 ## Footnotes
 
 <a name="footnote1">1</a>: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
+
+{% include widget-scripts.html %}
+<script src="{{ '/assets/shared/js/golden-ratio-widget.js' | relative_url }}"></script>
