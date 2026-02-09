@@ -87,7 +87,7 @@ where $$r_i = y_i - \sum_{j\ne k} \beta_j x_{ij}$$
     <!-- Right segment -->
     <rect id="gr-right-segment" x="300" y="50" width="220" height="30" fill="#3fb950"></rect>
     <!-- Draggable point -->
-    <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" cursor="pointer"></circle>
+    <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" style="cursor: pointer; pointer-events: auto;"></circle>
     <!-- Ratio labels -->
     <g id="gr-labels"></g>
   </svg>
@@ -160,6 +160,20 @@ Intuitively,
   const resetBtn = document.getElementById('golden-ratio-reset');
   const labelsG = document.getElementById('gr-labels');
 
+  // Defensive check: ensure all required elements exist
+  if (!svg || !point || !leftSegment || !rightSegment || !ratio1El || !ratio2El || !resetBtn) {
+    console.error('Golden ratio widget: missing DOM elements', {
+      svg: !!svg,
+      point: !!point,
+      leftSegment: !!leftSegment,
+      rightSegment: !!rightSegment,
+      ratio1El: !!ratio1El,
+      ratio2El: !!ratio2El,
+      resetBtn: !!resetBtn
+    });
+    return;
+  }
+
   // SVG dimensions
   const BAR_X = 80;
   const BAR_Y = 50;
@@ -213,6 +227,9 @@ Intuitively,
   function update() {
     const ratios = calculateRatios(currentPosition);
 
+    // Debug: log calculation
+    console.debug('update()', { currentPosition, ratios });
+
     // Update point position and color
     const pointX = BAR_X + currentPosition;
     point.setAttribute('cx', pointX);
@@ -262,6 +279,10 @@ Intuitively,
 
     // Clamp position within bar bounds
     currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgMouseX - BAR_X));
+
+    // Debug logging
+    console.debug('handleMouseMove:', { mouseX, svgRect: svgRect.width, viewBoxWidth, scale, svgMouseX, BAR_X, currentPosition });
+
     update();
   }
 
@@ -301,6 +322,10 @@ Intuitively,
 
     // Clamp position within bar bounds
     currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgTouchX - BAR_X));
+
+    // Debug logging
+    console.debug('handleTouchMove:', { touchX, svgRect: svgRect.width, viewBoxWidth, scale, svgTouchX, BAR_X, currentPosition });
+
     update();
   }
 
@@ -336,6 +361,14 @@ Intuitively,
   point.addEventListener('mousedown', handleMouseDown);
   point.addEventListener('touchstart', handleTouchStart);
   resetBtn.addEventListener('click', reset);
+
+  // Debug: log initial state
+  console.debug('Golden ratio widget initialized', {
+    currentPosition,
+    BAR_WIDTH,
+    pointCx: point.getAttribute('cx'),
+    viewBoxWidth: getViewBoxScale()
+  });
 
   // Initial update
   update();
