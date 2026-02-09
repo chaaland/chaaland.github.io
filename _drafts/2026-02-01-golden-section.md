@@ -78,14 +78,14 @@ where $$r_i = y_i - \sum_{j\ne k} \beta_j x_{ij}$$
   <div class="widget-controls">
     <button type="button" class="widget-button" id="golden-ratio-reset">Reset</button>
   </div>
-  <svg class="widget-plot" id="golden-ratio-svg" viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet">
+  <svg class="widget-plot" id="golden-ratio-svg" viewBox="0 0 600 150">
     <rect x="0" y="0" width="600" height="150" fill="#0d1117"></rect>
     <!-- Bar background -->
-    <rect id="gr-bar-bg" x="80" y="50" width="440" height="30" fill="#1c2128" rx="2"></rect>
+    <rect id="gr-bar-bg" x="80" y="50" width="440" height="30" fill="#1c2128"></rect>
     <!-- Left segment -->
-    <rect id="gr-left-segment" x="80" y="50" width="220" height="30" fill="#58a6ff" rx="2"></rect>
+    <rect id="gr-left-segment" x="80" y="50" width="220" height="30" fill="#58a6ff"></rect>
     <!-- Right segment -->
-    <rect id="gr-right-segment" x="300" y="50" width="220" height="30" fill="#3fb950" rx="2"></rect>
+    <rect id="gr-right-segment" x="300" y="50" width="220" height="30" fill="#3fb950"></rect>
     <!-- Draggable point -->
     <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" cursor="pointer"></circle>
     <!-- Ratio labels -->
