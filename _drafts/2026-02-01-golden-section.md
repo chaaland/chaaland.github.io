@@ -87,7 +87,7 @@ where $$r_i = y_i - \sum_{j\ne k} \beta_j x_{ij}$$
     <!-- Right segment -->
     <rect id="gr-right-segment" x="300" y="50" width="220" height="30" fill="#3fb950"></rect>
     <!-- Draggable point -->
-    <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" cursor="pointer"></circle>
+    <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" style="cursor: pointer; pointer-events: auto;"></circle>
     <!-- Ratio labels -->
     <g id="gr-labels"></g>
   </svg>
@@ -127,4 +127,260 @@ Intuitively,
 <a name="footnote1">1</a>: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
 
 {% include widget-scripts.html %}
-<script src="{{ '/assets/shared/js/golden-ratio-widget.js' | relative_url }}"></script>
+<script>
+(function() {
+  'use strict';
+
+  // Golden ratio and threshold
+  const PHI = 1.618033988749895;
+  const TOLERANCE = 0.05; // 5% tolerance
+  const PHI_MIN = PHI * (1 - TOLERANCE);
+  const PHI_MAX = PHI * (1 + TOLERANCE);
+
+  // Color scheme
+  const COLORS = {
+    defaultPoint: '#58a6ff',
+    goldenPoint: '#ffd700',
+    leftSegment: '#58a6ff',
+    rightSegment: '#3fb950',
+    goldenText: '#ffd700',
+    defaultText: '#8b949e'
+  };
+
+  // DOM elements
+  const widget = document.getElementById('golden-ratio-widget');
+  if (!widget) return; // Widget not present
+
+  const svg = document.getElementById('golden-ratio-svg');
+  const point = document.getElementById('gr-point');
+  const leftSegment = document.getElementById('gr-left-segment');
+  const rightSegment = document.getElementById('gr-right-segment');
+  const ratio1El = document.getElementById('gr-ratio1');
+  const ratio2El = document.getElementById('gr-ratio2');
+  const resetBtn = document.getElementById('golden-ratio-reset');
+  const labelsG = document.getElementById('gr-labels');
+
+  // Defensive check: ensure all required elements exist
+  if (!svg || !point || !leftSegment || !rightSegment || !ratio1El || !ratio2El || !resetBtn) {
+    console.error('Golden ratio widget: missing DOM elements', {
+      svg: !!svg,
+      point: !!point,
+      leftSegment: !!leftSegment,
+      rightSegment: !!rightSegment,
+      ratio1El: !!ratio1El,
+      ratio2El: !!ratio2El,
+      resetBtn: !!resetBtn
+    });
+    return;
+  }
+
+  // SVG dimensions
+  const BAR_X = 80;
+  const BAR_Y = 50;
+  const BAR_WIDTH = 440;
+  const BAR_HEIGHT = 30;
+  const POINT_RADIUS = 8;
+
+  // State
+  let isDragging = false;
+  let currentPosition = BAR_WIDTH / 2; // Start at middle
+
+  /**
+   * Calculate ratios given a point position
+   * @param {number} position - Position along bar [0, BAR_WIDTH]
+   * @returns {Object} {wholeToLonger, longerToShorter, isGolden}
+   */
+  function calculateRatios(position) {
+    const clampedPos = Math.max(0, Math.min(BAR_WIDTH, position));
+    const leftLen = clampedPos;
+    const rightLen = BAR_WIDTH - clampedPos;
+
+    const longerLen = Math.max(leftLen, rightLen);
+    const shorterLen = Math.min(leftLen, rightLen);
+
+    // Avoid division by zero
+    if (shorterLen === 0) {
+      return {
+        wholeToLonger: 1,
+        longerToShorter: Infinity,
+        isGolden: false
+      };
+    }
+
+    const wholeToLonger = BAR_WIDTH / longerLen;
+    const longerToShorter = longerLen / shorterLen;
+
+    // Check if either ratio is close to golden ratio
+    const isGolden = (wholeToLonger >= PHI_MIN && wholeToLonger <= PHI_MAX) ||
+                     (longerToShorter >= PHI_MIN && longerToShorter <= PHI_MAX);
+
+    return {
+      wholeToLonger,
+      longerToShorter,
+      isGolden
+    };
+  }
+
+  /**
+   * Update the widget display
+   */
+  function update() {
+    const ratios = calculateRatios(currentPosition);
+
+    // Debug: log calculation
+    console.debug('update()', { currentPosition, ratios });
+
+    // Update point position and color
+    const pointX = BAR_X + currentPosition;
+    point.setAttribute('cx', pointX);
+    point.setAttribute('fill', ratios.isGolden ? COLORS.goldenPoint : COLORS.defaultPoint);
+
+    // Update segments
+    leftSegment.setAttribute('width', currentPosition);
+    rightSegment.setAttribute('x', BAR_X + currentPosition);
+    rightSegment.setAttribute('width', BAR_WIDTH - currentPosition);
+
+    // Format and display ratios
+    const ratio1Text = ratios.wholeToLonger === Infinity ? '∞' : ratios.wholeToLonger.toFixed(3);
+    const ratio2Text = ratios.longerToShorter === Infinity ? '∞' : ratios.longerToShorter.toFixed(3);
+
+    ratio1El.textContent = ratio1Text;
+    ratio2El.textContent = ratio2Text;
+
+    // Highlight text if golden ratio found
+    const textColor = ratios.isGolden ? COLORS.goldenText : COLORS.defaultText;
+    ratio1El.style.color = textColor;
+    ratio2El.style.color = textColor;
+  }
+
+  /**
+   * Handle mouse down on draggable point
+   */
+  function handleMouseDown(e) {
+    isDragging = true;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    e.preventDefault();
+  }
+
+  /**
+   * Handle mouse move while dragging
+   */
+  function handleMouseMove(e) {
+    if (!isDragging) return;
+
+    const svgRect = svg.getBoundingClientRect();
+    const mouseX = e.clientX - svgRect.left;
+
+    // Convert to SVG coordinates (accounting for viewBox scaling)
+    const viewBoxWidth = getViewBoxScale();
+    const scale = viewBoxWidth / svgRect.width;
+    const svgMouseX = mouseX * scale;
+
+    // Clamp position within bar bounds
+    currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgMouseX - BAR_X));
+
+    // Debug logging
+    console.debug('handleMouseMove:', { mouseX, svgRect: svgRect.width, viewBoxWidth, scale, svgMouseX, BAR_X, currentPosition });
+
+    update();
+  }
+
+  /**
+   * Handle mouse up to stop dragging
+   */
+  function handleMouseUp() {
+    isDragging = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }
+
+  /**
+   * Handle touch start on draggable point
+   */
+  function handleTouchStart(e) {
+    isDragging = true;
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    e.preventDefault();
+  }
+
+  /**
+   * Handle touch move while dragging
+   */
+  function handleTouchMove(e) {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+    const svgRect = svg.getBoundingClientRect();
+    const touchX = touch.clientX - svgRect.left;
+
+    // Convert to SVG coordinates (accounting for viewBox scaling)
+    const viewBoxWidth = getViewBoxScale();
+    const scale = viewBoxWidth / svgRect.width;
+    const svgTouchX = touchX * scale;
+
+    // Clamp position within bar bounds
+    currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgTouchX - BAR_X));
+
+    // Debug logging
+    console.debug('handleTouchMove:', { touchX, svgRect: svgRect.width, viewBoxWidth, scale, svgTouchX, BAR_X, currentPosition });
+
+    update();
+  }
+
+  /**
+   * Handle touch end to stop dragging
+   */
+  function handleTouchEnd() {
+    isDragging = false;
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
+  }
+
+  /**
+   * Get viewBox width with safe parsing
+   */
+  function getViewBoxScale() {
+    const viewBox = svg.getAttribute('viewBox');
+    if (!viewBox) return 600; // Default matches SVG viewBox
+    const parts = viewBox.split(' ');
+    const viewBoxWidth = parseFloat(parts[2]);
+    return isNaN(viewBoxWidth) ? 600 : viewBoxWidth;
+  }
+
+  /**
+   * Reset widget to initial state (middle position)
+   */
+  function reset() {
+    currentPosition = BAR_WIDTH / 2;
+    update();
+  }
+
+  // Initialize event listeners
+  point.addEventListener('mousedown', handleMouseDown);
+  point.addEventListener('touchstart', handleTouchStart);
+  resetBtn.addEventListener('click', reset);
+
+  // Debug: log initial state
+  console.debug('Golden ratio widget initialized', {
+    currentPosition,
+    BAR_WIDTH,
+    pointCx: point.getAttribute('cx'),
+    viewBoxWidth: getViewBoxScale()
+  });
+
+  // Initial update
+  update();
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', function() {
+    if (isDragging) {
+      handleMouseUp();
+    }
+    point.removeEventListener('mousedown', handleMouseDown);
+    point.removeEventListener('touchstart', handleTouchStart);
+    resetBtn.removeEventListener('click', reset);
+  });
+})();
+</script>
