@@ -8,7 +8,8 @@ tags:
   - Optimization
 toc: true
 classes: wide
-excerpt: ""
+excerpt: "Golden section search reuses objective evaluations to efficiently minimize 1D functions. Learn how this classical algorithm connects to the golden ratio and applies to robust regression."
+
 ---
 
 The most common method of fitting a linear model to data is ordinary least squares.
@@ -17,9 +18,10 @@ In ordinary least squares we want to solve the following optimization problem
 $$
 \begin{equation}
 \underset{\beta}{\text{minimize}} \quad \sum_{i=1}^N (\beta^T x_i - y_i)^2
-\end{equation}.
+\end{equation}
 $$
 
+where $$N$$ is the number of samples.
 Oftentimes this will be written in matrix form as
 
 $$
@@ -63,7 +65,7 @@ What if we could instead reduce the multi-dimensional optimization down to a ser
 
 This is the idea of coordinate descent.
 Instead of optimizing over all $$\beta_1,\ldots,\beta_d$$ jointly, we cycle through each variable holding the other fixed and optimize over just one variable.
-For a specific coordinate k, the subproblem becomes a single-variable optimization:
+For a specific coordinate $$k$$, we hold all other $$\beta_j (j\ne k)$$ fixed, making the residual $$r_i = y_i - Σ_{j\ne k} \beta_j x_{ij} a constant. Now the subproblem becomes a single-variable optimization:
 
 $$
 \begin{equation}
@@ -82,7 +84,8 @@ In Figure 1, we see an objective with just one absolute value term
     <figcaption>Figure 1: Left: individual absolute value terms. Right: their mean (the objective to minimize), showing kinks at the zeros of each term.</figcaption>
 </figure>
 
-One observation worth noting is that the graph of the average of the absolute values has kinks at the vertices of the original absolute value terms.
+One observation worth noting is that the graph of the average of the absolute values has non-differentiable points/"kinks" at the vertices of the original absolute value terms.
+
 
 Figure 2 shows the average of several absolute value terms of the form $$\lvert \beta_k x_{ik} - y_i\rvert $$ and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
 
@@ -137,13 +140,14 @@ At the start of the algorithm, we'll have found $$a$$ and $$b$$ in $$\mathcal{O}
 For a given $$\rho$$, we can then compute $$x_1$$ and $$x_2$$.
 Suppose we evaluate the objective at these new points, and find $$f(x_1) < f(x_2)$$.
 
-Looking at the first subplot of Figure 3, we can see that this scenario would be impossible. For a convex function, when both $$x_1$$ and $$x_2$$ are to the left of the minimum, the subgradient is negative and therefore $$f(x_1) \ge f(x_2)$$.
+Looking at the first subplot of Figure 3, we can see that this scenario would be impossible.
+For a convex function, when both $$x_1$$ and $$x_2$$ are to the left of the minimum, the subgradient is negative and therefore $$f(x_1) \ge f(x_2)$$.
 
 However, both the second and third subplot are potentially consistent with the observation that $$f(x_1) < f(x_2)$$.
 If we _knew_ we were in situation two, we could shrink the interval from $$[a,b]$$ down to $$[x_1, x_2]$$.
 On the other hand, if we _knew_ were in situation three, we could shrink the interval to $$[a, x_1]$$.
 
-Since the cases aren't distinguishable just from knowing $$f(x_1) < f(x_2)$$, we can only reduce the interval to $$[x_1, x_2] \cup [a, x_1] = [a, x_2]$$.
+Since we cannot distinguish between cases 2 and 3, we must retain all points consistent with either case. The union of these two intervals is simply  $$[a, x_2]$$.
 
 Running through the same argument for when $$f(x_1)\ge f(x_2)$$ shows the interval can be reduced to $$[x_1, b]$$.
 
@@ -158,7 +162,7 @@ Click for code
 
 {% highlight python %}
 
-def interval_shinking_minimize(
+def interval_shrinking_minimize(
     obj_fn,
     a: float,
     b: float,
@@ -247,7 +251,7 @@ $$\rho = {-1 + \sqrt{5} \over 2} \approx 0.61803.$$
 
 By setting $$\rho$$ to this value, we ensure we can reuse the objective value at $$f(x_1)$$ and only need to compute the objective at $$x'_1$$ saving us $$\mathcal{O}(N)$$ computation.
 
-The widget in Figure 4 demonstrates the golden section algorithm for various numbers of iterations.
+The widget in Figure 4 visually demonstrates the golden section algorithm and how points are reused from iteration to iteration.
 
 <div class="widget-container" id="golden-section-widget">
   <div class="widget-controls">
@@ -291,6 +295,9 @@ The widget in Figure 4 demonstrates the golden section algorithm for various num
   </figcaption>
 </div>
 
+The code below is a sample implementation of the golden section algorithm.
+Notice how there is now only one call to `obj_fn` per iteration.
+
 <details>
 <summary>
 Click for code
@@ -316,6 +323,8 @@ def golden_section_minimize(obj_fn, a, b, n_iters: int = 5):
 
     for i in range(n_iters):
         if f_x1 < f_x2:
+            # When f(x1) < f(x2), x1 becomes the new x2 (reused from previous iteration)
+
             b, f_b = x2, f_x2
             L = b - a
 
@@ -340,41 +349,36 @@ def golden_section_minimize(obj_fn, a, b, n_iters: int = 5):
 </details>
 <br>
 
-Notice in the code above how there is now only one call to `obj_fn` per iteration.
-
-
-
 # The Golden Ratio
 
-<div class="widget-container" id="golden-ratio-widget">
-  <div class="widget-controls">
-    <button type="button" class="widget-button" id="golden-ratio-reset">Reset</button>
-  </div>
-  <svg class="widget-plot" id="golden-ratio-svg" viewBox="0 0 600 150">
-    <rect x="0" y="0" width="600" height="150" fill="#0d1117"></rect>
-    <!-- Bar background -->
-    <rect id="gr-bar-bg" x="80" y="50" width="440" height="30" fill="#1c2128"></rect>
-    <!-- Left segment -->
-    <rect id="gr-left-segment" x="80" y="50" width="220" height="30" fill="#58a6ff"></rect>
-    <!-- Right segment -->
-    <rect id="gr-right-segment" x="300" y="50" width="220" height="30" fill="#3fb950"></rect>
-    <!-- Draggable point -->
-    <circle id="gr-point" cx="300" cy="65" r="8" fill="#58a6ff" style="cursor: pointer; pointer-events: auto;"></circle>
-    <!-- Ratio labels -->
-    <g id="gr-labels"></g>
-  </svg>
-  <div class="widget-info" id="golden-ratio-info">
-    <div class="widget-info-row">
-      <span class="widget-info-label">Whole / Longer:</span>
-      <span class="widget-info-value" id="gr-ratio1">1.000</span>
-    </div>
-    <div class="widget-info-row">
-      <span class="widget-info-label">Longer / Shorter:</span>
-      <span class="widget-info-value" id="gr-ratio2">∞</span>
-    </div>
-  </div>
-  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure X: Interactive golden ratio demonstration. Drag the middle point to adjust the position. The ratios highlight in gold when within 5% of φ ≈ 1.618.</figcaption>
-</div>
+One remaining question is why this algorithm is referred to as the "golden" section algorithm.
+It turns out, it has a very close connection to the golden ratio $$\varphi$$.
+
+Two line segments are said to be in a golden ratio when the ratio of the longer segment to the shorter segment is the same as that of the sum of the lengths of the segments to the longer segment. Concretely, suppose $$a$$ and $$b$$ are the lengths of two line segments with $$a < b$$, then they are said to be in the golden ratio when
+
+$$
+{a+b \over b} = {b \over a}.
+$$
+
+Denoting the ratio $$b/a$$ as $$\varphi$$, we have
+
+$$
+\begin{align*}
+{1\over \varphi} + 1 &= \varphi\\
+1 + \varphi &= \varphi^2\\
+\end{align*}
+$$
+
+Solving for $$\varphi$$ using the quadratic formula and discarding the negative solution,
+
+$$\varphi = {1 + \sqrt{5} \over 2}$$.
+
+This looks very close to our "optimal" $$\rho$$ from the golden-section algorithm which was
+
+$$\rho = {-1 + \sqrt{5} \over 2}.$$
+
+If we assume $$b=1$$ and solve for $$a$$ in $$(a+b)/b = \varphi$$, we have $$a = \varphi  - 1= \rho$$!
+Solving $$b/a=\varphi$$ for $$a$$, we can also see that $$a = 1/\varphi$$ further cementing the connection to the golden ratio.
 
 ## Footnotes
 

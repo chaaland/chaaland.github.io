@@ -5,10 +5,7 @@ for embedding in Jekyll blog posts.
 Usage:
     python plotly_demo.py
 
-This will generate HTML files in the plots/ directory that can be embedded
-in blog posts using:
-
-    {% include plotly_figure.html src="/assets/examples/plots/sine_wave.html" height="600px" %}
+This will generate HTML files in the plots/ directory.
 """
 
 from pathlib import Path
@@ -389,5 +386,3 @@ if __name__ == "__main__":
 
     print("-" * 50)
     print("Done! Charts saved to:", PLOT_DIR)
-    print("\nTo embed in a blog post, use:")
-    print('  {% include plotly_figure.html src="/assets/examples/plots/sine_wave.html" height="600px" %}')

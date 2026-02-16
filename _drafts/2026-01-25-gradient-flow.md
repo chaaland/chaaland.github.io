@@ -33,12 +33,6 @@ This ODE describes a particle flowing downhill on the loss surface at a rate pro
 
 Consider the simplest case: minimizing a 1D quadratic $$f(x) = \frac{S}{2}x^2$$ where $$S > 0$$ is the **sharpness** (curvature) of the function. Larger $$S$$ means a steeper, narrower parabola.
 
-{% include plotly_figure.html
-   src="/assets/2026/gradient-flow/plots/sharpness_1d.html"
-   height="500px"
-   caption="Quadratic functions with different sharpness values S. Larger S means steeper curvature."
-%}
-
 The gradient is $$\nabla f(x) = Sx$$, so gradient descent becomes
 
 $$x_{k+1} = x_k - \eta \cdot S x_k = (1 - S\eta) x_k$$
@@ -81,12 +75,6 @@ $$x(t) = e^{-At}x_0$$
 
 which traces a smooth curve toward the origin. In contrast, gradient descent with a fixed learning rate takes discrete steps that may overshoot along the high-curvature directions.
 
-{% include plotly_figure.html
-   src="/assets/2026/gradient-flow/plots/contours_simple.html"
-   height="700px"
-   caption="Contours of a 2D quadratic with gradient flow (blue) and gradient descent (red) trajectories."
-%}
-
 ## Loss vs Step: The Effect of Learning Rate
 
 The learning rate $$\eta$$ dramatically affects convergence behavior. The critical threshold is
@@ -98,21 +86,9 @@ where $$\lambda_{\max}$$ is the largest eigenvalue of $$2A$$ (i.e., twice the sh
 - For $$\eta < \eta_{\text{crit}}$$: Loss monotonically decreases
 - For $$\eta > \eta_{\text{crit}}$$: Iterates diverge to infinity
 
-{% include plotly_figure.html
-   src="/assets/2026/gradient-flow/plots/loss_vs_step.html"
-   height="550px"
-   caption="Loss vs optimization step for different learning rates. Rates above the critical threshold cause divergence."
-%}
-
 ## Interactive Exploration
 
 The following interactive visualization lets you explore how the ellipse parameters ($$a$$, $$b$$, $$\theta$$) and learning rate ($$\eta$$) affect gradient descent behavior. The blue curve shows gradient flow (the continuous limit), while red points show gradient descent iterates.
-
-{% include plotly_figure.html
-   src="/assets/2026/gradient-flow/plots/quadratic_interactive.html"
-   height="750px"
-   caption="Interactive visualization of gradient flow and gradient descent. Adjust the sliders to explore different configurations."
-%}
 
 Key observations to make:
 - When $$a = b$$, the contours are circular and gradient descent moves directly toward the origin

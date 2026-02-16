@@ -11,14 +11,12 @@ This is a **Jekyll-based technical blog** deployed to GitHub Pages at `chaaland.
 ├── _posts/              # Published blog posts (Markdown with frontmatter)
 ├── _drafts/             # Unpublished draft posts
 ├── _includes/           # Reusable HTML partials
-│   ├── plotly_figure.html   # Embed interactive Plotly charts
 │   ├── head/custom.html     # Google Fonts imports
 │   ├── footer.html          # Custom footer with social links
 │   └── scripts.html         # Analytics scripts
 ├── _sass/               # Custom SCSS stylesheets
 │   ├── _custom-variables.scss  # Theme colors and typography
-│   ├── _custom-styles.scss     # Component styling
-│   └── _plotly.scss            # Plotly figure styles
+│   └── _custom-styles.scss     # Component styling
 ├── _site/               # Generated output (do not edit directly)
 ├── assets/              # Static assets organized by year
 │   ├── shared/          # Shared resources (avatar, css, data)
@@ -79,16 +77,6 @@ mathjax: true
 toc: true
 excerpt: "Brief description for previews"
 ---
-```
-
-### Embedding Plotly Figures
-
-```liquid
-{% include plotly_figure.html
-   src="/assets/<year>/<topic>/plots/figure.html"
-   height="500px"
-   caption="Figure caption text"
-%}
 ```
 
 ## Asset Organization
