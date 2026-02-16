@@ -13,8 +13,5 @@
 // Custom styles - imported AFTER the theme to override component styles
 @import "custom-styles";
 
-// Custom styles for interactive plots
-@import "plotly";
-
 // Base styles for interactive SVG widgets
 @import "widget-base";

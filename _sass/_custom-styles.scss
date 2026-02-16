@@ -645,33 +645,6 @@ sup {
 }
 
 // --------------------------------------------------------------------------
-// Plotly Figures - Enhanced
-// --------------------------------------------------------------------------
-
-.plotly-figure {
-  margin: $padding-large 0;
-  background: $surface-color;
-  border: 1px solid $border-color;
-  border-radius: $border-radius;
-  padding: 1rem;
-
-  iframe {
-    max-width: 100%;
-    background: transparent;
-    border-radius: 4px;
-  }
-
-  figcaption {
-    font-family: $monospace;
-    font-size: $type-size-7;
-    text-align: center;
-    color: $muted-text-color;
-    margin-top: 0.75rem;
-    font-style: normal;
-  }
-}
-
-// --------------------------------------------------------------------------
 // Selection Highlight
 // --------------------------------------------------------------------------
 
