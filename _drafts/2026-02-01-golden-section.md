@@ -254,7 +254,6 @@ Figure 4 shows how the golden section algorithm at initialization
     <figcaption>Figure 4</figcaption>
 </figure>
 
-
 <figure>
     <a href="/assets/2026/golden-section/images/golden-section-0.png"><img src="/assets/2026/golden-section/images/golden-section-0.png"></a>
     <figcaption>Figure 4</figcaption>
@@ -353,286 +352,6 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
     Use the slider to step through iterations 0–5. Dashed lines show: <span style="color:#f85149">a</span> (left), <span style="color:#58a6ff">x₁</span> (interior left), <span style="color:#3fb950">x₂</span> (interior right), <span style="color:#d29922">b</span> (right).
   </figcaption>
 </div>
-
-{% include widget-scripts.html %}
-<script>
-(function() {
-  'use strict';
-
-  // Data from marimo notebook (seed=31)
-  const X_DATA = [19, 24, 17, 3, 24, 7, 11];
-  const Y_DATA = [21, -19, -7, -7, 0, -8, -2];
-  const RHO = (-1 + Math.sqrt(5)) / 2; // ≈ 0.61803
-  const COLORS = {
-    a: '#f85149',
-    x1: '#58a6ff',
-    x2: '#3fb950',
-    b: '#d29922'
-  };
-
-  // SVG layout
-  const MARGIN = { top: 30, right: 30, bottom: 50, left: 60 };
-  const SVG_W = 600;
-  const SVG_H = 380;
-  const PLOT_W = SVG_W - MARGIN.left - MARGIN.right;
-  const PLOT_H = SVG_H - MARGIN.top - MARGIN.bottom;
-
-  // DOM elements
-  const widget = document.getElementById('golden-section-widget');
-  if (!widget) return;
-
-  const svg = document.getElementById('golden-section-svg');
-  const slider = document.getElementById('gs-iter-slider');
-  const iterLabel = document.getElementById('gs-iter-label');
-  const gGrid = document.getElementById('gs-grid');
-  const gAxes = document.getElementById('gs-axes');
-  const gCurve = document.getElementById('gs-curve');
-  const gVlines = document.getElementById('gs-vlines');
-  const gDots = document.getElementById('gs-dots');
-  const gLabels = document.getElementById('gs-labels');
-  const aVal = document.getElementById('gs-a-val');
-  const x1Val = document.getElementById('gs-x1-val');
-  const x2Val = document.getElementById('gs-x2-val');
-  const bVal = document.getElementById('gs-b-val');
-  const intervalVal = document.getElementById('gs-interval-val');
-
-  // Compute objective function
-  function objectiveFunction(beta) {
-    let sum = 0;
-    for (let i = 0; i < X_DATA.length; i++) {
-      sum += Math.abs(beta * X_DATA[i] - Y_DATA[i]);
-    }
-    return sum / X_DATA.length;
-  }
-
-  // Initialize the algorithm state
-  const knots = Y_DATA.map((y, i) => y / X_DATA[i]);
-  let initA = Math.min(...knots);
-  let initB = Math.max(...knots);
-  let initL = initB - initA;
-  let initX1 = initB - RHO * initL;
-  let initX2 = initA + RHO * initL;
-
-  // Compute initial objective values
-  let initFa = objectiveFunction(initA);
-  let initFx1 = objectiveFunction(initX1);
-  let initFx2 = objectiveFunction(initX2);
-  let initFb = objectiveFunction(initB);
-
-  // Pre-compute all algorithm states
-  function computeStates() {
-    const states = [];
-    let a = initA, b = initB, x1 = initX1, x2 = initX2;
-    let fa = initFa, fx1 = initFx1, fx2 = initFx2, fb = initFb;
-
-    states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
-
-    for (let iter = 0; iter < 5; iter++) {
-      if (fx1 < fx2) {
-        // Shrink from right
-        b = x2;
-        fb = fx2;
-        let L = b - a;
-        x2 = x1;
-        fx2 = fx1;
-        x1 = b - RHO * L;
-        fx1 = objectiveFunction(x1);
-      } else {
-        // Shrink from left
-        a = x1;
-        fa = fx1;
-        let L = b - a;
-        x1 = x2;
-        fx1 = fx2;
-        x2 = a + RHO * L;
-        fx2 = objectiveFunction(x2);
-      }
-      states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
-    }
-
-    return states;
-  }
-
-  const allStates = computeStates();
-
-  // Compute data range for plotting
-  const betaMin = initA - 0.2 * initL;
-  const betaMax = initB + 0.2 * initL;
-  const betaRange = betaMax - betaMin;
-
-  let maxF = 0;
-  for (let i = 0; i <= 100; i++) {
-    const beta = betaMin + (i / 100) * betaRange;
-    maxF = Math.max(maxF, objectiveFunction(beta));
-  }
-  const fMax = maxF * 1.1;
-
-  // Coordinate transforms
-  function toSvgX(beta) {
-    return MARGIN.left + ((beta - betaMin) / betaRange) * PLOT_W;
-  }
-
-  function toSvgY(f) {
-    return MARGIN.top + (1 - f / fMax) * PLOT_H;
-  }
-
-  // Draw background grid
-  function drawGrid() {
-    gGrid.innerHTML = '';
-    const xStep = betaRange / 5;
-    const yStep = fMax / 5;
-
-    for (let beta = betaMin; beta <= betaMax; beta += xStep) {
-      const line = WidgetUtils.createSvgElement('line', {
-        x1: toSvgX(beta),
-        y1: MARGIN.top,
-        x2: toSvgX(beta),
-        y2: SVG_H - MARGIN.bottom,
-        stroke: '#21262d',
-        'stroke-width': '1'
-      });
-      gGrid.appendChild(line);
-    }
-
-    for (let f = 0; f <= fMax; f += yStep) {
-      const line = WidgetUtils.createSvgElement('line', {
-        x1: MARGIN.left,
-        y1: toSvgY(f),
-        x2: SVG_W - MARGIN.right,
-        y2: toSvgY(f),
-        stroke: '#21262d',
-        'stroke-width': '1'
-      });
-      gGrid.appendChild(line);
-    }
-  }
-
-  // Draw axes
-  function drawAxes() {
-    gAxes.innerHTML = '';
-
-    // X axis
-    const xAxis = WidgetUtils.createSvgElement('line', {
-      x1: MARGIN.left,
-      y1: toSvgY(0),
-      x2: SVG_W - MARGIN.right,
-      y2: toSvgY(0),
-      stroke: '#6e7681',
-      'stroke-width': '2'
-    });
-    gAxes.appendChild(xAxis);
-
-    // Y axis
-    const yAxis = WidgetUtils.createSvgElement('line', {
-      x1: toSvgX(0),
-      y1: MARGIN.top,
-      x2: toSvgX(0),
-      y2: SVG_H - MARGIN.bottom,
-      stroke: '#6e7681',
-      'stroke-width': '2'
-    });
-    gAxes.appendChild(yAxis);
-  }
-
-  // Draw objective curve
-  function drawCurve() {
-    gCurve.innerHTML = '';
-    const nSamples = 300;
-    const points = [];
-
-    for (let i = 0; i <= nSamples; i++) {
-      const beta = betaMin + (i / nSamples) * betaRange;
-      const f = objectiveFunction(beta);
-      points.push({ beta, f });
-    }
-
-    let pathData = `M ${toSvgX(points[0].beta)} ${toSvgY(points[0].f)}`;
-    for (let i = 1; i < points.length; i++) {
-      pathData += ` L ${toSvgX(points[i].beta)} ${toSvgY(points[i].f)}`;
-    }
-
-    const path = WidgetUtils.createSvgElement('path', {
-      d: pathData,
-      stroke: '#8b949e',
-      'stroke-width': '2',
-      fill: 'none'
-    });
-    gCurve.appendChild(path);
-  }
-
-  // Update vertical lines and dots for current iteration
-  function updateState(iterIdx) {
-    const state = allStates[iterIdx];
-    const { a, b, x1, x2 } = state;
-
-    // Clear old lines and dots
-    gVlines.innerHTML = '';
-    gDots.innerHTML = '';
-    gLabels.innerHTML = '';
-
-    // Helper to draw vline + dot + label
-    function drawKeyPoint(beta, fVal, name, color) {
-      // Vertical line
-      const line = WidgetUtils.createSvgElement('line', {
-        x1: toSvgX(beta),
-        y1: MARGIN.top,
-        x2: toSvgX(beta),
-        y2: SVG_H - MARGIN.bottom,
-        stroke: color,
-        'stroke-width': '2',
-        'stroke-dasharray': '5,5'
-      });
-      gVlines.appendChild(line);
-
-      // Dot on curve
-      const dot = WidgetUtils.createSvgElement('circle', {
-        cx: toSvgX(beta),
-        cy: toSvgY(fVal),
-        r: '4',
-        fill: color
-      });
-      gDots.appendChild(dot);
-
-      // Label below x-axis
-      const text = WidgetUtils.createSvgElement('text', {
-        x: toSvgX(beta),
-        y: SVG_H - MARGIN.bottom + 20,
-        'text-anchor': 'middle',
-        fill: color,
-        'font-size': '12',
-        'font-weight': 'bold'
-      });
-      text.textContent = name;
-      gLabels.appendChild(text);
-    }
-
-    drawKeyPoint(a, objectiveFunction(a), 'a', COLORS.a);
-    drawKeyPoint(x1, objectiveFunction(x1), 'x₁', COLORS.x1);
-    drawKeyPoint(x2, objectiveFunction(x2), 'x₂', COLORS.x2);
-    drawKeyPoint(b, objectiveFunction(b), 'b', COLORS.b);
-
-    // Update info panel
-    aVal.textContent = a.toFixed(4);
-    x1Val.textContent = x1.toFixed(4);
-    x2Val.textContent = x2.toFixed(4);
-    bVal.textContent = b.toFixed(4);
-    intervalVal.textContent = (b - a).toFixed(4);
-  }
-
-  // Initialize display
-  drawGrid();
-  drawAxes();
-  drawCurve();
-  updateState(0);
-
-  // Slider event listener
-  slider.addEventListener('input', function() {
-    const iter = parseInt(this.value);
-    iterLabel.textContent = iter;
-    updateState(iter);
-  });
-})();
-</script>
 
 # The Golden Ratio
 
@@ -927,6 +646,286 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
     point.removeEventListener('mousedown', handleMouseDown);
     point.removeEventListener('touchstart', handleTouchStart);
     resetBtn.removeEventListener('click', reset);
+  });
+})();
+</script>
+
+{% include widget-scripts.html %}
+<script>
+(function() {
+  'use strict';
+
+  // Data from marimo notebook (seed=31)
+  const X_DATA = [19, 24, 17, 3, 24, 7, 11];
+  const Y_DATA = [21, -19, -7, -7, 0, -8, -2];
+  const RHO = (-1 + Math.sqrt(5)) / 2; // ≈ 0.61803
+  const COLORS = {
+    a: '#f85149',
+    x1: '#58a6ff',
+    x2: '#3fb950',
+    b: '#d29922'
+  };
+
+  // SVG layout
+  const MARGIN = { top: 30, right: 30, bottom: 50, left: 60 };
+  const SVG_W = 600;
+  const SVG_H = 380;
+  const PLOT_W = SVG_W - MARGIN.left - MARGIN.right;
+  const PLOT_H = SVG_H - MARGIN.top - MARGIN.bottom;
+
+  // DOM elements
+  const widget = document.getElementById('golden-section-widget');
+  if (!widget) return;
+
+  const svg = document.getElementById('golden-section-svg');
+  const slider = document.getElementById('gs-iter-slider');
+  const iterLabel = document.getElementById('gs-iter-label');
+  const gGrid = document.getElementById('gs-grid');
+  const gAxes = document.getElementById('gs-axes');
+  const gCurve = document.getElementById('gs-curve');
+  const gVlines = document.getElementById('gs-vlines');
+  const gDots = document.getElementById('gs-dots');
+  const gLabels = document.getElementById('gs-labels');
+  const aVal = document.getElementById('gs-a-val');
+  const x1Val = document.getElementById('gs-x1-val');
+  const x2Val = document.getElementById('gs-x2-val');
+  const bVal = document.getElementById('gs-b-val');
+  const intervalVal = document.getElementById('gs-interval-val');
+
+  // Compute objective function
+  function objectiveFunction(beta) {
+    let sum = 0;
+    for (let i = 0; i < X_DATA.length; i++) {
+      sum += Math.abs(beta * X_DATA[i] - Y_DATA[i]);
+    }
+    return sum / X_DATA.length;
+  }
+
+  // Initialize the algorithm state
+  const knots = Y_DATA.map((y, i) => y / X_DATA[i]);
+  let initA = Math.min(...knots);
+  let initB = Math.max(...knots);
+  let initL = initB - initA;
+  let initX1 = initB - RHO * initL;
+  let initX2 = initA + RHO * initL;
+
+  // Compute initial objective values
+  let initFa = objectiveFunction(initA);
+  let initFx1 = objectiveFunction(initX1);
+  let initFx2 = objectiveFunction(initX2);
+  let initFb = objectiveFunction(initB);
+
+  // Pre-compute all algorithm states
+  function computeStates() {
+    const states = [];
+    let a = initA, b = initB, x1 = initX1, x2 = initX2;
+    let fa = initFa, fx1 = initFx1, fx2 = initFx2, fb = initFb;
+
+    states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
+
+    for (let iter = 0; iter < 5; iter++) {
+      if (fx1 < fx2) {
+        // Shrink from right
+        b = x2;
+        fb = fx2;
+        let L = b - a;
+        x2 = x1;
+        fx2 = fx1;
+        x1 = b - RHO * L;
+        fx1 = objectiveFunction(x1);
+      } else {
+        // Shrink from left
+        a = x1;
+        fa = fx1;
+        let L = b - a;
+        x1 = x2;
+        fx1 = fx2;
+        x2 = a + RHO * L;
+        fx2 = objectiveFunction(x2);
+      }
+      states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
+    }
+
+    return states;
+  }
+
+  const allStates = computeStates();
+
+  // Compute data range for plotting
+  const betaMin = initA - 0.2 * initL;
+  const betaMax = initB + 0.2 * initL;
+  const betaRange = betaMax - betaMin;
+
+  let maxF = 0;
+  for (let i = 0; i <= 100; i++) {
+    const beta = betaMin + (i / 100) * betaRange;
+    maxF = Math.max(maxF, objectiveFunction(beta));
+  }
+  const fMax = maxF * 1.1;
+
+  // Coordinate transforms
+  function toSvgX(beta) {
+    return MARGIN.left + ((beta - betaMin) / betaRange) * PLOT_W;
+  }
+
+  function toSvgY(f) {
+    return MARGIN.top + (1 - f / fMax) * PLOT_H;
+  }
+
+  // Draw background grid
+  function drawGrid() {
+    gGrid.innerHTML = '';
+    const xStep = betaRange / 5;
+    const yStep = fMax / 5;
+
+    for (let beta = betaMin; beta <= betaMax; beta += xStep) {
+      const line = WidgetUtils.createSvgElement('line', {
+        x1: toSvgX(beta),
+        y1: MARGIN.top,
+        x2: toSvgX(beta),
+        y2: SVG_H - MARGIN.bottom,
+        stroke: '#21262d',
+        'stroke-width': '1'
+      });
+      gGrid.appendChild(line);
+    }
+
+    for (let f = 0; f <= fMax; f += yStep) {
+      const line = WidgetUtils.createSvgElement('line', {
+        x1: MARGIN.left,
+        y1: toSvgY(f),
+        x2: SVG_W - MARGIN.right,
+        y2: toSvgY(f),
+        stroke: '#21262d',
+        'stroke-width': '1'
+      });
+      gGrid.appendChild(line);
+    }
+  }
+
+  // Draw axes
+  function drawAxes() {
+    gAxes.innerHTML = '';
+
+    // X axis
+    const xAxis = WidgetUtils.createSvgElement('line', {
+      x1: MARGIN.left,
+      y1: toSvgY(0),
+      x2: SVG_W - MARGIN.right,
+      y2: toSvgY(0),
+      stroke: '#6e7681',
+      'stroke-width': '2'
+    });
+    gAxes.appendChild(xAxis);
+
+    // Y axis
+    const yAxis = WidgetUtils.createSvgElement('line', {
+      x1: toSvgX(0),
+      y1: MARGIN.top,
+      x2: toSvgX(0),
+      y2: SVG_H - MARGIN.bottom,
+      stroke: '#6e7681',
+      'stroke-width': '2'
+    });
+    gAxes.appendChild(yAxis);
+  }
+
+  // Draw objective curve
+  function drawCurve() {
+    gCurve.innerHTML = '';
+    const nSamples = 300;
+    const points = [];
+
+    for (let i = 0; i <= nSamples; i++) {
+      const beta = betaMin + (i / nSamples) * betaRange;
+      const f = objectiveFunction(beta);
+      points.push({ beta, f });
+    }
+
+    let pathData = `M ${toSvgX(points[0].beta)} ${toSvgY(points[0].f)}`;
+    for (let i = 1; i < points.length; i++) {
+      pathData += ` L ${toSvgX(points[i].beta)} ${toSvgY(points[i].f)}`;
+    }
+
+    const path = WidgetUtils.createSvgElement('path', {
+      d: pathData,
+      stroke: '#8b949e',
+      'stroke-width': '2',
+      fill: 'none'
+    });
+    gCurve.appendChild(path);
+  }
+
+  // Update vertical lines and dots for current iteration
+  function updateState(iterIdx) {
+    const state = allStates[iterIdx];
+    const { a, b, x1, x2 } = state;
+
+    // Clear old lines and dots
+    gVlines.innerHTML = '';
+    gDots.innerHTML = '';
+    gLabels.innerHTML = '';
+
+    // Helper to draw vline + dot + label
+    function drawKeyPoint(beta, fVal, name, color) {
+      // Vertical line
+      const line = WidgetUtils.createSvgElement('line', {
+        x1: toSvgX(beta),
+        y1: MARGIN.top,
+        x2: toSvgX(beta),
+        y2: SVG_H - MARGIN.bottom,
+        stroke: color,
+        'stroke-width': '2',
+        'stroke-dasharray': '5,5'
+      });
+      gVlines.appendChild(line);
+
+      // Dot on curve
+      const dot = WidgetUtils.createSvgElement('circle', {
+        cx: toSvgX(beta),
+        cy: toSvgY(fVal),
+        r: '4',
+        fill: color
+      });
+      gDots.appendChild(dot);
+
+      // Label below x-axis
+      const text = WidgetUtils.createSvgElement('text', {
+        x: toSvgX(beta),
+        y: SVG_H - MARGIN.bottom + 20,
+        'text-anchor': 'middle',
+        fill: color,
+        'font-size': '12',
+        'font-weight': 'bold'
+      });
+      text.textContent = name;
+      gLabels.appendChild(text);
+    }
+
+    drawKeyPoint(a, objectiveFunction(a), 'a', COLORS.a);
+    drawKeyPoint(x1, objectiveFunction(x1), 'x₁', COLORS.x1);
+    drawKeyPoint(x2, objectiveFunction(x2), 'x₂', COLORS.x2);
+    drawKeyPoint(b, objectiveFunction(b), 'b', COLORS.b);
+
+    // Update info panel
+    aVal.textContent = a.toFixed(4);
+    x1Val.textContent = x1.toFixed(4);
+    x2Val.textContent = x2.toFixed(4);
+    bVal.textContent = b.toFixed(4);
+    intervalVal.textContent = (b - a).toFixed(4);
+  }
+
+  // Initialize display
+  drawGrid();
+  drawAxes();
+  drawCurve();
+  updateState(0);
+
+  // Slider event listener
+  slider.addEventListener('input', function() {
+    const iter = parseInt(this.value);
+    iterLabel.textContent = iter;
+    updateState(iter);
   });
 })();
 </script>
