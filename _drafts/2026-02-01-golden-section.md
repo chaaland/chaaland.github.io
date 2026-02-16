@@ -247,17 +247,50 @@ $$\rho = {-1 + \sqrt{5} \over 2} \approx 0.61803.$$
 
 By setting $$\rho$$ to this value, we ensure we can reuse the objective value at $$f(x_1)$$ and only need to compute the objective at $$x'_1$$ saving us $$\mathcal{O}(N)$$ computation.
 
-Figure 4 shows how the golden section algorithm at initialization
+The widget in Figure 4 demonstrates the golden section algorithm for various numbers of iterations.
 
-<figure>
-    <a href="/assets/2026/golden-section/images/golden-section-0.png"><img src="/assets/2026/golden-section/images/golden-section-0.png"></a>
-    <figcaption>Figure 4</figcaption>
-</figure>
+<div class="widget-container" id="golden-section-widget">
+  <div class="widget-controls">
+    <label class="widget-label">Iteration: <span id="gs-iter-label">0</span></label>
+    <input type="range" id="gs-iter-slider" class="widget-slider" min="0" max="5" step="1" value="0">
+  </div>
+  <svg class="widget-plot" id="golden-section-svg" viewBox="0 0 600 380">
+    <rect x="0" y="0" width="600" height="380" fill="#0d1117"></rect>
+    <g id="gs-grid"></g>
+    <g id="gs-axes"></g>
+    <g id="gs-curve"></g>
+    <g id="gs-vlines"></g>
+    <g id="gs-dots"></g>
+    <g id="gs-labels"></g>
+  </svg>
+  <div class="widget-info" id="gs-info">
+    <div class="widget-info-row">
+      <span class="widget-info-label">a:</span>
+      <span class="widget-info-value" id="gs-a-val">–</span>
+    </div>
+    <div class="widget-info-row">
+      <span class="widget-info-label">x₁:</span>
+      <span class="widget-info-value" id="gs-x1-val">–</span>
+    </div>
+    <div class="widget-info-row">
+      <span class="widget-info-label">x₂:</span>
+      <span class="widget-info-value" id="gs-x2-val">–</span>
+    </div>
+    <div class="widget-info-row">
+      <span class="widget-info-label">b:</span>
+      <span class="widget-info-value" id="gs-b-val">–</span>
+    </div>
+    <div class="widget-info-row">
+      <span class="widget-info-label">Interval length:</span>
+      <span class="widget-info-value" id="gs-interval-val">–</span>
+    </div>
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">
+    Figure 4: Golden section search on f(β) = mean(|β·xᵢ − yᵢ|) with 7 data points.
+    Dashed lines show: <span style="color:#f85149">a</span> (left), <span style="color:#58a6ff">x₁</span> (interior left), <span style="color:#3fb950">x₂</span> (interior right), <span style="color:#d29922">b</span> (right).
+  </figcaption>
+</div>
 
-<figure>
-    <a href="/assets/2026/golden-section/images/golden-section-0.png"><img src="/assets/2026/golden-section/images/golden-section-0.png"></a>
-    <figcaption>Figure 4</figcaption>
-</figure>
 <details>
 <summary>
 Click for code
@@ -309,49 +342,7 @@ def golden_section_minimize(obj_fn, a, b, n_iters: int = 5):
 
 Notice in the code above how there is now only one call to `obj_fn` per iteration.
 
-# Golden Section Search in Action
 
-<div class="widget-container" id="golden-section-widget">
-  <div class="widget-controls">
-    <label class="widget-label">Iteration: <span id="gs-iter-label">0</span></label>
-    <input type="range" id="gs-iter-slider" class="widget-slider" min="0" max="5" step="1" value="0">
-  </div>
-  <svg class="widget-plot" id="golden-section-svg" viewBox="0 0 600 380">
-    <rect x="0" y="0" width="600" height="380" fill="#0d1117"></rect>
-    <g id="gs-grid"></g>
-    <g id="gs-axes"></g>
-    <g id="gs-curve"></g>
-    <g id="gs-vlines"></g>
-    <g id="gs-dots"></g>
-    <g id="gs-labels"></g>
-  </svg>
-  <div class="widget-info" id="gs-info">
-    <div class="widget-info-row">
-      <span class="widget-info-label">a:</span>
-      <span class="widget-info-value" id="gs-a-val">–</span>
-    </div>
-    <div class="widget-info-row">
-      <span class="widget-info-label">x₁:</span>
-      <span class="widget-info-value" id="gs-x1-val">–</span>
-    </div>
-    <div class="widget-info-row">
-      <span class="widget-info-label">x₂:</span>
-      <span class="widget-info-value" id="gs-x2-val">–</span>
-    </div>
-    <div class="widget-info-row">
-      <span class="widget-info-label">b:</span>
-      <span class="widget-info-value" id="gs-b-val">–</span>
-    </div>
-    <div class="widget-info-row">
-      <span class="widget-info-label">Interval length:</span>
-      <span class="widget-info-value" id="gs-interval-val">–</span>
-    </div>
-  </div>
-  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">
-    Figure X: Golden section search on f(β) = mean(|β·xᵢ − yᵢ|) with 7 data points.
-    Use the slider to step through iterations 0–5. Dashed lines show: <span style="color:#f85149">a</span> (left), <span style="color:#58a6ff">x₁</span> (interior left), <span style="color:#3fb950">x₂</span> (interior right), <span style="color:#d29922">b</span> (right).
-  </figcaption>
-</div>
 
 # The Golden Ratio
 
@@ -721,11 +712,12 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
     let a = initA, b = initB, x1 = initX1, x2 = initX2;
     let fa = initFa, fx1 = initFx1, fx2 = initFx2, fb = initFb;
 
-    states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
+    // Iteration 0: all points are new
+    states.push({ a, b, x1, x2, fa, fx1, fx2, fb, newEval: null });
 
     for (let iter = 0; iter < 5; iter++) {
       if (fx1 < fx2) {
-        // Shrink from right
+        // Shrink from right; x1 is reused as new x2
         b = x2;
         fb = fx2;
         let L = b - a;
@@ -733,8 +725,9 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
         fx2 = fx1;
         x1 = b - RHO * L;
         fx1 = objectiveFunction(x1);
+        states.push({ a, b, x1, x2, fa, fx1, fx2, fb, newEval: 'x1' });
       } else {
-        // Shrink from left
+        // Shrink from left; x2 is reused as new x1
         a = x1;
         fa = fx1;
         let L = b - a;
@@ -742,8 +735,8 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
         fx1 = fx2;
         x2 = a + RHO * L;
         fx2 = objectiveFunction(x2);
+        states.push({ a, b, x1, x2, fa, fx1, fx2, fb, newEval: 'x2' });
       }
-      states.push({ a, b, x1, x2, fa, fx1, fx2, fb });
     }
 
     return states;
@@ -859,7 +852,7 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
   // Update vertical lines and dots for current iteration
   function updateState(iterIdx) {
     const state = allStates[iterIdx];
-    const { a, b, x1, x2 } = state;
+    const { a, b, x1, x2, newEval } = state;
 
     // Clear old lines and dots
     gVlines.innerHTML = '';
@@ -867,7 +860,12 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
     gLabels.innerHTML = '';
 
     // Helper to draw vline + dot + label
-    function drawKeyPoint(beta, fVal, name, color) {
+    // isNew: true = newly computed in this iteration (dashed, lighter)
+    //        false = reused from previous iteration (solid, full opacity)
+    function drawKeyPoint(beta, fVal, name, color, isNew) {
+      const strokeDasharray = isNew ? '5,5' : 'none';
+      const opacity = isNew ? '0.6' : '1';
+
       // Vertical line
       const line = WidgetUtils.createSvgElement('line', {
         x1: toSvgX(beta),
@@ -876,7 +874,8 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
         y2: SVG_H - MARGIN.bottom,
         stroke: color,
         'stroke-width': '2',
-        'stroke-dasharray': '5,5'
+        'stroke-dasharray': strokeDasharray,
+        'opacity': opacity
       });
       gVlines.appendChild(line);
 
@@ -885,7 +884,8 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
         cx: toSvgX(beta),
         cy: toSvgY(fVal),
         r: '4',
-        fill: color
+        fill: color,
+        'opacity': opacity
       });
       gDots.appendChild(dot);
 
@@ -896,16 +896,22 @@ Notice in the code above how there is now only one call to `obj_fn` per iteratio
         'text-anchor': 'middle',
         fill: color,
         'font-size': '12',
-        'font-weight': 'bold'
+        'font-weight': 'bold',
+        'opacity': opacity
       });
       text.textContent = name;
       gLabels.appendChild(text);
     }
 
-    drawKeyPoint(a, objectiveFunction(a), 'a', COLORS.a);
-    drawKeyPoint(x1, objectiveFunction(x1), 'x₁', COLORS.x1);
-    drawKeyPoint(x2, objectiveFunction(x2), 'x₂', COLORS.x2);
-    drawKeyPoint(b, objectiveFunction(b), 'b', COLORS.b);
+    // Interior points: check if they're newly evaluated
+    const x1IsNew = (newEval === 'x1');
+    const x2IsNew = (newEval === 'x2');
+
+    // Boundaries and interior points
+    drawKeyPoint(a, objectiveFunction(a), 'a', COLORS.a, false);  // never new
+    drawKeyPoint(x1, objectiveFunction(x1), 'x₁', COLORS.x1, x1IsNew);
+    drawKeyPoint(x2, objectiveFunction(x2), 'x₂', COLORS.x2, x2IsNew);
+    drawKeyPoint(b, objectiveFunction(b), 'b', COLORS.b, false);  // never new
 
     // Update info panel
     aVal.textContent = a.toFixed(4);
