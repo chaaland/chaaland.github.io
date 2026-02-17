@@ -86,7 +86,6 @@ In Figure 1, we see an objective with just one absolute value term
 
 One observation worth noting is that the graph of the average of the absolute values has non-differentiable points/"kinks" at the vertices of the original absolute value terms.
 
-
 Figure 2 shows the average of several absolute value terms of the form $$\lvert \beta_k x_{ik} - y_i\rvert $$ and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
 
 <figure class="half">
@@ -371,7 +370,7 @@ $$
 
 Solving for $$\varphi$$ using the quadratic formula and discarding the negative solution,
 
-$$\varphi = {1 + \sqrt{5} \over 2}$$.
+$$\varphi = {1 + \sqrt{5} \over 2}.$$
 
 This looks very close to our "optimal" $$\rho$$ from the golden-section algorithm which was
 
@@ -380,7 +379,19 @@ $$\rho = {-1 + \sqrt{5} \over 2}.$$
 If we assume $$b=1$$ and solve for $$a$$ in $$(a+b)/b = \varphi$$, we have $$a = \varphi  - 1= \rho$$!
 Solving $$b/a=\varphi$$ for $$a$$, we can also see that $$a = 1/\varphi$$ further cementing the connection to the golden ratio.
 
-## Footnotes
+# Conclusion
+
+We've seen how the golden section search elegantly solves 1D convex optimization problems by reusing objective evaluations across iterations, halving the computational cost compared to naive interval shrinking.
+
+Recall that solving least absolute deviations regression—the robust alternative to least squares—requires solving:
+
+$$\underset{\beta}{\text{minimize}} \quad ||X\beta - y||_1$$
+
+Since this is a convex objective without a closed-form solution, coordinate descent is a natural approach: cycle through each coordinate $\beta_k$ and solve the resulting 1D subproblem. For each coordinate, we're minimizing a sum of absolute value terms—a convex, unimodal function perfectly suited to this algorithm.
+
+Remarkably, this classical algorithm from numerical optimization connects back to one of mathematics' most famous constants, the golden ratio.
+
+# Footnotes
 
 <a name="footnote1">1</a>: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
 
