@@ -2,7 +2,7 @@
 title: "Golden Section Search for Robust Regression"
 categories:
   - Optimization
-date: 2026-01-09 19:00:00 +0000
+date: 2026-02-17 19:00:00 +0000
 mathjax: true
 tags:
   - Optimization
@@ -17,21 +17,21 @@ In ordinary least squares we want to solve the following optimization problem
 
 $$
 \begin{equation}
-\underset{\beta}{\text{minimize}} \quad \sum_{i=1}^N (\beta^T x_i - y_i)^2
+\underset{\beta}{\text{minimize}} \quad {1 \over N}\sum_{i=1}^N (\beta^T x_i - y_i)^2
 \end{equation}
 $$
 
-where $$N$$ is the number of samples.
+where $$N$$ is the number of samples and $$\beta \in \mathbf{R}^d$$.
 Often this will be written in matrix form as
 
 $$
 \begin{equation}
-\underset{\beta}{\text{minimize}} \quad ||X\beta - y||_2^2
+\underset{\beta}{\text{minimize}} \quad {1 \over N}||X\beta - y||_2^2
 \end{equation}
 $$
 
 where $$X\in \mathbf{R}^{N\times d}$$ and $$y\in \mathbf{R}^{N}$$.
-In this form, least squares has a particularly nice closed form solution<sup>[1](#footnote1)</sup>
+In this formulation, least squares has a particularly nice closed form solution<sup>[1](#footnote1)</sup>
 
 $$\beta^\star = (X^TX)^{-1}X^Ty.$$
 
@@ -40,7 +40,7 @@ A more robust fitting procedure is _least absolute deviations_ where we instead 
 
 $$
 \begin{equation}
-\underset{\beta}{\text{minimize}} \quad \sum_{i=1}^N |\beta^T x_i - y_i|
+\underset{\beta}{\text{minimize}} \quad {1 \over N}\sum_{i=1}^N |\beta^T x_i - y_i|
 \end{equation}.
 $$
 
@@ -53,7 +53,7 @@ $$
 $$
 
 However, unlike least squares, there is no succinct closed form solution.
-The next section will introduce an iterative algorithm for solving this problem
+The next section will introduce an iterative algorithm for solving this problem.
 
 # Coordinate Descent
 
@@ -64,17 +64,16 @@ In typical applications, the $$\beta$$ we're solving for can be very high dimens
 What if we could instead reduce the multi-dimensional optimization down to a series of 1D optimization problems?
 
 This is the idea of coordinate descent.
-Instead of optimizing over all $$\beta_1,\ldots,\beta_d$$ jointly, we cycle through each variable holding the other fixed and optimize over just one variable.
+Instead of optimizing over all $$\beta_1,\ldots,\beta_d$$ jointly, we cycle through each variable holding the others fixed and optimize over just one variable.
 For a specific coordinate $$k$$, since all other $$\beta_j (j\ne k)$$ are held fixed, the term $$\sum_{j\ne k} \beta_j x_{ij}$$ is constant with respect to $$\beta_k$$, so we can rewrite the residual as $$r_i = y_i - Σ_{j\ne k} \beta_j x_{ij}$$. Now the subproblem becomes a single-variable optimization:
 
 $$
 \begin{equation}
-\underset{\beta_k}{\text{minimize}} \quad \sum_{i=1}^N |\beta_k x_{ik} - r_i|.
+\underset{\beta_k}{\text{minimize}} \quad {1 \over N}\sum_{i=1}^N |\beta_k x_{ik} - r_i|.
 \end{equation}
 $$
 
 Now that we have a simple 1D problem, we can graph an example to see what the objective might look like.
-In Figure 1, we see an objective with just one absolute value term
 
 <figure class="half">
     <a href="/assets/2026/golden-section/images/1d-abs-deviation-00.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-00.png"></a>
@@ -82,7 +81,7 @@ In Figure 1, we see an objective with just one absolute value term
     <figcaption>Figure 1: Left: individual absolute value terms. Right: their mean (the objective to minimize), showing kinks at the zeros of each term.</figcaption>
 </figure>
 
-One observation worth noting is that the graph of the average of the absolute values has non-differentiable points/"kinks" at the vertices of the original absolute value terms.
+One observation worth noting from figure 1 is that the graph of the average of the absolute values has non-differentiable points ("kinks") at the vertices of the original absolute value terms.
 
 Figure 2 shows the average of several absolute value terms of the form $$\lvert \beta_k x_{ik} - y_i\rvert $$ and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
 
@@ -95,7 +94,7 @@ Figure 2 shows the average of several absolute value terms of the form $$\lvert 
 Since these kinks occur at the non-differentiable points of each absolute value term, they occur exactly when $$\beta_k x_{ik} - r_i = 0$$.
 More precisely, kinks occur at values when $$\beta_k = r_i / x_{ik}$$ for each $$i=1,\ldots, N$$.
 
-From the figure, it's not hard to see that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
+From the figure, it should be clear that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
 If the objective is convex<sup>[2](#footnote2)</sup> and we can bound the minimizer $$\beta_k^\star$$, can we come up with an algorithm to iteratively shrink the bounds on the minimizer?
 
 # Interval Shrinking
@@ -112,7 +111,7 @@ $$
 From the discussion above, it is guaranteed that $$a \le \beta^\star_k \le b$$.
 
 In order to iteratively shrink our interval $$[a, b]$$ in which the solution lies, we need to evaluate the objective at some points inside of the interval.
-We can define two new points to evaluate inside the interval by taking an offset from each of the interval endpoints.
+We can define two new points to evaluate inside the interval by taking an offset from each of the endpoints.
 
 Letting $$L=b-a$$, the length of the bounding interval, we can define
 
@@ -144,11 +143,13 @@ However, both the second and third subplot are potentially consistent with the o
 If we _knew_ we were in situation two, we could shrink the interval from $$[a,b]$$ down to $$[x_1, x_2]$$.
 On the other hand, if we _knew_ were in situation three, we could shrink the interval to $$[a, x_1]$$.
 
-Since we cannot distinguish between cases 2 and 3, we must retain all points consistent with either case. The union of these two intervals is simply  $$[a, x_2]$$.
+Since we cannot distinguish between cases 2 and 3, we must retain all points consistent with either case, namely the union of the two intervals, $$[a, x_2]$$.
 
 Running through the same argument for when $$f(x_1)\ge f(x_2)$$ shows the interval can be reduced to $$[x_1, b]$$.
 
-The algorithm to find the minimum is to initialize an interval $$[a, b]$$ to the smallest and largest values of kinks in the graph. Then compute $$x_1$$ and $$x_2$$ and evaluate the objective to determine whether the solution lies in $$[a, x_2]$$ or $$[x_1, b]$$. This becomes our new interval and we repeat the procedure.
+The full algorithm is then to initialize an interval $$[a, b]$$ to the smallest and largest values of kinks in the graph.
+Then compute $$x_1$$ and $$x_2$$ as described above and evaluate the objective to determine whether the solution lies in $$[a, x_2]$$ or $$[x_1, b]$$.
+This becomes our new interval and we repeat the procedure.
 
 This algorithm is shown in the code below
 
@@ -351,7 +352,9 @@ def golden_section_minimize(obj_fn, a, b, n_iters: int = 5):
 One remaining question is why this algorithm is referred to as the "golden" section algorithm.
 It turns out, it has a very close connection to the golden ratio $$\varphi$$.
 
-Two line segments are said to be in a golden ratio when the ratio of the longer segment to the shorter segment is the same as that of the sum of the lengths of the segments to the longer segment. Concretely, suppose $$s$$ and $$\ell$$ are the lengths of two line segments with $$s < \ell$$, then they are said to be in the golden ratio when
+Two line segments are said to be in a golden ratio when the ratio of the longer segment to the shorter segment is the same as that of the sum of the lengths of the segments to that of the longer segment.
+
+Concretely, suppose $$s$$ and $$\ell$$ are the lengths of two line segments with $$s < \ell$$, then they are said to be in the golden ratio when
 
 $$
 {s + \ell \over \ell} = {\ell \over s}.
@@ -383,11 +386,11 @@ We've seen how the golden section search elegantly solves 1D convex optimization
 
 Recall that solving least absolute deviations regression—the robust alternative to least squares—requires solving:
 
-$$\underset{\beta}{\text{minimize}} \quad ||X\beta - y||_1$$
+$$\underset{\beta}{\text{minimize}} \quad {1 \over N}||X\beta - y||_1$$
 
-Since this is a convex objective without a closed-form solution, coordinate descent is a natural approach: cycle through each coordinate $\beta_k$ and solve the resulting 1D subproblem. For each coordinate, we're minimizing a sum of absolute value terms—a convex, unimodal function perfectly suited to this algorithm.
+Since this is a convex objective without a closed-form solution, coordinate descent is a natural approach: cycle through each coordinate $$\beta_k$$ and solve the resulting 1D subproblem. For each coordinate, we're minimizing a sum of absolute value terms—a convex, unimodal function perfectly suited to this algorithm.
 
-Remarkably, this classical algorithm from numerical optimization connects back to one of mathematics' most famous constants, the golden ratio.
+Surprisingly, this classical algorithm connects back to one of mathematics' most famous constants, the golden ratio.
 
 # Footnotes
 
