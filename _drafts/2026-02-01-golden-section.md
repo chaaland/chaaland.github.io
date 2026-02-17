@@ -22,7 +22,7 @@ $$
 $$
 
 where $$N$$ is the number of samples.
-Oftentimes this will be written in matrix form as
+Often this will be written in matrix form as
 
 $$
 \begin{equation}
@@ -65,15 +65,13 @@ What if we could instead reduce the multi-dimensional optimization down to a ser
 
 This is the idea of coordinate descent.
 Instead of optimizing over all $$\beta_1,\ldots,\beta_d$$ jointly, we cycle through each variable holding the other fixed and optimize over just one variable.
-For a specific coordinate $$k$$, we hold all other $$\beta_j (j\ne k)$$ fixed, making the residual $$r_i = y_i - Σ_{j\ne k} \beta_j x_{ij} a constant. Now the subproblem becomes a single-variable optimization:
+For a specific coordinate $$k$$, since all other $$\beta_j (j\ne k)$$ are held fixed, the term $$\sum_{j\ne k} \beta_j x_{ij}$$ is constant with respect to $$\beta_k$$, so we can rewrite the residual as $$r_i = y_i - Σ_{j\ne k} \beta_j x_{ij}$$. Now the subproblem becomes a single-variable optimization:
 
 $$
 \begin{equation}
-\underset{\beta_k}{\text{minimize}} \quad \sum_{i=1}^N |\beta_k x_{ik} - r_i|
+\underset{\beta_k}{\text{minimize}} \quad \sum_{i=1}^N |\beta_k x_{ik} - r_i|.
 \end{equation}
 $$
-
-where $$r_i = y_i - \sum_{j\ne k} \beta_j x_{ij}$$.
 
 Now that we have a simple 1D problem, we can graph an example to see what the objective might look like.
 In Figure 1, we see an objective with just one absolute value term
@@ -95,7 +93,7 @@ Figure 2 shows the average of several absolute value terms of the form $$\lvert 
 </figure>
 
 Since these kinks occur at the non-differentiable points of each absolute value term, they occur exactly when $$\beta_k x_{ik} - r_i = 0$$.
-More precisely, when $$\beta_k = r_i / x_{ik}$$.
+More precisely, kinks occur at values when $$\beta_k = r_i / x_{ik}$$ for each $$i=1,\ldots, N$$.
 
 From the figure, it's not hard to see that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
 If the objective is convex<sup>[2](#footnote2)</sup> and we can bound the minimizer $$\beta_k^\star$$, can we come up with an algorithm to iteratively shrink the bounds on the minimizer?
@@ -140,7 +138,7 @@ For a given $$\rho$$, we can then compute $$x_1$$ and $$x_2$$.
 Suppose we evaluate the objective at these new points, and find $$f(x_1) < f(x_2)$$.
 
 Looking at the first subplot of Figure 3, we can see that this scenario would be impossible.
-For a convex function, when both $$x_1$$ and $$x_2$$ are to the left of the minimum, the subgradient is negative and therefore $$f(x_1) \ge f(x_2)$$.
+For a convex function, when both interior points are to the left of the minimum, the function is decreasing (negative subgradient), so $$f(x_1) > f(x_2)$$..
 
 However, both the second and third subplot are potentially consistent with the observation that $$f(x_1) < f(x_2)$$.
 If we _knew_ we were in situation two, we could shrink the interval from $$[a,b]$$ down to $$[x_1, x_2]$$.
@@ -353,13 +351,13 @@ def golden_section_minimize(obj_fn, a, b, n_iters: int = 5):
 One remaining question is why this algorithm is referred to as the "golden" section algorithm.
 It turns out, it has a very close connection to the golden ratio $$\varphi$$.
 
-Two line segments are said to be in a golden ratio when the ratio of the longer segment to the shorter segment is the same as that of the sum of the lengths of the segments to the longer segment. Concretely, suppose $$a$$ and $$b$$ are the lengths of two line segments with $$a < b$$, then they are said to be in the golden ratio when
+Two line segments are said to be in a golden ratio when the ratio of the longer segment to the shorter segment is the same as that of the sum of the lengths of the segments to the longer segment. Concretely, suppose $$s$$ and $$\ell$$ are the lengths of two line segments with $$s < \ell$$, then they are said to be in the golden ratio when
 
 $$
-{a+b \over b} = {b \over a}.
+{s + \ell \over \ell} = {\ell \over s}.
 $$
 
-Denoting the ratio $$b/a$$ as $$\varphi$$, we have
+Denoting the ratio $$\ell/s$$ as $$\varphi$$, we have
 
 $$
 \begin{align*}
@@ -376,8 +374,8 @@ This looks very close to our "optimal" $$\rho$$ from the golden-section algorith
 
 $$\rho = {-1 + \sqrt{5} \over 2}.$$
 
-If we assume $$b=1$$ and solve for $$a$$ in $$(a+b)/b = \varphi$$, we have $$a = \varphi  - 1= \rho$$!
-Solving $$b/a=\varphi$$ for $$a$$, we can also see that $$a = 1/\varphi$$ further cementing the connection to the golden ratio.
+If we assume $$\ell=1$$ and solve for $$s$$ in $$(s+\ell)/\ell = \varphi$$, we have $$s = \varphi  - 1= \rho$$!
+Solving $$\ell/s=\varphi$$ for $$s$$, we can also see that $$s = 1/\varphi$$ further cementing the connection to the golden ratio.
 
 # Conclusion
 
@@ -396,265 +394,6 @@ Remarkably, this classical algorithm from numerical optimization connects back t
 <a name="footnote1">1</a>: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
 
 <a name="footnote2">2</a>: The algorithm will also work for quasiconvex functions (a.k.a unimodal functions) like $$f(x) = -e^{-x^2}$$
-
-{% include widget-scripts.html %}
-<script>
-(function() {
-  'use strict';
-
-  // Golden ratio and threshold
-  const PHI = 1.618033988749895;
-  const TOLERANCE = 0.05; // 5% tolerance
-  const PHI_MIN = PHI * (1 - TOLERANCE);
-  const PHI_MAX = PHI * (1 + TOLERANCE);
-
-  // Color scheme
-  const COLORS = {
-    defaultPoint: '#58a6ff',
-    goldenPoint: '#ffd700',
-    leftSegment: '#58a6ff',
-    rightSegment: '#3fb950',
-    goldenText: '#ffd700',
-    defaultText: '#8b949e'
-  };
-
-  // DOM elements
-  const widget = document.getElementById('golden-ratio-widget');
-  if (!widget) return; // Widget not present
-
-  const svg = document.getElementById('golden-ratio-svg');
-  const point = document.getElementById('gr-point');
-  const leftSegment = document.getElementById('gr-left-segment');
-  const rightSegment = document.getElementById('gr-right-segment');
-  const ratio1El = document.getElementById('gr-ratio1');
-  const ratio2El = document.getElementById('gr-ratio2');
-  const resetBtn = document.getElementById('golden-ratio-reset');
-  const labelsG = document.getElementById('gr-labels');
-
-  // Defensive check: ensure all required elements exist
-  if (!svg || !point || !leftSegment || !rightSegment || !ratio1El || !ratio2El || !resetBtn) {
-    console.error('Golden ratio widget: missing DOM elements', {
-      svg: !!svg,
-      point: !!point,
-      leftSegment: !!leftSegment,
-      rightSegment: !!rightSegment,
-      ratio1El: !!ratio1El,
-      ratio2El: !!ratio2El,
-      resetBtn: !!resetBtn
-    });
-    return;
-  }
-
-  // SVG dimensions
-  const BAR_X = 80;
-  const BAR_Y = 50;
-  const BAR_WIDTH = 440;
-  const BAR_HEIGHT = 30;
-  const POINT_RADIUS = 8;
-
-  // State
-  let isDragging = false;
-  let currentPosition = BAR_WIDTH / 2; // Start at middle
-
-  /**
-   * Calculate ratios given a point position
-   * @param {number} position - Position along bar [0, BAR_WIDTH]
-   * @returns {Object} {wholeToLonger, longerToShorter, isGolden}
-   */
-  function calculateRatios(position) {
-    const clampedPos = Math.max(0, Math.min(BAR_WIDTH, position));
-    const leftLen = clampedPos;
-    const rightLen = BAR_WIDTH - clampedPos;
-
-    const longerLen = Math.max(leftLen, rightLen);
-    const shorterLen = Math.min(leftLen, rightLen);
-
-    // Avoid division by zero
-    if (shorterLen === 0) {
-      return {
-        wholeToLonger: 1,
-        longerToShorter: Infinity,
-        isGolden: false
-      };
-    }
-
-    const wholeToLonger = BAR_WIDTH / longerLen;
-    const longerToShorter = longerLen / shorterLen;
-
-    // Check if either ratio is close to golden ratio
-    const isGolden = (wholeToLonger >= PHI_MIN && wholeToLonger <= PHI_MAX) ||
-                     (longerToShorter >= PHI_MIN && longerToShorter <= PHI_MAX);
-
-    return {
-      wholeToLonger,
-      longerToShorter,
-      isGolden
-    };
-  }
-
-  /**
-   * Update the widget display
-   */
-  function update() {
-    const ratios = calculateRatios(currentPosition);
-
-    // Debug: log calculation
-    console.debug('update()', { currentPosition, ratios });
-
-    // Update point position and color
-    const pointX = BAR_X + currentPosition;
-    point.setAttribute('cx', pointX);
-    point.setAttribute('fill', ratios.isGolden ? COLORS.goldenPoint : COLORS.defaultPoint);
-
-    // Update segments
-    leftSegment.setAttribute('width', currentPosition);
-    rightSegment.setAttribute('x', BAR_X + currentPosition);
-    rightSegment.setAttribute('width', BAR_WIDTH - currentPosition);
-
-    // Format and display ratios
-    const ratio1Text = ratios.wholeToLonger === Infinity ? '∞' : ratios.wholeToLonger.toFixed(3);
-    const ratio2Text = ratios.longerToShorter === Infinity ? '∞' : ratios.longerToShorter.toFixed(3);
-
-    ratio1El.textContent = ratio1Text;
-    ratio2El.textContent = ratio2Text;
-
-    // Highlight text if golden ratio found
-    const textColor = ratios.isGolden ? COLORS.goldenText : COLORS.defaultText;
-    ratio1El.style.color = textColor;
-    ratio2El.style.color = textColor;
-  }
-
-  /**
-   * Handle mouse down on draggable point
-   */
-  function handleMouseDown(e) {
-    isDragging = true;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    e.preventDefault();
-  }
-
-  /**
-   * Handle mouse move while dragging
-   */
-  function handleMouseMove(e) {
-    if (!isDragging) return;
-
-    const svgRect = svg.getBoundingClientRect();
-    const mouseX = e.clientX - svgRect.left;
-
-    // Convert to SVG coordinates (accounting for viewBox scaling)
-    const viewBoxWidth = getViewBoxScale();
-    const scale = viewBoxWidth / svgRect.width;
-    const svgMouseX = mouseX * scale;
-
-    // Clamp position within bar bounds
-    currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgMouseX - BAR_X));
-
-    // Debug logging
-    console.debug('handleMouseMove:', { mouseX, svgRect: svgRect.width, viewBoxWidth, scale, svgMouseX, BAR_X, currentPosition });
-
-    update();
-  }
-
-  /**
-   * Handle mouse up to stop dragging
-   */
-  function handleMouseUp() {
-    isDragging = false;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  }
-
-  /**
-   * Handle touch start on draggable point
-   */
-  function handleTouchStart(e) {
-    isDragging = true;
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-    e.preventDefault();
-  }
-
-  /**
-   * Handle touch move while dragging
-   */
-  function handleTouchMove(e) {
-    if (!isDragging) return;
-
-    const touch = e.touches[0];
-    const svgRect = svg.getBoundingClientRect();
-    const touchX = touch.clientX - svgRect.left;
-
-    // Convert to SVG coordinates (accounting for viewBox scaling)
-    const viewBoxWidth = getViewBoxScale();
-    const scale = viewBoxWidth / svgRect.width;
-    const svgTouchX = touchX * scale;
-
-    // Clamp position within bar bounds
-    currentPosition = Math.max(0, Math.min(BAR_WIDTH, svgTouchX - BAR_X));
-
-    // Debug logging
-    console.debug('handleTouchMove:', { touchX, svgRect: svgRect.width, viewBoxWidth, scale, svgTouchX, BAR_X, currentPosition });
-
-    update();
-  }
-
-  /**
-   * Handle touch end to stop dragging
-   */
-  function handleTouchEnd() {
-    isDragging = false;
-    document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('touchend', handleTouchEnd);
-  }
-
-  /**
-   * Get viewBox width with safe parsing
-   */
-  function getViewBoxScale() {
-    const viewBox = svg.getAttribute('viewBox');
-    if (!viewBox) return 600; // Default matches SVG viewBox
-    const parts = viewBox.split(' ');
-    const viewBoxWidth = parseFloat(parts[2]);
-    return isNaN(viewBoxWidth) ? 600 : viewBoxWidth;
-  }
-
-  /**
-   * Reset widget to initial state (middle position)
-   */
-  function reset() {
-    currentPosition = BAR_WIDTH / 2;
-    update();
-  }
-
-  // Initialize event listeners
-  point.addEventListener('mousedown', handleMouseDown);
-  point.addEventListener('touchstart', handleTouchStart);
-  resetBtn.addEventListener('click', reset);
-
-  // Debug: log initial state
-  console.debug('Golden ratio widget initialized', {
-    currentPosition,
-    BAR_WIDTH,
-    pointCx: point.getAttribute('cx'),
-    viewBoxWidth: getViewBoxScale()
-  });
-
-  // Initial update
-  update();
-
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', function() {
-    if (isDragging) {
-      handleMouseUp();
-    }
-    point.removeEventListener('mousedown', handleMouseDown);
-    point.removeEventListener('touchstart', handleTouchStart);
-    resetBtn.removeEventListener('click', reset);
-  });
-})();
-</script>
 
 {% include widget-scripts.html %}
 <script>
