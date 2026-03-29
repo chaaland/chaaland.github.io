@@ -186,37 +186,6 @@ def _(IMAGE_DIR, knots, plot_golden_section_minimize_algo, plt):
     return
 
 
-app._unparsable_cell(
-    r"""
-    # minimize_lad(x, y)
-
-
-    def coordinate_descent_lad(X, y, beta: np.ndarray):
-        n, d = X.shape
-        for k in rang(d):
-            r = y 
-            if k > 0:
-                r-= X[:, :k] @ beta[:k] 
-            elif k >= d- 1
-                r-= X[:, k + 1 :] @ beta[k + 1 :]
-            a, x1, x2, b = golden_section_minimize(obj_fn, a=min(knots), b=max(knots), n_iters=n_iters)
-    """,
-    name="_"
-)
-
-
-@app.cell
-def _():
-    # show example fitting a line to data and using coordinate descent
-    return
-
-
-@app.cell
-def _():
-    # Example situations for the minimizer
-    return
-
-
 @app.cell
 def _(IMAGE_DIR, make_cartesian_plane, np, plt):
     _beta = np.linspace(-2, 2, 1000)

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="nabla" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#79c0ff"/>
+      <stop offset="100%" stop-color="#39c5cf"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="32" height="32" rx="5" fill="#0d1117"/>
+  <!-- Nabla (∇) — the gradient operator, pointing toward minimum -->
+  <path d="M16 25 L5 9 H27 Z" fill="url(#nabla)"/>
+</svg>
