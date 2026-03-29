@@ -2,7 +2,7 @@
 title: "Robust Regression Without Gradients"
 categories:
   - Optimization
-date: 2026-03-05 19:00:00 +0000
+date: 2026-03-29 19:00:00 +0000
 mathjax: true
 tags:
   - Optimization
