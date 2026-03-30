@@ -36,11 +36,11 @@ def hyperbolic_cordic_iter(i: int, v: list[float], ccw: bool, scale: bool = Fals
 
 
 def get_scale_factor(n_iters: int) -> float:
-    return math.exp(sum(-0.5 * math.log(1 + 2 ** (-2 * k))) for k in range(n_iters))
+    return math.exp(sum(-0.5 * math.log(1 + 2 ** (-2 * k)) for k in range(n_iters)))
 
 
 def get_hyperbolic_scale_factor(n_iters: int) -> float:
-    return math.exp(sum(-0.5 * math.log(1 - 2 ** (-2 * (k + 1)))) for k in range(n_iters))
+    return math.exp(sum(-0.5 * math.log(1 - 2 ** (-2 * (k + 1))) for k in range(n_iters)))
 
 
 def cordic(theta: float, n_iters: int = 20) -> tuple[float, float]:
