@@ -326,7 +326,7 @@ $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \lvert \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert,
 $$
 
-we can perform a clever rewrite by dividing and multiplying each term in the summation by $$ \lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert$$  
+we can perform a clever rewrite by dividing and multiplying each term in the summation by $$ \lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert$$<sup>[3](#footnote3)</sup>
 
 $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \frac{1}{\lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert} \cdot (\beta^T x^{(i)} + \beta_0  - y^{(i)})^2.
@@ -338,7 +338,7 @@ $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N w_i \cdot (\beta^T x^{(i)} + \beta_0 - y^{(i)})^2
 $$
 
-which is simply a _weighted_ least squares problem and like OLS, also has a simple closed form solution.<sup>[3](#footnote3)</sup>
+which is simply a _weighted_ least squares problem and like OLS, also has a simple closed form solution.<sup>[4](#footnote4)</sup>
 Note that the weights are inversely proportional to the error.
 This means samples with large absolute deviation are given _less_ weight.
 
@@ -413,7 +413,9 @@ However, in cases where you don't care as much about speed and just need somethi
 
 <a name="footnote2">2</a>: Strictly, $$\lvert x \rvert$$ is not differentiable at $$x = 0$$. The identity $${d \over dx}\lvert x\rvert = \mathbf{sign}(x)$$ uses the convention $$\mathbf{sign}(0) = 0$$, but the true derivative is undefined there. The correct generalization is the subgradient: $$\partial \lvert x \rvert = \mathbf{sign}(x)$$ for $$x \neq 0$$, and $$\partial \lvert x \rvert = [-1, 1]$$ at $$x = 0$$.
 
-<a name="footnote3">3</a>: Weighted least squares minimizes $$\|W^{1/2}(Ax - b)\|^2 = (Ax-b)^T W (Ax-b)$$ where $$W = \mathbf{diag}(w_1,\ldots,w_N)$$. Setting the gradient to zero gives $$A^TWAx = A^TWb$$, with closed-form solution $$x = (A^TWA)^{-1}A^TWb$$.
+<a name="footnote3">3</a>: For any $$x \neq 0$$, multiplying and dividing by $$\lvert x \rvert$$ gives $$\lvert x \rvert = \frac{\lvert x \rvert^2}{\lvert x \rvert} = \frac{x^2}{\lvert x \rvert}$$.
+
+<a name="footnote4">4</a>: Weighted least squares minimizes $$\|W^{1/2}(Ax - b)\|^2 = (Ax-b)^T W (Ax-b)$$ where $$W = \mathbf{diag}(w_1,\ldots,w_N)$$. Setting the gradient to zero gives $$A^TWAx = A^TWb$$, with closed-form solution $$x = (A^TWA)^{-1}A^TWb$$.
 
 {% include widget-scripts.html %}
 <script>
