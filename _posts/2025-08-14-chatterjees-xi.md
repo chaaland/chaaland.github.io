@@ -211,7 +211,7 @@ With $$r_s=0.93$$, it is clear Spearman's correlation is still able to detect th
 This is because the correlation calculation doesn't depend on the actual values themselves, only the ranks.
 
 However, Spearman's correlation cannot capture more complicated relationships between data.
-For example, the noiseless quadratic and sinusoidal data shown in figure 6 below.
+For example, the noiseless quadratic and sinusoidal data shown in Figure 6 below.
 
 <figure class>
     <a href="/assets/2025/chatterjees-xi/images/nonlinear_spearman_corrs.png"><img src="/assets/2025/chatterjees-xi/images/nonlinear_spearman_corrs.png"></a>
@@ -393,7 +393,7 @@ When there is a perfect functional relationship, the ranks of $$y$$ will change 
 
 With the intuition for Xi in place, let's examine its performance on the nonlinear data we've discussed.
 
-We'll start by revisiting the non-linear data from figure 6.
+We'll start by revisiting the non-linear data from Figure 6.
 We saw that both Pearson's and Spearman's correlations failed to capture the clear functional relationships in the quadratic and sinusoidal datasets.
 Figure 8 shows the same data, this time including Chatterjee's correlation.
 

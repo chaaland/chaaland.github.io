@@ -81,7 +81,7 @@ Now that we have a simple 1D problem, we can graph an example to see what the ob
     <figcaption>Figure 1: Left: individual absolute value terms. Right: their mean (the objective to minimize), showing kinks at the zeros of each term.</figcaption>
 </figure>
 
-One observation worth noting from figure 1 is that the graph of the average of the absolute values has non-differentiable points ("kinks") at the vertices of the original absolute value terms.
+One observation worth noting from Figure 1 is that the graph of the average of the absolute values has non-differentiable points ("kinks") at the vertices of the original absolute value terms.
 
 Figure 2 shows the average of several absolute value terms of the form $$\lvert \beta_k x_{ik} - y_i\rvert $$ and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
 

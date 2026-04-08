@@ -36,7 +36,7 @@ This is an example of a _Quadratically Constrained Quadratic Program_ (QCQP) in 
     <figcaption>Figure 1</figcaption>
 </figure>
 
-Looking at figure 1, we can learn a few things about our problem
+Looking at Figure 1, we can learn a few things about our problem
 
 1. The feasible region is
 $$\{x\, |\, 2 \le x \le 4\}$$
@@ -67,14 +67,14 @@ This function is called the _Lagrangian_ .[^fn1] Notice that allowing $$\lambda 
 
 For this reason, we restrict $$\lambda \ge 0$$. In this way, violations of the constraint produce larger/worse values of the objective. Larger violations produce larger penalties to the objective. Conversely, satisfying the constraint produces lower/better values of the objective. Contrast this with the hard constraint where any size violation of the constraint results in an infinite objective and satisfying the constraint leaves the objective unaltered. It is worth repeating that the Lagrangian is only an approximation of the original objective, and a crude one at that.
 
-The following shows a plot for various positive Lagrange multipliers overlayed on the original optimisation problem. It should be clear from figure 2 that Lagrangians (in purple) are hardly great approximations of the hard constraint formulation (in green) for any value of $$\lambda$$.
+The following shows a plot for various positive Lagrange multipliers overlayed on the original optimisation problem. It should be clear from Figure 2 that Lagrangians (in purple) are hardly great approximations of the hard constraint formulation (in green) for any value of $$\lambda$$.
 
 <figure class>
     <a href="/assets/2021/lagrange-duality/images/primal_dual_toy_problem.png"><img src="/assets/2021/lagrange-duality/images/primal_dual_toy_problem.png"></a>
     <figcaption>Figure 2</figcaption>
 </figure>
 
-The key takeaway from figure 2 is that the Lagrangian **always** underestimates the original objective inside the feasible region. This is visually apparent looking at the dark purple traces which show plots of the Lagrangian for various values of $$\lambda \ge 0$$.
+The key takeaway from Figure 2 is that the Lagrangian **always** underestimates the original objective inside the feasible region. This is visually apparent looking at the dark purple traces which show plots of the Lagrangian for various values of $$\lambda \ge 0$$.
 
 This property is simply a consequence of algebra. Consider any point $$x_{feas}$$ satisfying $$g(x) = x^2-6x+8\le 0$$. The Lagrangian is then
 
@@ -94,7 +94,7 @@ In particular,
 
 $$L(2, \lambda) \le 5.$$
 
-Though $$x^\star=2$$ is the minimiser of the primal problem, in general, it is not necessarily a minimiser of the Lagrangian for all $$\lambda$$. Referring to figure 2, it is clear the Lagrangian is minimised by different values of $$x$$ depending on the value of $$\lambda$$.
+Though $$x^\star=2$$ is the minimiser of the primal problem, in general, it is not necessarily a minimiser of the Lagrangian for all $$\lambda$$. Referring to Figure 2, it is clear the Lagrangian is minimised by different values of $$x$$ depending on the value of $$\lambda$$.
 
 For example, consider the case where $$\lambda = 4$$. The Lagrangian is
 
@@ -128,7 +128,7 @@ x &= \frac{3\lambda}{\lambda + 1}
 \end{align*}
 $$
 
-Figure 3 shows the contours of the Lagrangian along with the trajectory (in purple) of $$x$$'s minimising the Lagrangian for various values of $$\lambda$$. It is worth mentioning that the $$x$$ which minimises the Lagrangian need not be primal feasible. Choosing $$\lambda=0$$, gives an argmin occurring at $$x=0$$ which is clearly infeasible (see figure 2).
+Figure 3 shows the contours of the Lagrangian along with the trajectory (in purple) of $$x$$'s minimising the Lagrangian for various values of $$\lambda$$. It is worth mentioning that the $$x$$ which minimises the Lagrangian need not be primal feasible. Choosing $$\lambda=0$$, gives an argmin occurring at $$x=0$$ which is clearly infeasible (see Figure 2).
 
 <figure class>
     <a href="/assets/2021/lagrange-duality/images/lagrange_infimum.png"><img src="/assets/2021/lagrange-duality/images/lagrange_infimum.png"></a>
@@ -144,7 +144,7 @@ g(\lambda) &= \left(\frac{3\lambda}{\lambda + 1}\right)^2 + 1 + \lambda \left[\l
 \end{align*}
 $$
 
-which is plotted in figure 4.
+which is plotted in Figure 4.
 <figure class>
     <a href="/assets/2021/lagrange-duality/images/dual_fn.png"><img src="/assets/2021/lagrange-duality/images/dual_fn.png"></a>
     <figcaption>Figure 4</figcaption>
@@ -154,7 +154,7 @@ which is plotted in figure 4.
 
 Since the dual function satisfies
 
-$$g(\lambda) \leq p^\star,$$
+$$g(\lambda) \le p^\star,$$
 
 we can try to find the best lower bound by maximising it. This pushes the left hand side as close as possible to $$p^\star$$. This maximisation is just another optimisation problem called the _dual_. The dual problem for our running example is
 
@@ -165,7 +165,7 @@ $$
 \end{align*}
 $$
 
-From figure 4, the solution is $$(\lambda^\star,\, g(\lambda^\star)) = (2,\,5)$$. From this we can conclude that 5 is a lower bound on $$p^\star$$. The fact that $$g(\lambda^\star) \leq p^\star$$ is called _weak duality_.
+From Figure 4, the solution is $$(\lambda^\star,\, g(\lambda^\star)) = (2,\,5)$$. From this we can conclude that 5 is a lower bound on $$p^\star$$. The fact that $$g(\lambda^\star) \le p^\star$$ is called _weak duality_.
 
 However, since we happened to have solved our original optimisation problem by inspection, we see that the lower bound is sharp. In this case where $$g(\lambda^\star) = p^\star$$, we say that _strong duality_ obtains. There are a variety of conditions specifying when strong duality obtains, referred to as _constraint qualifications_ but it is typical to have strong duality for convex optimisation problems.
 
@@ -184,24 +184,24 @@ $$
 Just as before we can cast this as an unconstrained problem
 
 $$
-\underset{x}{\text{minimize}}\quad f_0(x) + \sum_{i=1}^m \mathbf{1}_\infty\{f_i(x) \leq 0\} + \sum_{j=1}^p \mathbf{1}_\infty \{h_j(x) = 0\}\\
+\underset{x}{\text{minimize}}\quad f_0(x) + \sum_{i=1}^m \mathbf{1}_\infty\{f_i(x) \le 0\} + \sum_{j=1}^p \mathbf{1}_\infty \{h_j(x) = 0\}\\
 $$
 
 Now instead of introducing a single Lagrange multiplier we add $$m + p$$ new variables, one for each of the constraints. The Lagrangian is defined as
 
 $$
-L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^n \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)\\
+L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^m \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)\\
 $$
 
 with $$L:\mathbf{R}^n\times \mathbf{R}_+^m\times \mathbf{R}^p \rightarrow \mathbf{R}$$. With the same reasoning discussed previously, we must have $$\lambda_i \geq 0$$ for this relaxation to be a sensible approximation of the original objective. From here, all the arguments are the same, just with extra variables.
 
 The Lagrangian still lower bounds the objective in the feasible region. The dual function is then given by
 
-$$g(\lambda, \nu) = \underset{x}{\mathbf{inf}}\, L(x, \lambda, \nu)$$
+$$g(\lambda, \nu) = \underset{x}{\text{inf}}\, L(x, \lambda, \nu)$$
 
 with $$g: \mathbf{R}_+^m\times \mathbf{R}^p\rightarrow \mathbf{R}$$. By a nearly identical argument as in the single constraint case, the dual function satisfies the inequality
 
-$$g(\lambda, \nu) \leq L(x^\star, \lambda, \nu) \leq p^\star$$
+$$g(\lambda, \nu) \le L(x^\star, \lambda, \nu) \le p^\star$$
 
 This leads us to form a new optimisation problem maximising the dual function in order to find the best lower bound of $$p^\star$$
 
@@ -230,7 +230,7 @@ $$
 \end{align*}
 $$
 
-2. Form the Lagrangian $$L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^n \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)$$.
+2. Form the Lagrangian $$L(x, \lambda, \nu) = f_0(x) + \sum_{i=1}^m \lambda_i f_i(x) + \sum_{j=1}^p \nu_j h_j(x)$$.
 3. Compute the dual function $$g(\lambda, \nu)$$ by taking the infimum of the Lagrangian over $$x$$.
 4. Maximise the dual function subject to $$\lambda \succeq 0$$.
 

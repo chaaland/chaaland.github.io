@@ -90,7 +90,7 @@ This is because when the difference between the predicted value and the observed
 An alternative approach to least squares is least absolute deviation (LAD), which is given mathematically by 
 
 $$
-\underset{\beta_1, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N |\beta_1 x_i + \beta_0 - y_i|.
+\underset{\beta_1, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \lvert\beta_1 x_i + \beta_0 - y_i\rvert.
 $$
 
 Figure 2 shows the same data points with the loss landscape of the LAD objective.
@@ -165,7 +165,7 @@ To see why, suppose we already know the optimal $$\beta_0^\star$$.
 Our problem then reduces to the 1D
 
 $$
-\underset{\beta_1}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N |\beta_1 x_i + (\beta_0^\star - y_i)|.
+\underset{\beta_1}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \lvert\beta_1 x_i + (\beta_0^\star - y_i)\rvert.
 $$
 
 It's easy to see that the objective is not differentiable at $$\beta_1 = (y_i - \beta_0^\star) / x_i,\ i=1,\ldots,N$$.
@@ -223,7 +223,7 @@ The more general form of linear regression fits a hyperplane to the data.
 The objective function is
 
 $$
-\underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N |\beta^T x^{(i)} + \beta_0 - y^{(i)}|,
+\underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \lvert\beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert,
 $$
 
 where $$\beta\in \mathbf{R}^d$$ collects all slope parameters (the scalar $$\beta_1$$ from the 2D case becomes the first component of $$\beta$$).

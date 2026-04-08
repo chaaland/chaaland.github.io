@@ -28,7 +28,7 @@ An optimisation problem with $$m$$ equality constraints takes the form
 $$
 \begin{align*}
 \underset{x}{\text{minimize}}&\quad f_0(x)\\
-\text{subject to}&\quad f_i(x) = 0 \quad i=1...m\\
+\text{subject to}&\quad f_i(x) = 0 \quad i=1,\ldots,m\\
 \end{align*}
 $$
 
@@ -88,8 +88,8 @@ Some engineering problems require a vector containing only integers. One special
 
 $$
 \begin{align*}
-\underset{x}{\text{minimize}}&\quad ||Ax - b||^2_2\\
-\text{subject to}&\quad x_i(1-x_i) = 0 \quad i=1...m\\
+\underset{x}{\text{minimize}}&\quad ||Ax - b||_2^2\\
+\text{subject to}&\quad x_i(1-x_i) = 0 \quad i=1,\ldots,m\\
 \end{align*}
 $$
 
@@ -99,7 +99,7 @@ Another common constraint is ensuring a vector has unit length. The definition o
 
 $$
 \begin{align*}
-\underset{x}{\text{maximize}}&\quad ||Ax||^2_2\\
+\underset{x}{\text{maximize}}&\quad ||Ax||_2^2\\
 \text{subject to}&\quad ||x||_2=1
 \end{align*}
 $$
