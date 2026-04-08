@@ -47,7 +47,7 @@ $$
 $$
 
 Where each term in the sum represents the area of one of our rectangles.
-The width of each block is $$h={b-a \over N}$$ (the total interval divided into $$n$$ pieces), and the height is $$f\left(a + {b-a \over N} k\right)$$ (the function evaluated at the left edge of each block)<sup>[1](#footnote1)</sup>.
+The width of each block is $$h={b-a \over N}$$ (the total interval divided into $$n$$ pieces), and the height is $$f\left(a + {b-a \over N} k\right)$$ (the function evaluated at the left edge of each block)[^fn1].
 
 <div class="widget-container" id="riemann-widget">
   <div class="widget-controls">
@@ -109,7 +109,7 @@ $$
 Figure 2: Interactive right Riemann approximation.
 </figcaption>
 
-We can think of Riemann sums as approximating the function as piecewise constant<sup>[2](#footnote2)</sup>.
+We can think of Riemann sums as approximating the function as piecewise constant[^fn2].
 
 ## Trapezoidal approximation
 
@@ -239,7 +239,7 @@ Near the asymptote, the function changes so rapidly that a reasonable number of 
 
 Tanh-sinh quadrature transforms our integral in a way that "tames" these asymptotes.
 
-In this section we'll restrict our attention to integrals in the interval $$[-1,1]$$ for simplicity<sup>[3](#footnote3)</sup>.
+In this section we'll restrict our attention to integrals in the interval $$[-1,1]$$ for simplicity[^fn3].
 We'll start by making the rather unusual variable substitution
 
 $$x = \tanh\left(\sinh \left({\pi \over 2} t\right)\right)$$
@@ -353,7 +353,7 @@ This is because of the rapid saturation of the tanhsinh substitution and the lim
 The $$x$$ values become indistinguishable from 1 for arguments just larger than 3.
 This causes $$1/\sqrt{1-x}$$ to divide by zero and enters an infinity into the summation.
 
-A more robust implementation of this would find the first value (based on the floating point precision) that becomes identically 1 under the tanhsinh transformation.<sup>[4](#footnote4)</sup>.
+A more robust implementation of this would find the first value (based on the floating point precision) that becomes identically 1 under the tanhsinh transformation.[^fn4].
 This effectively truncates the infinite summation and allows the user to only specify $$h$$ (since $$a$$ and $$b$$ become finite).
 
 ## Conclusion
@@ -368,15 +368,13 @@ We saw how it can be viewed in two different ways
 The first corresponds to the view in $$x$$ space and using quadrature.
 The second corresponds to uniform spacing in $$t$$ space and using Riemann rectangles of equal weight.
 
-## Footnotes
+[^fn1]: The rectangles don't need to be uniformly spaced but it makes things simpler. In the limit as $$h\rightarrow 0$$, this becomes equality. It's more of a definition actually. An important caveat is that this does not work when $$a$$ or $$b$$ are infinite.
 
-<a name="footnote1">1</a>: The rectangles don't need to be uniformly spaced but it makes things simpler. In the limit as $$h\rightarrow 0$$, this becomes equality. It's more of a definition actually. An important caveat is that this does not work when $$a$$ or $$b$$ are infinite.
+[^fn2]: We may hear this called zero-order hold in time series contexts. That is, the value of the function in between sampling points is assumed constant (a zero order polynomial) until the next sampling point.
 
-<a name="footnote2">2</a>: We may hear this called zero-order hold in time series contexts. That is, the value of the function in between sampling points is assumed constant (a zero order polynomial) until the next sampling point.
+[^fn3]: A simple change of variables $$u = a + x (b-a)$$ allows handling arbitrary limits of integration.
 
-<a name="footnote3">3</a>: A simple change of variables $$u = a + x (b-a)$$ allows handling arbitrary limits of integration.
-
-<a name="footnote4">4</a>: The easiest way to do this is to find where the complement of $$x$$ achieves the smallest normal floating point number, denoted $$\epsilon$$. Some algebra shows
+[^fn4]: The easiest way to do this is to find where the complement of $$x$$ achieves the smallest normal floating point number, denoted $$\epsilon$$. Some algebra shows
 
 $$1-x = {2 \over 1+e^{\pi/2 \sinh(t)}}.$$
 

@@ -31,7 +31,7 @@ $$
 $$
 
 where $$X\in \mathbf{R}^{N\times d}$$ and $$y\in \mathbf{R}^{N}$$.
-In this formulation, least squares has a particularly nice closed form solution<sup>[1](#footnote1)</sup>
+In this formulation, least squares has a particularly nice closed form solution[^fn1]
 
 $$\beta^\star = (X^TX)^{-1}X^Ty.$$
 
@@ -95,7 +95,7 @@ Since these kinks occur at the non-differentiable points of each absolute value 
 More precisely, kinks occur at values when $$\beta_k = r_i / x_{ik}$$ for each $$i=1,\ldots, N$$.
 
 From the figure, it should be clear that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
-If the objective is convex<sup>[2](#footnote2)</sup> and we can bound the minimizer $$\beta_k^\star$$, can we come up with an algorithm to iteratively shrink the bounds on the minimizer?
+If the objective is convex[^fn2] and we can bound the minimizer $$\beta_k^\star$$, can we come up with an algorithm to iteratively shrink the bounds on the minimizer?
 
 # Interval Shrinking
 
@@ -392,11 +392,9 @@ Since this is a convex objective without a closed-form solution, coordinate desc
 
 Surprisingly, this classical algorithm connects back to one of mathematics' most famous constants, the golden ratio.
 
-# Footnotes
+[^fn1]: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
 
-<a name="footnote1">1</a>: This formula only holds if $$X^TX$$ is invertible. More specifically, when $$X$$ is skinny (i.e. $$N>d$$) and full rank (i.e. $$\mathbf{rank}(X)=d$$)
-
-<a name="footnote2">2</a>: The algorithm will also work for quasiconvex functions (a.k.a unimodal functions) like $$f(x) = -e^{-x^2}$$
+[^fn2]: The algorithm will also work for quasiconvex functions (a.k.a unimodal functions) like $$f(x) = -e^{-x^2}$$
 
 {% include widget-scripts.html %}
 <script>

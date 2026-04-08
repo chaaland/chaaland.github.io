@@ -82,7 +82,7 @@ Figure 1 shows some example data along with a contour plot of the objective func
 </div>
 
 OLS is nice because the objective is differentiable making it amenable to gradient based optimization methods.
-OLS also has a nice closed form solution in the form of the normal equations.<sup>[1](#footnote1)</sup>
+OLS also has a nice closed form solution in the form of the normal equations.[^fn1]
 
 One drawback is that it is very sensitive to outliers.
 This is because when the difference between the predicted value and the observed value is large, as in the case of an outlier, squaring this difference makes it even larger, leading to an overemphasis on extreme points.
@@ -188,7 +188,7 @@ The golden section method does this in a particularly clever way that avoids ext
 See [Golden Section Search for Robust Regression](/optimization/golden-section/) for a full derivation and implementation. 
 
 However, we started by assuming we knew $$\beta_0^\star$$, but in practice, this is a value we need to compute.
-A rough argument is that using $${d \over dx} \lvert x\rvert = \mathbf{sign}(x)$$<sup>[2](#footnote2)</sup> and denoting $$r_i = y_i - \beta_1 x_i$$, leads to the derivative of the objective
+A rough argument is that using $${d \over dx} \lvert x\rvert = \mathbf{sign}(x)$$[^fn2] and denoting $$r_i = y_i - \beta_1 x_i$$, leads to the derivative of the objective
 
 $$
 \frac{dL}{d\beta_0}  = \frac{1}{N}\sum_{i=1}^N \mathbf{sign}(\beta_0 - r_i).
@@ -326,7 +326,7 @@ $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \lvert \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert,
 $$
 
-we can perform a clever rewrite by dividing and multiplying each term in the summation by $$ \lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert$$<sup>[3](#footnote3)</sup>
+we can perform a clever rewrite by dividing and multiplying each term in the summation by $$ \lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert$$[^fn3]
 
 $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N \frac{1}{\lvert  \beta^T x^{(i)} + \beta_0 - y^{(i)}\rvert} \cdot (\beta^T x^{(i)} + \beta_0  - y^{(i)})^2.
@@ -338,7 +338,7 @@ $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N w_i \cdot (\beta^T x^{(i)} + \beta_0 - y^{(i)})^2
 $$
 
-which is simply a _weighted_ least squares problem and like OLS, also has a simple closed form solution.<sup>[4](#footnote4)</sup>
+which is simply a _weighted_ least squares problem and like OLS, also has a simple closed form solution.[^fn4]
 Note that the weights are inversely proportional to the error.
 This means samples with large absolute deviation are given _less_ weight.
 
@@ -407,15 +407,13 @@ In this post we've seen 4 different methods for solving the least absolute devia
 The clear winner for speed of convergence is Iteratively Reweighted Least Squares.
 However, in cases where you don't care as much about speed and just need something that works (e.g. you don't have access to/don't want to take a dependence on a linear algebra package), coordinate descent with weighted median is a simple, easy to implement second choice.
 
-## Footnotes
+[^fn1]: In the general form, OLS minimizes $$\|Ax - b\|^2$$ over $$x \in \mathbf{R}^d$$, where $$A \in \mathbf{R}^{N \times d}$$ is the design matrix and $$b \in \mathbf{R}^N$$ is the target vector. Setting the gradient $$2A^T(Ax - b) = 0$$ gives the normal equations $$A^TAx = A^Tb$$, with closed-form solution $$x = (A^TA)^{-1}A^Tb$$ whenever $$A^TA$$ is invertible.
 
-<a name="footnote1">1</a>: In the general form, OLS minimizes $$\|Ax - b\|^2$$ over $$x \in \mathbf{R}^d$$, where $$A \in \mathbf{R}^{N \times d}$$ is the design matrix and $$b \in \mathbf{R}^N$$ is the target vector. Setting the gradient $$2A^T(Ax - b) = 0$$ gives the normal equations $$A^TAx = A^Tb$$, with closed-form solution $$x = (A^TA)^{-1}A^Tb$$ whenever $$A^TA$$ is invertible.
+[^fn2]: Strictly, $$\lvert x \rvert$$ is not differentiable at $$x = 0$$. The identity $${d \over dx}\lvert x\rvert = \mathbf{sign}(x)$$ uses the convention $$\mathbf{sign}(0) = 0$$, but the true derivative is undefined there. The correct generalization is the subgradient: $$\partial \lvert x \rvert = \mathbf{sign}(x)$$ for $$x \neq 0$$, and $$\partial \lvert x \rvert = [-1, 1]$$ at $$x = 0$$.
 
-<a name="footnote2">2</a>: Strictly, $$\lvert x \rvert$$ is not differentiable at $$x = 0$$. The identity $${d \over dx}\lvert x\rvert = \mathbf{sign}(x)$$ uses the convention $$\mathbf{sign}(0) = 0$$, but the true derivative is undefined there. The correct generalization is the subgradient: $$\partial \lvert x \rvert = \mathbf{sign}(x)$$ for $$x \neq 0$$, and $$\partial \lvert x \rvert = [-1, 1]$$ at $$x = 0$$.
+[^fn3]: For any $$x \neq 0$$, multiplying and dividing by $$\lvert x \rvert$$ gives $$\lvert x \rvert = \frac{\lvert x \rvert^2}{\lvert x \rvert} = \frac{x^2}{\lvert x \rvert}$$.
 
-<a name="footnote3">3</a>: For any $$x \neq 0$$, multiplying and dividing by $$\lvert x \rvert$$ gives $$\lvert x \rvert = \frac{\lvert x \rvert^2}{\lvert x \rvert} = \frac{x^2}{\lvert x \rvert}$$.
-
-<a name="footnote4">4</a>: Weighted least squares minimizes $$\|W^{1/2}(Ax - b)\|^2 = (Ax-b)^T W (Ax-b)$$ where $$W = \mathbf{diag}(w_1,\ldots,w_N)$$. Setting the gradient to zero gives $$A^TWAx = A^TWb$$, with closed-form solution $$x = (A^TWA)^{-1}A^TWb$$.
+[^fn4]: Weighted least squares minimizes $$\|W^{1/2}(Ax - b)\|^2 = (Ax-b)^T W (Ax-b)$$ where $$W = \mathbf{diag}(w_1,\ldots,w_N)$$. Setting the gradient to zero gives $$A^TWAx = A^TWb$$, with closed-form solution $$x = (A^TWA)^{-1}A^TWb$$.
 
 {% include widget-scripts.html %}
 <script>

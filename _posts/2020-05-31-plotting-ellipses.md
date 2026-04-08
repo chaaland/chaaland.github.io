@@ -65,7 +65,7 @@ y
 \end{align*}
 $$
 
-The constraint $$Q\in \mathbf{S}^2_{++}$$ is a more compact way of saying that $$Q\in \mathbf{R}^{2\times 2}$$, $$Q=Q^T$$, $$\mathbf{det}\, Q > 0$$, and $$\mathbf{trace}\, Q > 0$$.<sup>[1](#footnote3)</sup>
+The constraint $$Q\in \mathbf{S}^2_{++}$$ is a more compact way of saying that $$Q\in \mathbf{R}^{2\times 2}$$, $$Q=Q^T$$, $$\mathbf{det}\, Q > 0$$, and $$\mathbf{trace}\, Q > 0$$.[^fn1]
 
 Recall that completing the square for a single variable quadratic $$ax^2+bx+c=0$$ requires adding and subtracting $$\frac{b^2}{4a}$$ in order to eliminate the linear term
 
@@ -75,11 +75,11 @@ Analogously, this can be accomplished in the multidimensional case by adding and
 
 $$\left(z - \frac{1}{2}Q^{-1}b\right)^TQ\left(z-\frac{1}{2}Q^{-1}b\right) + F - \frac{1}{4}b^TQ^{-1}b = 0$$
 
-Provided we do not have a degenerate case in which $$F - \frac{1}{4}b^TQ^{-1}b = 0$$, this can be rewritten in an even more compact form<sup>[2](#footnote2)</sup>
+Provided we do not have a degenerate case in which $$F - \frac{1}{4}b^TQ^{-1}b = 0$$, this can be rewritten in an even more compact form[^fn2]
 
 $$(z - c)^TP(z-c) = 1$$
 
-This is an ellipse expressed as a _quadratic form_.<sup>[3](#footnote3)</sup>
+This is an ellipse expressed as a _quadratic form_.[^fn3]
  Note that if $$P=r^{-2}I$$, this reduces to a circle with radius $$r$$. When $$P=\mathbf{diag}(1/a^2, 1/b^2)$$, we have the familiar equation of an axis aligned ellipse
 
 $$\frac{(x-x_c)^2}{a^2} + \frac{(y-y_c)^2}{b^2} = 1$$
@@ -172,7 +172,7 @@ In the preceding section, it was found that an ellipse can be generated as long 
 1. Compute the eigenvalue decomposition $$VDV^T$$ of $$P$$.
 2. Form a vector $$\theta \in \mathbf{R}^N$$ with values $$0 \le \theta_i < 2\pi$$.
 3. Create vectors $$x\in\mathbf{R}^N$$ and $$y\in\mathbf{R}^N$$ where $$x_i = \cos \theta_i$$ and $$y_i = \sin \theta_i$$. These points lie on the unit circle.
-4. For each point on the unit circle, $$[x_i, y_i]^T$$ multiply on the left by $$VD^{-1/2}$$<sup>[4](#footnote4)</sup> and add $$c$$.
+4. For each point on the unit circle, $$[x_i, y_i]^T$$ multiply on the left by $$VD^{-1/2}$$[^fn4] and add $$c$$.
 
 This routine is expressed using `numpy` in the code below
 
@@ -213,7 +213,7 @@ For hypothesis testing, it is of interest to just look at the random variable in
 
 $$ z = (x-\mu)^T\Sigma^{-1}(x-\mu) .$$
 
-This variable has [chi-square distribution](https://en.wikipedia.org/wiki/Chi-square_distribution) with $$n$$ degrees of freedom. Since covariance matrices have nonnegative eigenvalues, the level sets clearly define ellipses as quadratic forms. They are aptly named _confidence ellipses_. Given a particular level set, the interior defines a space in which a random draw from $$f_X(x)$$ has a specific probability of landing. The probability of a gaussian random vector lying in this ellipse is in fact dictated by the chi-square distribution.<sup>[5](#footnote5)</sup>
+This variable has [chi-square distribution](https://en.wikipedia.org/wiki/Chi-square_distribution) with $$n$$ degrees of freedom. Since covariance matrices have nonnegative eigenvalues, the level sets clearly define ellipses as quadratic forms. They are aptly named _confidence ellipses_. Given a particular level set, the interior defines a space in which a random draw from $$f_X(x)$$ has a specific probability of landing. The probability of a gaussian random vector lying in this ellipse is in fact dictated by the chi-square distribution.[^fn5]
 
 ## Least Squares
 
@@ -235,16 +235,14 @@ Since it can be shown that $$A^TA$$ will always have non-negative eigenvalues, t
 
 Ellipses appear in a number of places, both pure and applied. The code provided should make it a simple exercise to move between ellipse representations as well as provide some simple code for plotting an arbitrary ellipse.
 
-# Footnotes
+[^fn1]: More generally, $$Q\in \mathbf{S}^n_{++}$$, means that $$Q$$ is a positive semidefinite matrix. When $$n=2$$, a positive determinant is sufficient to ensure this. In fact, it is identical to the discriminant condition.
 
-<a name="footnote1">1</a>: More generally, $$Q\in \mathbf{S}^n_{++}$$, means that $$Q$$ is a positive semidefinite matrix. When $$n=2$$, a positive determinant is sufficient to ensure this. In fact, it is identical to the discriminant condition.
+[^fn2]: Here, $$c=Q^{-1}b$$ is the center of the ellipse and $$P = Q/(\frac{1}{4}b^TQ^{-1}b - F)$$.
 
-<a name="footnote2">2</a>: Here, $$c=Q^{-1}b$$ is the center of the ellipse and $$P = Q/(\frac{1}{4}b^TQ^{-1}b - F)$$.
+[^fn3]: Some author's use the convention $$(z-c)^T P^{-1} (z-c)$$ instead.
 
-<a name="footnote3">3</a>: Some author's use the convention $$(z-c)^T P^{-1} (z-c)$$ instead.
+[^fn4]: This is called the coloring matrix. Additionally it is $$P^{-1/2}$$, the inverse of the matrix square root of $$P$$
 
-<a name="footnote4">4</a>: This is called the coloring matrix. Additionally it is $$P^{-1/2}$$, the inverse of the matrix square root of $$P$$
-
-<a name="footnote5">5</a>: If the ellipse is defined by
+[^fn5]: If the ellipse is defined by
 $$\left\{x| (x-\mu)^T\Sigma^{-1}(x-\mu) \le \alpha\right\},$$
 then a random draw of $$x$$ will have probability $$F^{-1}_{\chi_n^2}(\alpha)$$ of being inside the region.$$\, F^{-1}_{\chi_n^2}$$ is the inverse CDF of a chi-square distribution with $$n$$ degrees of freedom.

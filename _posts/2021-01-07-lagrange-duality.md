@@ -63,7 +63,7 @@ where $$\lambda\in \mathbf{R}$$ is a new variable called the _Lagrange multiplie
 
 $$L(x,\lambda) = x^2 + 1 + \lambda(x^2-6x+8)$$
 
-This function is called the _Lagrangian_ .<sup>[1](#footnote1)</sup> Notice that allowing $$\lambda < 0$$ would not approximate the original objective well since violations of the constraint could potentially yield better values of the objective than if the constraint were satisfied.
+This function is called the _Lagrangian_ .[^fn1] Notice that allowing $$\lambda < 0$$ would not approximate the original objective well since violations of the constraint could potentially yield better values of the objective than if the constraint were satisfied.
 
 For this reason, we restrict $$\lambda \ge 0$$. In this way, violations of the constraint produce larger/worse values of the objective. Larger violations produce larger penalties to the objective. Conversely, satisfying the constraint produces lower/better values of the objective. Contrast this with the hard constraint where any size violation of the constraint results in an infinite objective and satisfying the constraint leaves the objective unaltered. It is worth repeating that the Lagrangian is only an approximation of the original objective, and a crude one at that.
 
@@ -105,13 +105,13 @@ L(x,4) &= x^2+1+4(x^2-6x+8)\\
 \end{align*}
 $$
 
-which attains a minimum at $$x = 12/5$$.<sup>[2](#footnote2)</sup>
+which attains a minimum at $$x = 12/5$$.[^fn2]
 
 This partial minimisation of the Lagrangian produces a function of $$\lambda$$ called the _dual function_
 
 $$g(\lambda) = \underset{x}{\text{inf}}\, L(x, \lambda).$$
 
-From this definition, it follows that dual function satisfies the following chain of inequalities<sup>[3](#footnote3)</sup>
+From this definition, it follows that dual function satisfies the following chain of inequalities[^fn3]
 
 $$g(\lambda) \le L(x^\star, \lambda) \le p^\star.$$
 
@@ -212,7 +212,7 @@ $$
 \end{align*}
 $$
 
-where $$\lambda \succeq 0$$ means the vector is component-wise greater or equal to 0.<sup>[4](#footnote4)</sup>
+where $$\lambda \succeq 0$$ means the vector is component-wise greater or equal to 0.[^fn4]
 
 ## Conclusion
 
@@ -234,15 +234,13 @@ $$
 3. Compute the dual function $$g(\lambda, \nu)$$ by taking the infimum of the Lagrangian over $$x$$.
 4. Maximise the dual function subject to $$\lambda \succeq 0$$.
 
-## Footnotes
+[^fn1]: Not to be confused with the Lagrangian $$L(x,\dot{x})$$ from classical mechanics.
 
-<a name="footnote1">1</a>: Not to be confused with the Lagrangian $$L(x,\dot{x})$$ from classical mechanics.
+[^fn2]: The minimum of a quadratic $$f(x) = ax^2 + bx + c$$ with $$a > 0$$ occurs at $$x = -b/(2a)$$.
 
-<a name="footnote2">2</a>: The minimum of a quadratic $$f(x) = ax^2 + bx + c$$ with $$a > 0$$ occurs at $$x = -b/(2a)$$.
+[^fn3]: Recall that $$x^\star$$ solves the primal problem, so it must be feasible by definition.
 
-<a name="footnote3">3</a>: Recall that $$x^\star$$ solves the primal problem, so it must be feasible by definition.
-
-<a name="footnote4">4</a>: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_.
+[^fn4]: In 2D this condition means $$\lambda$$ lies in the first quadrant. More generally, $$\lambda$$ is said to lie in the _non-negative orthant_.
 
 ## References
 

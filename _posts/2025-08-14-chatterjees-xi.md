@@ -129,7 +129,7 @@ Spearman's correlation is defined as
 
 $$r_s = \mathbf{corr}(\mathbf{rank}(x),\, \mathbf{rank}(y)).$$
 
-When there are no ties<sup>[1](#footnote1)</sup>, Spearman's correlation simplifies to
+When there are no ties[^fn1], Spearman's correlation simplifies to
 
 $$ r_s = 1 - \frac{6\sum_{i=1}^N \left(\mathbf{rank}(x_i) - \mathbf{rank}(y_i)\right)^2}{N(N^2-1)}$$
 
@@ -236,7 +236,7 @@ Surprisingly, in 2019, a very simple correlation coefficient was introduced that
 
 ### Definition
 
-If we first sort the data by their $$x$$-coordinates, Chatterjee's Xi coefficient is given by<sup>[2](#footnote2)</sup>
+If we first sort the data by their $$x$$-coordinates, Chatterjee's Xi coefficient is given by[^fn2]
 
 $$\xi(x,y) = 1 - {\sum_{i=1}^{N-1} |\mathbf{rank}(y_{i+1}) - \mathbf{rank}(y_i)| \over {(N^2-1)/3}}.$$
 
@@ -377,7 +377,7 @@ The total expected sum for a completely random relationship is
 
 $$\mathbf{E}[d] = (N-1)(N+1)/3 = (N^2-1)/3.$$
 
-The Xi coefficient is then constructed to measure how close our observed sum of differences is to this random baseline<sup>[3](#footnote3)</sup>.
+The Xi coefficient is then constructed to measure how close our observed sum of differences is to this random baseline[^fn3].
 
 $$
 \begin{align*}
@@ -450,7 +450,7 @@ One important characteristic of Chatterjee's Xi is its dependence on the sample 
 For a function with a complex or "wiggly" shape, the coefficient's ability to detect the relationship improves with more data points.
 
 As the number of points increases, Chatterjee's Xi approaches 1.
-This is because Chatterjee's coefficient needs to detect arbitrary relationships $$y=f(x)$$<sup>[4](#footnote4)</sup>.
+This is because Chatterjee's coefficient needs to detect arbitrary relationships $$y=f(x)$$[^fn4].
 This requires a sufficient number of data points to distinguish a true functional relationship from random noise.
 In general, the more "wiggly" the underlying function is, the more points will be required to get high Chatterjee's correlation
 
@@ -473,15 +473,13 @@ This measure represents a significant leap forward, aligning the mathematical de
 The simplicity of the formula for $$\xi(x,y)$$ makes it all the more surprising that it had remained undiscovered until 2019.
 Chatterjee's coefficient is a truly remarkable example of how, even in a field as established as statistics, there are still simple and powerful ideas waiting to be discovered.
 
-## Footnotes
+[^fn1]: In the case of ties, the $$\mathbf{corr}(\mathbf{rank}(x), \mathbf{rank}(y))$$ definition must be used.
 
-<a name="footnote1">1</a>: In the case of ties, the $$\mathbf{corr}(\mathbf{rank}(x), \mathbf{rank}(y))$$ definition must be used.
+[^fn2]: In the case of ties in the $$y$$-values there is a more general form that can be found in the paper. We'll assume no ties in this post however.
 
-<a name="footnote2">2</a>: In the case of ties in the $$y$$-values there is a more general form that can be found in the paper. We'll assume no ties in this post however.
+[^fn3]: Since the normalisation is done against the expected value of a random permutation, rather than the worst case, it is possible for Chatterjee's coefficient to be negative. Consider the $$y$$-ranks being $$[1,3,2]$$ after being ordered by $$x$$. This would yield $$d = 9/8$$ leading to $$\xi(x,y) = -1/8$$.
 
-<a name="footnote3">3</a>: Since the normalisation is done against the expected value of a random permutation, rather than the worst case, it is possible for Chatterjee's coefficient to be negative. Consider the $$y$$-ranks being $$[1,3,2]$$ after being ordered by $$x$$. This would yield $$d = 9/8$$ leading to $$\xi(x,y) = -1/8$$.
-
-<a name="footnote4">4</a>: For this reason, $$\xi(x,y) \ne \xi(y,x)$$. Compare this with our other measures of correlation where $$x$$ and $$y$$ were completely interchangeable.
+[^fn4]: For this reason, $$\xi(x,y) \ne \xi(y,x)$$. Compare this with our other measures of correlation where $$x$$ and $$y$$ were completely interchangeable.
 
 ## References
 

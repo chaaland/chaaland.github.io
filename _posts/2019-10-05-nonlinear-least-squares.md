@@ -95,7 +95,7 @@ $$
 where $$y\in \mathbf{R}^{m}$$ and $$A\in \mathbf{R}^{m\times n}$$ with $$m \ge n$$ and having _linearly independent_ columns. The vector inside the Euclidean norm is often called the _residual vector_ and denoted $$r \in \mathbf{R}^m$$. Ordinary least squares problems are ideal for a number of reasons such as,
 
 - objective is differentiable
-- objective is _convex_<sup>[1](#footnote1)</sup>
+- objective is _convex_[^fn1]
 - closed form solution given by the _normal equations_
 
 $$A^TAx^{\star} = A^T y$$
@@ -104,7 +104,7 @@ The power law model proposed to fit the empirical word frequency data is very cl
 
 $$\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{|V|} \left(f_i - Kr_i^\alpha\right)^2$$
 
-where $$f_i\in\mathbf{R}_+$$ is the empirical frequency of the word with rank $$r_i$$. If instead of fitting the empirical frequencies with a power law, we fit the logarithm of the frequencies<sup>[2](#footnote2)</sup>, the optimisation problem becomes
+where $$f_i\in\mathbf{R}_+$$ is the empirical frequency of the word with rank $$r_i$$. If instead of fitting the empirical frequencies with a power law, we fit the logarithm of the frequencies[^fn2], the optimisation problem becomes
 
 $$\underset{K,\, \alpha}{\text{minimize}}\quad \sum_{i=1}^{|V|} \left(\log f_i - \log K - \alpha \log r_i\right)^2$$
 
@@ -247,7 +247,7 @@ $$
 
 Iterating steps 2 and 3 until some convergence criteria are satisfied. The following python code implements the Gauss-Newton method using the mean squared error of
 $$\nabla_x ||r(x)||^2$$
-as part of the convergence criteria. <sup>[3](#footnote3)</sup>
+as part of the convergence criteria.[^fn3]
 
 {% highlight python %}
 import numpy as np
@@ -424,11 +424,11 @@ Nonlinear models appear all the time in math and physics. Fitting parameters doe
 
 Lastly, it is worth noting that even though, we have written an implementation of an NLLS solver, in practice, you should always use something like `scipy.optimize`'s `least_squares` method. Thousands of man hours of work have gone into creating efficient solvers, the result of which is many clever optimisations and corner-case handling on top of the vanilla implementation.
 
-## Footnotes
+[^fn1]: A function is convex if $$f(\theta x + (1-\theta)y) \le \theta f(x) + (1-\theta)f(y)$$.
 
-<a name="footnote1">1</a>: A function is convex if $$f(\theta x + (1-\theta)y) \le \theta f(x) + (1-\theta)f(y)$$.  
-<a name="footnote2">2</a>: Since the ranks and frequencies are all positive, the logarithm is well defined.  
-<a name="footnote3">3</a>: Since $$\frac{\partial ||r(x)||^2}{\partial x_j} = \sum_{i=1}^m \frac{\partial}{\partial x_j}(r_i^2(x)) =  \sum_{i=1}^m 2r_i(x)\frac{\partial r_i(x)}{\partial x_j}$$ it follows that $$\nabla_x ||r(x)||^2 = (Dr(x))^Tr(x)$$
+[^fn2]: Since the ranks and frequencies are all positive, the logarithm is well defined.
+
+[^fn3]: Since $$\frac{\partial ||r(x)||^2}{\partial x_j} = \sum_{i=1}^m \frac{\partial}{\partial x_j}(r_i^2(x)) =  \sum_{i=1}^m 2r_i(x)\frac{\partial r_i(x)}{\partial x_j}$$ it follows that $$\nabla_x ||r(x)||^2 = (Dr(x))^Tr(x)$$
 
 ## References
 
