@@ -338,15 +338,15 @@ $$
 \underset{\beta, \beta_0}{\text{minimize}}\quad \frac{1}{N} \sum_{i=1}^N w_i \cdot (\beta^T x^{(i)} + \beta_0 - y^{(i)})^2
 $$
 
-which is simply a _weighted_ least squares problem and like OLS, also has a simple closed form solution.[^fn4]
+which is simply a _weighted_ least squares problem (WLS) and like OLS, also has a simple closed form solution.[^fn4]
 Note that the weights are inversely proportional to the error.
 This means samples with large absolute deviation are given _less_ weight.
 
 However, since our weights actually _do_ depend on the parameters we're optimizing over, we need to use an iterative approach.
 
-1. Initialize parameters
-2. Compute $$w_1,\ldots,w_N$$
-3. Solve the associated weighted least squares problem
+1. Initialize parameters, $$\beta$$ and $$\beta_0$$
+2. Fix $$\beta$$ and $$\beta_0$$, compute $$w_1,\ldots,w_N$$
+3. Fix $$w_1,\ldots, w_N$$, compute $$\beta$$ and $$\beta_0$$ by solving the WLS problem
 4. If not converged, go back to step 2
 
 This algorithm is called Iteratively Reweighted Least Squares (IRLS).
@@ -403,6 +403,15 @@ There are two things worth noting about this graph
 ## Summary
 
 In this post we've seen 4 different methods for solving the least absolute deviation minimization problem.
+
+Figure 8 shows how wall-clock time scales with dataset size for each method.
+
+<figure>
+  <a href="/assets/2026/l1-regression/images/benchmark-scaling.png">
+    <img src="/assets/2026/l1-regression/images/benchmark-scaling.png" alt="Log-log plot of wall-clock time vs number of data points for all four L1 regression methods">
+  </a>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 8: Wall-clock time to convergence vs. number of data points N, with d = 10 features. Each method is run until the relative suboptimality (loss &minus; loss*) / loss* drops below 0.1%, where loss* is the exact optimum from a linear program. The shaded band spans the min&ndash;max range across random seeds.</figcaption>
+</figure>
 
 The clear winner for speed of convergence is Iteratively Reweighted Least Squares.
 However, in cases where you don't care as much about speed and just need something that works (e.g. you don't have access to/don't want to take a dependence on a linear algebra package), coordinate descent with weighted median is a simple, easy to implement second choice.
