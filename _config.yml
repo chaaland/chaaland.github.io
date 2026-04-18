@@ -77,6 +77,7 @@ exclude:
   - "*.sublime-project"
   - "*.sublime-workspace"
   - vendor
+  - private       # macOS temp dir symlink artifacts from jekyll-remote-theme
   - .asset-cache
   - .bundle
   - .jekyll-assets-cache
@@ -205,6 +206,12 @@ defaults:
 sass:
   sass_dir: _sass
   style: compressed # http://sass-lang.com/documentation/file.SASS_REFERENCE.html#output_style
+  silence_deprecations:
+    - import          # @import is deprecated; theme requires it throughout
+    - global-builtin  # global color functions (mix, lighten) used by theme
+    - color-functions # lighten() etc. deprecated in favor of color.adjust()
+    - if-function     # Sass if() syntax deprecated; used throughout theme
+    - slash-div       # / for division deprecated; used throughout theme
 
 
 # Outputting
