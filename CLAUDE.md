@@ -32,6 +32,7 @@ This is a **Jekyll-based technical blog** deployed to GitHub Pages at `chaaland.
 │           └── __marimo__/         # Marimo notebook sessions
 ├── categories/          # Category archive pages
 ├── tags/                # Tag archive pages
+├── CONVENTIONS.md       # Authoring conventions (math, widgets, figures, footnotes)
 ├── index.html           # Homepage
 ├── about.md             # About page
 ├── Gemfile              # Ruby dependencies
@@ -43,7 +44,7 @@ This is a **Jekyll-based technical blog** deployed to GitHub Pages at `chaaland.
 - **Theme**: [Minimal Mistakes](https://github.com/mmistakes/minimal-mistakes) (dark skin)
 - **Markdown**: Kramdown with GFM support
 - **Math**: MathJax for LaTeX rendering
-- **Visualizations**: Plotly (interactive HTML charts)
+- **Visualizations**: Plotly (interactive HTML charts), inline SVG widgets
 - **Notebooks**: Marimo for computational exploration
 - **Fonts**: JetBrains Mono (headings/code), Source Serif Pro (body)
 
@@ -60,48 +61,20 @@ bundle exec jekyll serve
 bundle exec jekyll build
 ```
 
-## Writing Posts
+## Authoring Conventions
 
-### Frontmatter Template
+**Before writing or editing posts, read [CONVENTIONS.md](CONVENTIONS.md).** It is the authoritative reference for:
 
-```yaml
----
-title: "Post Title"
-date: YYYY-MM-DD
-categories:
-  - category-name
-tags:
-  - tag1
-  - tag2
-mathjax: true
-toc: true
-excerpt: "Brief description for previews"
----
-```
-
-## Asset Organization
-
-Assets are organized by year, matching post publication dates:
-- Published posts: `assets/<year>/<topic>/` (e.g., `assets/2025/cordic/`)
-- Draft posts: `assets/drafts/<topic>/`
-- Shared resources: `assets/shared/` (avatar, css, data)
-
-Each post's asset directory typically contains:
-- Python generation scripts (`generate_plots.py`)
-- Generated plots (`plots/` subdirectory)
-- Marimo notebooks (`__marimo__/`)
-- Supporting data files
-
-## Style Conventions
-
-- **Color palette**: GitHub dark theme inspired (background #0d1117, accent #58a6ff)
-- **Code blocks**: Use Rouge syntax highlighting
-- **Math**: Inline with `$...$`, display with `$$...$$`
-- **Permalinks**: `/:categories/:title/`
+- Frontmatter fields and their required values
+- Math notation choices (`\beta`, `\lvert...\rvert`, `$$...$$` for both inline and display)
+- Footnote syntax (Kramdown `[^fn1]`)
+- Figure numbering and `<figure>` / `<figcaption>` HTML patterns
+- Interactive widget HTML/JS structure, SVG layout constants, and color palette
+- Asset path conventions for published vs. draft posts
 
 ## Important Notes
 
-- MathJax must be enabled via `mathjax: true` in frontmatter
-- Posts require `toc: true` for table of contents
+- Ruby version 3.1.4 is required (see `.ruby-version`)
 - Analytics: Google Universal Analytics (G-FL4HTN0JH2)
-- Ruby version 3.1.4 is required
+- Permalinks: `/:categories/:title/`
+- Do NOT enter plan mode for informational questions or simple single-file edits — only use it for multi-step work spanning multiple files
