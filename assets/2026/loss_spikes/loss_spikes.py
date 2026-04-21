@@ -490,7 +490,6 @@ def _(np, plt, zipf):
 
     return (
         grad_descent_traj_zipf_nlls,
-        grad_flow_traj_zipf_nlls,
         grad_zipf_nlls,
         hessian_zipf_nlls,
         sharpness,
@@ -512,7 +511,7 @@ def _(mo):
 
 
 @app.cell
-def _(
+def non_convex_contours(
     eta_2_slider,
     freqs,
     functools,
@@ -560,7 +559,7 @@ def _(np):
 
 
 @app.cell
-def _(
+def loss_sharpness(
     ewma,
     freqs,
     functools,
@@ -604,7 +603,7 @@ def _(
         return plt.gca()
 
 
-    loss_and_sharpness_plots(freqs, np.arange(1, freqs.size + 1), x0=np.array([0, -0.8]), eta=70, n_steps=2500)
+    loss_and_sharpness_plots(freqs, np.arange(1, freqs.size + 1), x0=np.array([0, -0.8]), eta=94, n_steps=2500)
     return
 
 
@@ -635,73 +634,6 @@ def _(mo):
 
     $$g(w) \approx g(w_t) + \sigma S(w_t)u + \frac{\sigma^2}{2}\nabla S(w_t) $$
     """)
-    return
-
-
-@app.cell
-def _(
-    freqs,
-    functools,
-    grad_flow_traj_zipf_nlls,
-    grad_zipf_nlls,
-    mo,
-    np,
-    plot_zipf_param_contours,
-    plt,
-    remove_spines,
-    zipf_nlls_loss,
-):
-    def plot_zipf_nlls_grad_flow(freqs, ranks, x0):
-        _eta = 8e-5
-        grad_fn = functools.partial(grad_zipf_nlls, freqs=freqs, ranks=ranks)
-
-        ax = plot_zipf_param_contours(np.array(freqs))
-        x_traj_grad_flow = grad_flow_traj_zipf_nlls(x0, grad_fn, eta=_eta, n_steps=5000)
-        ax.plot(x_traj_grad_flow[:, 0], x_traj_grad_flow[:, 1], linewidth=2)
-
-        ax.set_xlim([-0.03, 0.07])
-        ax.set_ylim([-1, -0.4])
-        plt.tight_layout()
-
-        return ax
-
-
-    def plot_zipf_nlls_loss_grad_flow(freqs, ranks, x0):
-        _eta = 8e-5
-
-        plt.figure(figsize=(6, 6))
-
-        grad_fn = functools.partial(grad_zipf_nlls, freqs=freqs, ranks=ranks)
-        x_traj_grad_flow = grad_flow_traj_zipf_nlls(x0, grad_fn, eta=_eta, n_steps=5000)
-
-        plt.semilogy(
-            [
-                zipf_nlls_loss(ranks=np.arange(1, freqs.size + 1), freqs=freqs, K=_x[0], alpha=_x[1])
-                for _x in x_traj_grad_flow
-            ]
-        )
-        plt.title("Zipf NLLS Loss")
-        plt.tight_layout()
-
-        remove_spines(plt.gca())
-        return plt.gca()
-
-
-    _x0 = np.array([-0.02, -0.9])
-    _ax1 = plot_zipf_nlls_grad_flow(freqs, np.arange(1, freqs.size + 1), x0=_x0)
-    _ax2 = plot_zipf_nlls_loss_grad_flow(freqs, np.arange(1, freqs.size + 1), x0=_x0)
-
-    mo.hstack([_ax1, _ax2])
-    return
-
-
-@app.cell
-def _():
-    return
-
-
-@app.cell
-def _():
     return
 
 

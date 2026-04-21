@@ -1,8 +1,8 @@
 ---
-title: "Gradient Flow and Gradient Descent"
+title: "Loss Spikes in Gradient Descent"
 categories:
   - Optimization
-date: 2026-04-09 19:00:00 +0000
+date: 2026-04-19 19:00:00 +0000
 mathjax: true
 tags:
   - Optimization
@@ -10,12 +10,12 @@ tags:
   - Machine Learning
 toc: true
 classes: wide
-excerpt: "Understand the effect of sharpness on gradient descent dynamics."
+excerpt: "Loss spikes aren't noise. They're gradient descent briefly exceeding the edge of stability and snapping back. Here's why."
 ---
 
-This post explores the relationship between gradient flow (the continuous-time limit of gradient descent) and gradient descent, with a focus on how the learning rate and loss landscape curvature determine convergence behavior.
+Loss spikes are a familiar sight when training neural networks: the loss drops steadily, then suddenly jumps before recovering. This post explains why they happen. Starting from the simple case of a quadratic loss, we build up to the edge of stability and derive, via a Taylor expansion of the gradient, why spikes are self-correcting.
 
-## Motivation
+## Gradient Descent
 
 Given a differentiable loss function $$f: \mathbf{R}^d \to \mathbf{R}$$, gradient descent iteratively updates parameters according to
 
@@ -29,7 +29,7 @@ To understand this, it helps to first study a simple case to understand the sour
 
 ## 1D Quadratic Case
 
-Consider the simplest case of minimizing the 1D quadratic $$f(x) = \frac{S}{2}x^2$$ where $$S > 0$$ is the **sharpness** (curvature) of the function. Larger $$S$$ means a steeper, narrower parabola as shown in Figure 1.
+Consider the simplest case of minimizing the 1D quadratic $$f(x) = \frac{S}{2}x^2$$ where $$S > 0$$ is the _sharpness_ (curvature) of the function. Larger $$S$$ means a steeper, narrower parabola as shown in Figure 1.
 
 <div class="widget-container" id="quadratic-widget">
   <div class="widget-controls">
@@ -51,21 +51,21 @@ Consider the simplest case of minimizing the 1D quadratic $$f(x) = \frac{S}{2}x^
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 1: Larger S makes the parabola steeper and smaller S makes it flatter.</figcaption>
 </div>
 
-The gradient is $$\nabla f(x) = Sx$$, so gradient descent becomes
+The gradient/derivate is $$\nabla f(x) = Sx$$, so gradient descent becomes
 
 $$x_{k+1} = x_k - \eta \cdot S x_k = (1 - S\eta) x_k$$
 
 This is a simple geometric sequence! Starting from $$x_0$$, we have $$x_k = (1-S\eta)^k x_0.$$
 
-For convergence to zero, we need 
+For convergence to zero, we need
 
 $$\lvert 1 - S\eta\rvert < 1$$
 
-Since $$S, \eta > 0$$, this means:
+Since $$S, \eta > 0$$, this means
 
-$$0 < S\eta < 2 \quad \Rightarrow \quad \eta < \frac{2}{S}$$
+$$0 < S\eta < 2 \quad \Rightarrow \quad \eta < \frac{2}{S}.$$
 
-This means that for a quadratic function, the maximum stable learning rate is inversely proportional to the sharpness.
+This says that for a quadratic function, the maximum stable learning rate is inversely proportional to the sharpness.
 Intuitively, sharper quadratics require smaller learning rates as demonstrated in Figure 2.
 
 <div class="widget-container" id="gd1d-widget">
@@ -104,25 +104,25 @@ Intuitively, sharper quadratics require smaller learning rates as demonstrated i
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 2: Gradient descent for 15 steps. Left: iterates on the loss surface. Right: loss vs step on a log scale.</figcaption>
 </div>
 
-## The n-D Quadratic Case
+## The Multi-Dimensional Quadratic Case
 
-In higher dimensions, the picture becomes richer. Consider an $$n$$-D quadratic
+In higher dimensions, the picture becomes richer. Consider a $$d$$-dimensional quadratic
 
-$$f(x) = \frac{1}{2}x^T A x$$
+$$f(x) = \frac{1}{2}x^T A x = \sum_{i=1}^d \sum_{j=1}^d A_{ij}x_ix_j$$
 
-where $$A\in \mathbf{S}_n^{+}$$, the gradient of which is $$\nabla f = Ax$$.[^grad-general]
+where $$A\in \mathbf{S}_+^{d}$$[^spd], the gradient of which is $$\nabla f = Ax$$.[^grad-general]
 We can form the eigenvalue decomposition of the quadratic form as 
 
-$$A = V\mathbf{diag}(\lambda_1, \ldots, \lambda_n)V^T$$
+$$A = VDV^T, \quad D = \mathbf{diag}(\lambda_1, \ldots, \lambda_d)$$
 
 where $$V^TV = I$$.
 
 The quadratic form can then be written as
 
-$$f(x) = \frac{1}{2} \sum_{k=1}^n \lambda_k \cdot (x^Tv_k)^2$$
+$$f(x) = \frac{1}{2} \sum_{k=1}^d \lambda_k \cdot (x^Tv_k)^2$$
 
 where $$v_k$$ is the $$k^{th}$$ column of $$V$$.
-Comparing this decomposition to our 1D case, we can see that the eigenvalues are _exactly_ the sharpnesses of the quadratic along the directions $$v_1, \ldots, v_n$$ (called the principal axes).[^sharpness-proof]
+Comparing this decomposition to our 1D case, we can see that the eigenvalues are _exactly_ the sharpnesses of the quadratic along the directions $$v_1, \ldots, v_d$$ (called the principal axes).[^sharpness-proof]
 
 The level sets of a 2D quadratic are shown in Figure 3 which demonstrate how the eigenvalues affect the shape of the ellipses and thus the sharpness in the direction of the eigenvectors.
 
@@ -154,13 +154,13 @@ The level sets of a 2D quadratic are shown in Figure 3 which demonstrate how the
   <div class="widget-info" id="contour-info">
     λ₁ = 4.0 &nbsp;|&nbsp; λ₂ = 1.0
   </div>
-  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 3: Level sets (contours) of the 2D quadratic f(x) = ½(λ₁x₁² + λ₂x₂²). When λ₁ = λ₂ the contours are circles; unequal eigenvalues produce ellipses elongated along the less-sharp direction.</figcaption>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 3: Level sets (contours) of the 2D quadratic. When λ₁ = λ₂ the contours are circles; unequal eigenvalues produce ellipses elongated along the less-sharp direction.</figcaption>
 </div>
 
 In the 1D quadratic case, we derived the simple rule that $$\eta < 2/S$$ for gradient descent to converge.
-For the $$n$$-D quadratic case, how should we set the learning rate to ensure convergence?
+For the $$d$$-dimensional quadratic case, how should we set the learning rate to ensure convergence?
 
-Figure 4 shows the trajectory of gradient descent on our quadratic.
+Figure 4 shows the trajectory of gradient descent on a 2D quadratic.
 
 <div class="widget-container" id="gd-widget" style="max-width: 900px;">
   <div class="widget-controls">
@@ -222,164 +222,250 @@ Figure 4 shows the trajectory of gradient descent on our quadratic.
     η<sub>crit</sub> = 2/λ<sub>max</sub> = <span id="gd-eta-crit">0.50</span> &nbsp;|&nbsp;
     <span id="gd-status" style="color:#3fb950">Converging</span>
   </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Gradient descent trajectory on a quadratic. The left panel shows iterates on the loss contours; the right panel shows loss vs. step. Increasing η toward the critical value 2/λ<sub>max</sub> causes oscillations along the sharpest eigendirection, and crossing it leads to divergence.</figcaption>
 </div>
 
 From the figure, we can see that convergence occurs when
+
 $$
 \eta < \frac{2}{\max\{\lambda_1, \lambda_2\}}.
 $$
-For the general $$n$$-D case, $$\eta < \frac{2}{\max\{\lambda_1, \ldots, \lambda_n\}}.$$
 
-This says the maximal learning rate with which gradient descent can converge for a quadratic is governed by the sharpness along each principal axis.
+For the general $$d$$-dimensional case
+
+$$\eta < \frac{2}{\max\{\lambda_1, \ldots, \lambda_d\}}.$$
+
+This says that, for a quadratic, the maximal learning rate with which gradient descent will converge is governed by the sharpness along each principal axis.
 More specifically, it is determined by the _sharpest_ of these directions.
-Since the principal axis with the largest sharpness is the only one that governs convergence, we define to $$S= \max\{\lambda_1, \ldots, \lambda_n\}$$ as the sharpness of a quadratic in the general case.
-
-## Gradient Flow
-
-Gradient descent is an inherently discrete algorithm.
-By taking a finite step size $$\eta$$ in the direction of the negative gradient, we are not taking the path of steepest descent since the gradient changes as soon as we move any finite distance from our current iterate.
-
-In gradient descent, the update rule is
-
-$$x_{k+1} = x_k - \eta \nabla f(x_k).$$
-
-If we parametrise the path by the continuous variable $$t$$ rather than the discrete index $$k$$, the update rule becomes
-
-$$x(t+h) = x(t) - h \nabla_x f(x(t)).$$
-
-Rearranging these terms and taking the limit as $$h\rightarrow 0$$ gives the differential equation for the trajectory $$x(t)$$
-
-$$\frac{\mathrm{d}f(x(t))}{\mathrm{d}t} = \nabla_x f(x(t)).$$
-
-The solution to this differential equation $$x(t)$$ is called the _gradient flow_.
-For the case of a quadratic form, the equation is
-
-$$
-\frac{\mathrm{d}f(x(t))}{\mathrm{d}t} = -Ax(t)
-$$
-
-which has solution $$x(t) = e^{tA}x(0)$$.[^mat-exp]
-Because $$A = VDV^T$$, the gradient flow solution can be written as 
-
-$$x(t) = V\mathbf{diag}(e^{-\lambda_1 t},\ldots, e^{-\lambda_n t})V^Tx(0) = \sum_{k=1}^n e^{-\lambda_k t}(v_k^Tx(0)) v_k.$$
-
-Figure 5 illustrates the gradient flow trajectory for a 2D quadratic.
-Each component decays exponentially at its own eigenvalue rate, so high-sharpness directions vanish first.
-
-
-
-<div class="widget-container" id="gf-widget" style="max-width: 900px;">
-  <div class="widget-controls">
-    <label>
-      λ₁
-      <input type="range" min="0.5" max="8" value="4" step="0.5" data-param="gf-lambda1">
-      <span class="widget-readout" data-readout="gf-lambda1">4.0</span>
-    </label>
-    <label>
-      λ₂
-      <input type="range" min="0.5" max="8" value="1" step="0.5" data-param="gf-lambda2">
-      <span class="widget-readout" data-readout="gf-lambda2">1.0</span>
-    </label>
-    <label>
-      θ
-      <input type="range" min="0" max="90" value="30" step="5" data-param="gf-theta">
-      <span class="widget-readout" data-readout="gf-theta">30°</span>
-    </label>
-    <button type="button" class="widget-button" id="gf-reset">Reset</button>
-  </div>
-  <svg class="widget-plot" id="gf-svg" viewBox="0 0 880 420" preserveAspectRatio="xMidYMid meet">
-    <rect x="0" y="0" width="880" height="420" fill="#0d1117"></rect>
-    <g id="gf-grid"></g>
-    <g id="gf-contours"></g>
-    <g id="gf-axes"></g>
-    <path id="gf-path" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"></path>
-    <circle id="gf-start" r="7" fill="#3fb950" stroke="#0d1117" stroke-width="2"></circle>
-    <g id="gf-loss-grid"></g>
-    <g id="gf-loss-axes"></g>
-    <path id="gf-loss-path" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"></path>
-  </svg>
-  <div class="widget-legend">
-    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#58a6ff"></span>Gradient flow</span>
-    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#3fb950"></span>Start (click to move)</span>
-  </div>
-  <div class="widget-info" id="gf-info"></div>
-  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 5: Gradient flow trajectory on a 2D quadratic (left) and the corresponding loss vs. continuous time t (right). Each eigenvector component decays independently at rate λᵢ — the high-curvature direction (larger λ) vanishes first.</figcaption>
-</div>
-
-Unlike gradient descent, gradient flow cannot diverge for a quadratic.
+Since the principal axis with the largest sharpness is the only one that governs convergence, we define $$S= \max\{\lambda_1, \ldots, \lambda_d\}$$ as the sharpness of a quadratic in the general case.
+This generalizes the 1D definition, where the single eigenvalue $$S$$ of $$f(x) = \frac{S}{2}x^2$$ was the sharpness.
 
 ## Non-convex Case
 
-Introduce new level sets for non-linear problem. Show trajectory of gradient descent. Propose a second order taylor approx to measure sharpness at each point along the trajectory.
-The gradient flow solution is
+Let's turn to the more complicated case of minimizing a general objective $$f(x)$$.
+Writing the second order Taylor expansion about point $$a\in \mathbf{R}^d$$
 
-$$x(t) = e^{-At}x_0$$
+$$f(x)\approx f(a) + \nabla f(a)^T(x-a) + \frac{1}{2}(x-a)^T\nabla^2 f(a) (x-a)$$
 
-which traces a smooth curve toward the origin. In contrast, gradient descent with a fixed learning rate takes discrete steps that may overshoot along the high-curvature directions.
+we define the sharpness at $$a$$, denoted $$S(a)\in \mathbf{R}_+$$, to be the maximum eigenvalue of the Hessian $$\nabla^2 f(a)$$.[^sharpness-local]
 
-## Loss vs Step: The Effect of Learning Rate
+In order to have a more concrete example to visualize, let's consider the optimization problem
 
-The learning rate $$\eta$$ dramatically affects convergence behavior. The critical threshold is
+$$
+\begin{align*}
+\underset{C,\alpha}{\text{minimize}}&\quad \frac{1}{2N}\sum_{k=1}^N (y_k - Cx_k^\alpha)^2\\
+\end{align*}
+$$
 
-$$\eta_{\text{crit}} = \frac{2}{\lambda_{\max}}$$
+which comes from fitting a power law $$f(x) = Cx^\alpha$$ to $$N$$ data points.
 
-where $$\lambda_{\max}$$ is the largest eigenvalue of $$2A$$ (i.e., twice the sharpness along the steepest direction).
+Figure 5 shows the level sets of the objective along with the gradient descent trajectory
 
-- For $$\eta < \eta_{\text{crit}}$$: Loss monotonically decreases
-- For $$\eta > \eta_{\text{crit}}$$: Iterates diverge to infinity
+<div class="widget-container" id="nc-widget">
+  <div class="widget-controls">
+    <label>
+      η (learning rate)
+      <input type="range" min="1" max="100" value="1" step="1" data-param="nc-eta">
+      <span class="widget-readout" data-readout="nc-eta">1</span>
+    </label>
+  </div>
+  <svg class="widget-plot" id="nc-svg" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <clipPath id="nc-clip">
+        <rect x="60" y="30" width="420" height="325"></rect>
+      </clipPath>
+    </defs>
+    <rect x="0" y="0" width="500" height="400" fill="#0d1117"></rect>
+    <g id="nc-heatmap" clip-path="url(#nc-clip)"></g>
+    <g id="nc-traj-g" clip-path="url(#nc-clip)">
+      <g id="nc-traj-segs"></g>
+      <circle id="nc-start" r="5" fill="#3fb950"></circle>
+      <circle id="nc-end" r="5" fill="#f78166" stroke="#0d1117" stroke-width="1.5"></circle>
+    </g>
+    <g id="nc-axes"></g>
+  </svg>
+  <div class="widget-legend">
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#3fb950"></span>Start (K=0, α=−0.8)</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#f78166"></span>End</span>
+  </div>
+  <div class="widget-info" id="nc-info">η = 1</div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 5: Level sets of the power law  non-linear least squares objective on word frequency data. Brighter regions indicate higher loss.</figcaption>
+</div>
 
-## Interactive Exploration
+Notice how for $$\eta > 57$$, the trajectory shows increasingly oscillatory behavior and eventually completely diverges.
+This indicates that our learning rate is somehow "too big" for our optimization landscape.
+We previously found the maximum learning rate we could tolerate for a quadratic was $$2/S$$.
 
-The following interactive visualization lets you explore how the ellipse parameters ($$a$$, $$b$$, $$\theta$$) and learning rate ($$\eta$$) affect gradient descent behavior. The blue curve shows gradient flow (the continuous limit), while red points show gradient descent iterates.
+We can turn the question around and ask, "for a fixed learning rate $$\eta$$, what's the maximum sharpness $$S$$ that can be tolerated?".
+The answer is, a sharpness less than $$2/\eta$$ which is referred to variously as the _critical sharpness_ or _the edge of stability_.
 
-Key observations to make:
-- When $$a = b$$, the contours are circular and gradient descent moves directly toward the origin
-- When $$a \neq b$$ (elliptical contours), gradient descent can exhibit "zigzag" behavior
-- Larger $$\eta$$ causes more aggressive steps that may overshoot the minimum
-- The rotation angle $$\theta$$ changes the principal axes but not the convergence rate
+Figure 6 plots both the loss and sharpness at each point along the gradient descent trajectory. The sharpness threshold for the chosen $$\eta$$ is also displayed as a horizontal line on the sharpness plot.
 
-## Connection to Sharpness in Deep Learning
+<div class="widget-container" id="ls-widget">
+  <div class="widget-controls">
+    <label>
+      η (learning rate)
+      <input type="range" min="1" max="100" value="1" step="1" data-param="ls-eta">
+      <span class="widget-readout" data-readout="ls-eta">1</span>
+    </label>
+  </div>
+  <svg class="widget-plot" id="ls-svg" viewBox="0 0 700 460" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="700" height="460" fill="#0d1117"></rect>
+    <g id="ls-loss-grid"></g>
+    <g id="ls-loss-axes"></g>
+    <path id="ls-loss-path" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"></path>
+    <g id="ls-sharp-grid"></g>
+    <g id="ls-sharp-axes"></g>
+    <path id="ls-sharp-path" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"></path>
+    <line id="ls-crit-line" stroke="#f78166" stroke-width="1.5" stroke-dasharray="5,3" stroke-opacity="0"></line>
+    <text id="ls-crit-label" fill="#f78166" font-size="10" visibility="hidden"></text>
+  </svg>
+  <div class="widget-legend">
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#58a6ff"></span>Loss</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#f78166"></span>S = 2/η</span>
+  </div>
+  <div class="widget-info" id="ls-info">η = 70 &nbsp;|&nbsp; 2/η ≈ 0.0286</div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 6: Loss (log scale) and sharpness during gradient descent for 2500 steps on the non-linear least squares objective. The dashed orange line marks S&nbsp;=&nbsp;2/η (the critical sharpness above which gradient descent would diverge on a quadratic).</figcaption>
+</div>
 
-In deep learning, the "sharpness" of the loss landscape—measured by the largest eigenvalue of the Hessian—plays a crucial role in:
+Notice that for $$\eta$$ below ~57, the loss decreases monotonically and the sharpness along the gradient descent trajectory never exceeds the critical sharpness $$2/\eta$$.
 
-1. **Determining maximum learning rate**: The stability bound $$\eta < 2/S$$ applies locally
-2. **Generalization**: Flatter minima are often associated with better generalization
-3. **Adaptive methods**: Algorithms like Adam implicitly adapt to local curvature
+After $$\eta> 57$$, we see two things occur.
+The first is that _loss spikes_ begin appearing and we no longer observe a monotone decreasing loss during gradient descent.
+The second is that the sharpness begins exceeding the critical sharpness and then rapidly plunging back down below it.
+This is very different than the quadratic case where once we exceeded the critical threshold, gradient descent diverged.
 
-Recent research has shown that during training, neural networks often operate near the "edge of stability" where $$\eta \approx 2/S$$, with the sharpness dynamically adjusting to maintain this balance.
+Also notice that as we increase $$\eta$$, we see more oscillations around the critical sharpness with an exponentially decaying envelope.
+Simultaneously, we see larger and more frequent loss spikes.
+After around $$\eta=90$$, we see oscillations in the sharpness display an exponentially _growing_ envelope as well as the loss diverging.
+
+To understand what causes the sharpness to suddently decrease after exceeding the critical sharpness, Figure 7 decomposes the gradient at each step into its components along the dominant eigenvector $$v_1$$ (sharpest direction) and the non-dominant eigenvector $$v_2$$ of the local Hessian $$\nabla^2 f$$.
+
+<div class="widget-container" id="gc-widget">
+  <svg class="widget-plot" id="gc-svg" viewBox="0 0 700 480" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="700" height="480" fill="#0d1117"></rect>
+    <g id="gc-sharp-grid"></g>
+    <g id="gc-sharp-axes"></g>
+    <path id="gc-sharp-path" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"></path>
+    <line id="gc-crit-line" stroke="#f78166" stroke-width="1.5" stroke-dasharray="5,3" stroke-opacity="0"></line>
+    <text id="gc-crit-label" fill="#f78166" font-size="10" visibility="hidden"></text>
+    <g id="gc-comp-grid"></g>
+    <g id="gc-comp-axes"></g>
+    <path id="gc-v1-path" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"></path>
+    <path id="gc-v2-path" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-linejoin="round"></path>
+  </svg>
+  <div class="widget-legend">
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#58a6ff"></span>∇f·v₁ (dominant)</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#3fb950"></span>∇f·v₂ (non-dominant)</span>
+    <span class="widget-legend-item"><span class="widget-legend-swatch" style="background:#f78166"></span>S = 2/η</span>
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 7: Sharpness (top) and gradient decomposed along the dominant eigenvector v₁ and non-dominant eigenvector v₂ of the local Hessian (bottom) for η = 70. The dominant component oscillates (sign-flipping) once sharpness exceeds 2/η.</figcaption>
+</div>
+
+Notice how just when the sharpness drops down precipitously below the edge of stability, we see large oscillations back and forth in the component of the gradient vector in the direction of maximum sharpness.
+It turns out that this is the crux to understanding the phenomenon of loss spikes as we'll see in the next section.
+
+## Mathematics of Loss Spikes
+
+To study the dynamics of the loss curve, let's look at the Taylor expansion, not of the loss, but of the loss's gradient.
+For ease of notation, we'll denote the gradient as $$g(x)=\nabla f(x)$$.
+
+We'll perform the second order Taylor expansion around the point $$a\in\mathbf{R}^d$$.
+Since this would lead to a third order tensor, we'll just look a single scalar component $$g_k$$ of the gradient approximation centered at $$a$$
+
+$$g_k(x) \approx g_k(a) + Dg_k(a)(x-a) + \frac{1}{2}(x-a)^T \nabla^2 g_k(a) (x-a), \quad k=1,\ldots, d$$
+
+Evaluating this quadratic approximation at a perturbed point $$a+\delta\in\mathbf{R}^d$$ we have
+
+$$g_k(a+\delta) \approx g_k(a) + Dg_k(a)\delta + \frac{1}{2}\delta^T \nabla^2 g_k(a) \delta, \quad k=1,\ldots, d$$
+
+From analyzing the quadratic case, we observed that when the sharpness exceeds the critical threshold $$2/\eta$$, the perturbation was largely in the direction of maximal sharpness. 
+For this reason we set $$\delta = \sigma u$$ where $$u\in\mathbf{R}^d$$ is a unit vector in the direction of the dominant eigenvector of $$\nabla^2f$$ and $$\sigma \in \mathbf{R}$$. 
+This gives,
+
+$$
+g_k(a+\sigma u) \approx g_k(a) + \sigma Dg_k(a)u + \frac{\sigma^2}{2}u^T \nabla^2 g_k(a) u.
+$$
+
+The term $$Dg_k(a)\in \mathbf{R}^{1\times d}$$ is the total derivative of the $$k^{th}$$ component of the gradient at $$a$$.
+This is exactly the $$k^{th}$$ row of the hessian $$\nabla^2 f(a)$$.
+This means $$Dg_k(a) u$$ is simply, $$[\nabla^2 f(a) u]_k$$, the $$k^{th}$$ component of the product of the hessian and its dominant eigenvector.
+
+Since the eigenvalue associated with the dominant eigenvector is _by definition_ the sharpness, we have $$[\nabla^2 f(a) u]_k = S(a)u_k$$. 
+So the Taylor approximation of the gradient becomes
+
+$$
+g_k(a+\sigma u) \approx g_k(a) + \sigma S(a)u_k + \frac{\sigma^2}{2}u^T \nabla^2 g_k(a) u.
+$$
+
+We can also simplify the final term involving the hessian of the gradient (a third derivative!) using the definition $$g_k(a) = \partial f(a)/\partial x_k$$ and the identity $$x^TAx = \sum_{i=1}^N\sum_{j=1}^N A_{ij}x_ix_j$$
+
+$$
+\begin{align*}
+\frac{\sigma^2}{2}u^T \nabla^2 g_k(a) u &= \frac{\sigma^2}{2}\sum_{i=1}^d\sum_{j=1}^d \frac{\partial^2 g_k(a)}{ \partial x_i \partial x_j} u_i u_j  \\
+&= \frac{\sigma^2}{2}\sum_{i=1}^d\sum_{j=1}^d \frac{\partial^3 f(a)}{\partial x_k \partial x_i \partial x_j} u_i u_j  \\
+&= \frac{\sigma^2}{2}\left[\frac{\partial}{\partial x_k}\sum_{i=1}^d\sum_{j=1}^d \frac{\partial^2 f(x)}{\partial x_i \partial x_j} u_i u_j\right]_{x=a}  \\
+&= \frac{\sigma^2}{2}\left[\frac{\partial}{\partial x_k}\left(u^T \nabla^2 f(x) u\right)\right]_{x=a}  \\
+\end{align*}
+$$
+
+Simplifying the last part is tricky but a sketch of the argument comes from looking at the limit definition of the partial derivative with respect to $$x_k$$, where $$e_k$$ is the $$k^{th}$$ standard basis vector.
+
+$$
+\left[\frac{\partial}{\partial x_k}\left(u^T \nabla^2 f(x) u\right)\right]_{x=a} = \lim_{h\rightarrow 0} \frac{u^T \nabla^2 f(a+he_k) u - u^T\nabla^2 f(a)u}{h}
+$$
+
+Since $$u$$ is the dominant eigenvector of $$\nabla^2 f(a)$$, we have $$\nabla^2 f(a)u = S(a)u$$.
+Combined with the fact that $$u^Tu=1$$, we can simplify the above to
+
+$$
+\left[\frac{\partial}{\partial x_k}\left(u^T \nabla^2 f(x) u\right)\right]_{x=a} = \lim_{h\rightarrow 0} \frac{u^T \nabla^2 f(a+he_k) u - S(a)}{h}
+$$
+
+Since $$u$$ is an eigenvector of $$\nabla^2 f(a)$$ and _not_ $$\nabla^2 f(a+he_k)$$, this does not immediately simplify as before.
+However, for very small $$h$$ we can treat $$u$$ as constant and as an eigenvector of $$\nabla^2 f(a+he_k)$$, in which case the corresponding eigenvalue would be $$S(a+he_k)$$.
+This simplifies the partial derivative to
+
+$$
+\begin{align*}
+\left[\frac{\partial}{\partial x_k}\left(u^T \nabla^2 f(x) u\right)\right]_{x=a} &= \lim_{h\rightarrow 0} \frac{S(a+he_k) - S(a)}{h}\\
+&= \frac{\partial S(a)}{\partial x_k}
+\end{align*}
+$$
+
+With this simplification, the second order gradient approximation for the $$k^{th}$$ component at $$a+\sigma u$$ is
+
+$$g_k(a+\sigma u) \approx g_k(a) + \sigma S(a)u_k + \frac{\sigma^2}{2}\frac{\partial S(a)}{\partial x_k}.$$
+
+The approximation for the entire gradient vector is then
+
+$$g(a+\sigma u) \approx g(a) + \sigma S(a)u + \frac{\sigma^2}{2}\nabla S(a).$$
+
+This says that when the perturbation is small, a step in the negative gradient direction is dominated by the term $$-\sigma S(a)u$$ which pushes in the _opposite_ direction of the original perturbation $$\sigma u$$, causing the oscillatory behavior observed in Figure 7.
+When the perturbation is sufficiently large however, a step in the negative gradient direction is strongly in the direction of _decreasing_ sharpness (i.e. $$-\frac{\sigma^2}{2}\nabla S(a)$$).
+
+This effectively explains our observations!
+During gradient descent, our loss spikes occur when the sharpness exceeds the critical sharpness $$2/\eta$$ for the given learning rate.
+The loss drops back down because the sharpness rapidly drops back below $$2/\eta$$.
+But the reason the sharpness drops after having exceeded the edge of stability is because there is a built in negative feedback!
+When the perturbation along the dominant eigenvector of the hessian gets too large, the negative gradient of the loss also begins to point in the direction of the negative gradient of the sharpness, driving the sharpness back below the edge of stability.
 
 ## Conclusion
 
-Gradient flow provides a clean theoretical framework for understanding gradient descent:
 
-- The continuous limit removes discretization artifacts
-- Stability analysis reveals the critical role of sharpness
-- The maximum learning rate is $$\eta_{\max} = 2/\lambda_{\max}$$
-
-For quadratic functions, gradient flow always converges while gradient descent requires careful step size selection. In the non-quadratic case, these insights apply locally near critical points, explaining why adaptive learning rate methods are so effective in practice.
-
-## Try It Yourself
-
-Explore gradient descent dynamics with this interactive widget. Adjust the quadratic's shape (semi-axes $$a$$ and $$b$$), rotation angle $$\theta$$, starting point, and learning rate to see how they affect convergence.
-**Tips:**
-
-- Click anywhere on the left plot to set a new starting point
-- The right plot shows loss vs step on a log scale—watch how the loss decays (or explodes when diverging)
-- When $$\eta > \eta_{\text{crit}}$$, gradient descent diverges (loss explodes upward)
-- Try setting $$a = b$$ to see circular contours where GD moves directly toward the origin
-- Notice how gradient flow always takes the smooth optimal path while GD can overshoot
 
 [^grad-general]: More precisely, $$\nabla_x \tfrac{1}{2}x^T A x = \tfrac{1}{2}(A + A^T)x$$. When $$A$$ is symmetric this reduces to $$Ax$$.
 
-[^mat-exp]: The matrix exponential is defined by the same Taylor series as the scalar exponential, applied entry-wise to powers of the matrix: $$e^{tA} = \sum_{k=0}^{\infty} \frac{(tA)^k}{k!} = I + tA + \frac{t^2 A^2}{2!} + \frac{t^3 A^3}{3!} + \cdots$$. This series converges for any square matrix $$A$$ and any scalar $$t$$. For symmetric $$A = V\mathbf{diag}(\lambda_1,\ldots,\lambda_n)V^T$$ the result simplifies to $$e^{tA} = V\,\mathbf{diag}(e^{t\lambda_1},\ldots,e^{t\lambda_n})\,V^T$$, which makes the connection to eigenvalues explicit.
+[^spd]: $$\mathbf{S}_+^{d}$$ denotes the set of $$d\times d$$ symmetric positive semidefinite matrices.
+
+[^sharpness-local]: For a quadratic $$f(x) = \tfrac{1}{2}x^TAx$$, the Hessian is the constant matrix $$A$$, so the sharpness is the same at every point (i.e. a global property). For a general nonlinear function the Hessian varies, making sharpness point-dependent. Note also that this definition is a direct generalization of the $$d$$-dimensional quadratic case: the second order Taylor expansion of a quadratic is just the quadratic itself, so the maximum eigenvalue of $$\nabla^2 f(a) = A$$ recovers exactly $$S = \max\{\lambda_1,\ldots,\lambda_d\}$$.
 
 [^sharpness-proof]: To see why, set $$x = t\,v_k$$ for scalar $$t$$. Because the columns of $$V$$ are orthonormal, $$x^T v_j = t\,v_k^T v_j = t\,\delta_{kj}$$, so every term in the sum vanishes except the $$k^{th}$$ one: $$f(tv_k) = \tfrac{1}{2}\lambda_k t^2$$. This is exactly the 1D quadratic with sharpness $$\lambda_k$$, confirming that $$\lambda_k$$ governs the curvature of $$f$$ along $$v_k$$.
 
 ## References
 
-1. [Gradient Flow](https://en.wikipedia.org/wiki/Gradient_descent#Gradient_flow)
-2. Cohen, J., et al. "Gradient Descent on Neural Networks Typically Occurs at the Edge of Stability." ICLR 2021.
-3. Boyd, S. & Vandenberghe, L. "Convex Optimization." Cambridge University Press, 2004.
+1. [How does gradient descent work](https://centralflows.github.io/part1/)
+2. Boyd, S. & Vandenberghe, L. "Convex Optimization." Cambridge University Press, 2004.
 
 <script>
 // 2D contour-only widget (Figure 3)
@@ -463,15 +549,14 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
 
   function drawEllipses(l1, l2, thetaDeg) {
     ellipsesG.innerHTML = '';
-    const lMax = Math.max(l1, l2), lMin = Math.min(l1, l2);
     const scaleX = plotW / (xMax - xMin);
     const scaleY = plotH / (yMax - yMin);
     const levels = [0.5, 1, 2, 3, 5, 8, 12];
 
     levels.forEach(c => {
-      // Semi-axes: larger semi-axis along the less-sharp (smaller eigenvalue) direction
-      const rx = Math.sqrt(2 * c / lMin) * scaleX;
-      const ry = Math.sqrt(2 * c / lMax) * scaleY;
+      // l1 governs v1=[cos θ, sin θ] (horizontal when θ=0), l2 governs v2 (vertical)
+      const rx = Math.sqrt(2 * c / l1) * scaleX;
+      const ry = Math.sqrt(2 * c / l2) * scaleY;
       if (rx > W || ry > H) return;
 
       const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
@@ -1068,15 +1153,14 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
   }
 
   // Draw elliptical contours
-  function drawContours(A, thetaDeg) {
+  function drawContours(l1, l2, thetaDeg) {
     contoursG.innerHTML = '';
-    const eigs = eigenvalues(A);
-    const l1 = Math.max(...eigs), l2 = Math.min(...eigs);
     const levels = [0.5, 1, 2, 3, 5, 8, 12];
 
     levels.forEach(c => {
-      const ax = Math.sqrt(2 * c / l2);
-      const ay = Math.sqrt(2 * c / l1);
+      // l1 governs v1=[cos θ, sin θ] (horizontal before rotation), l2 governs v2
+      const ax = Math.sqrt(2 * c / l1);
+      const ay = Math.sqrt(2 * c / l2);
       if (ax > 10 || ay > 10) return;
 
       const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
@@ -1195,7 +1279,7 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
     }
 
     // Draw contours
-    drawContours(A, theta);
+    drawContours(l1, l2, theta);
 
     // Compute GD trajectory with losses
     const gdResult = computeGDPath(x0, y0, A, lr, steps);
@@ -1274,188 +1358,512 @@ Explore gradient descent dynamics with this interactive widget. Adjust the quadr
   svg.style.cursor = 'crosshair';
 })();
 
-// Gradient flow widget (Figure 5)
+// Loss and Sharpness widget (Figure 6 — Zipf NLLS on Hamlet word frequencies)
 (function() {
-  'use strict';
+  const W = 700, H = 460;
+  const N_STEPS = 2500;
+  const ns = 'http://www.w3.org/2000/svg';
 
-  // Layout — identical to gd-widget so plots align visually
-  const totalW = 880, totalH = 420;
-  const leftW = 420, rightW = 400, rightX = 480, margin = 40;
-  const xMin = -3.5, xMax = 3.5, yMin = -3.5, yMax = 3.5;
-  const T_MAX = 5;   // continuous time horizon
-  const N_PTS = 300; // samples along the flow curve
+  // Panel layout
+  const mLeft = 65, mRight = 20;
+  const lossTop = 30, lossBot = 205;
+  const sharpTop = 240, sharpBot = 425;
+  const xLeft = mLeft, xRight = W - mRight;
+  const panelW = xRight - xLeft;
 
-  let x0 = 2.5, y0 = 2.0;
-  const x0_default = 2.5, y0_default = 2.0;
+  const lossGridG   = document.getElementById('ls-loss-grid');
+  const lossAxesG   = document.getElementById('ls-loss-axes');
+  const lossPathEl  = document.getElementById('ls-loss-path');
+  const sharpGridG  = document.getElementById('ls-sharp-grid');
+  const sharpAxesG  = document.getElementById('ls-sharp-axes');
+  const sharpPathEl = document.getElementById('ls-sharp-path');
+  const critLineEl  = document.getElementById('ls-crit-line');
+  const critLabelEl = document.getElementById('ls-crit-label');
+  const infoDiv     = document.getElementById('ls-info');
+  const etaSlider   = document.querySelector('[data-param="ls-eta"]');
+  const etaReadout  = document.querySelector('[data-readout="ls-eta"]');
 
-  // ── Coordinate transforms (left plot) ─────────────────────────────────────
-  const toSvgX  = x  => margin + (x - xMin) / (xMax - xMin) * (leftW - 2 * margin);
-  const toSvgY  = y  => totalH - margin - (y - yMin) / (yMax - yMin) * (totalH - 2 * margin);
-  const toDataX = sx => xMin + (sx - margin) / (leftW - 2 * margin) * (xMax - xMin);
-  const toDataY = sy => yMin + (totalH - margin - sy) / (totalH - 2 * margin) * (yMax - yMin);
+  let freqs = null, ranks = null, logRanks = null;
 
-  // ── Loss plot transforms (right plot, x = continuous time t) ──────────────
-  let lossMax = 10;
-  const toLossSvgX = t    => rightX + margin + (t / T_MAX) * (rightW - 2 * margin);
-  const toLossSvgY = loss => {
-    const logL = Math.log10(Math.max(loss, 1e-8));
-    const logMax = Math.log10(lossMax), logMin = -8;
-    return totalH - margin - (logL - logMin) / (logMax - logMin) * (totalH - 2 * margin);
-  };
+  function mk(tag, attrs) {
+    const el = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+  function mkTxt(text, attrs) { const el = mk('text', attrs); el.textContent = text; return el; }
 
-  // ── Math helpers (same logic as gd-widget) ────────────────────────────────
-  const buildA = (l1, l2, thetaDeg) => {
-    const t = thetaDeg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t);
-    return [[c*c*l1 + s*s*l2, c*s*(l1-l2)], [c*s*(l1-l2), s*s*l1 + c*c*l2]];
-  };
-  const quadLoss = (x, y, A) => 0.5 * (A[0][0]*x*x + 2*A[0][1]*x*y + A[1][1]*y*y);
+  function sup(n) {
+    const m = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+    return String(n).split('').map(c => m[c]||c).join('');
+  }
 
-  // Exact gradient flow via eigendecomposition: x(t) = Σ e^{-λk t} (vk·x0) vk
-  // With A = R diag(l1,l2) Rᵀ, columns of R are v1=[c,s], v2=[-s,c]
-  const computeFlow = (px, py, l1, l2, thetaDeg) => {
-    const th = thetaDeg * Math.PI / 180, c = Math.cos(th), s = Math.sin(th);
-    const u1 =  c*px + s*py;  // projection onto v1
-    const u2 = -s*px + c*py;  // projection onto v2
-    const pts = [], losses = [];
-    for (let i = 0; i <= N_PTS; i++) {
-      const t  = T_MAX * i / N_PTS;
-      const e1 = Math.exp(-l1 * t), e2 = Math.exp(-l2 * t);
-      pts.push([e1*u1*c + e2*u2*(-s), e1*u1*s + e2*u2*c]);
-      losses.push(0.5 * (l1*u1*u1*e1*e1 + l2*u2*u2*e2*e2));
+  // Single-pass: loss + gradient + Hessian + sharpness
+  function computeAll(K, alpha) {
+    const N = freqs.length;
+    let lossAcc = 0, dK = 0, dA = 0, h11 = 0, h12 = 0, h22 = 0;
+    for (let i = 0; i < N; i++) {
+      const ra  = Math.pow(ranks[i], alpha);
+      const lr  = logRanks[i];
+      const yh  = K * ra;
+      const res = freqs[i] - yh;       // freqs - yhat  (for loss & gradient)
+      lossAcc += res * res;
+      dK  -= ra * res;
+      dA  -= lr * yh * res;
+      h11 += ra * ra;
+      h12 += K * ra * ra * lr - res * ra * lr;
+      h22 += yh * lr * yh * lr - res * K * ra * lr * lr;
     }
-    return { pts, losses };
-  };
-
-  // ── SVG helpers ───────────────────────────────────────────────────────────
-  const NS = 'http://www.w3.org/2000/svg';
-  const mkEl  = (tag, attrs) => { const e = document.createElementNS(NS, tag); Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v)); return e; };
-  const mkTxt = (text, attrs) => { const e = mkEl('text', attrs); e.textContent = text; return e; };
-  const sup   = n => { const d = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']; return (n<0?'⁻':'') + String(Math.abs(n)).split('').map(c=>d[+c]).join(''); };
-
-  // ── DOM refs ──────────────────────────────────────────────────────────────
-  const gridG     = document.getElementById('gf-grid');
-  const axesG     = document.getElementById('gf-axes');
-  const contoursG = document.getElementById('gf-contours');
-  const flowPath  = document.getElementById('gf-path');
-  const startDot  = document.getElementById('gf-start');
-  const lossGridG = document.getElementById('gf-loss-grid');
-  const lossAxesG = document.getElementById('gf-loss-axes');
-  const lossPath  = document.getElementById('gf-loss-path');
-  const infoDiv   = document.getElementById('gf-info');
-  const svg       = document.getElementById('gf-svg');
-
-  // ── Static left-plot grid & axes (drawn once) ─────────────────────────────
-  function drawGrid() {
-    for (let v = Math.ceil(xMin); v <= Math.floor(xMax); v++)
-      gridG.appendChild(mkEl('line', { x1: toSvgX(v), y1: margin, x2: toSvgX(v), y2: totalH - margin, stroke: '#21262d', 'stroke-width': 1 }));
-    for (let v = Math.ceil(yMin); v <= Math.floor(yMax); v++)
-      gridG.appendChild(mkEl('line', { x1: margin, y1: toSvgY(v), x2: leftW - margin, y2: toSvgY(v), stroke: '#21262d', 'stroke-width': 1 }));
+    dK /= N; dA /= N; h11 /= N; h12 /= N; h22 /= N;
+    const disc = Math.sqrt((h11 - h22) * (h11 - h22) + 4 * h12 * h12);
+    return { loss: lossAcc / (2 * N), dK, dA, sharp: (h11 + h22 + disc) / 2 };
   }
 
-  function drawAxes() {
-    axesG.appendChild(mkEl('line', { x1: margin, y1: toSvgY(0), x2: leftW - margin, y2: toSvgY(0), stroke: '#484f58', 'stroke-width': 1.5 }));
-    axesG.appendChild(mkEl('line', { x1: toSvgX(0), y1: margin, x2: toSvgX(0), y2: totalH - margin, stroke: '#484f58', 'stroke-width': 1.5 }));
-    for (let v = Math.ceil(xMin); v <= Math.floor(xMax); v++)
-      if (v !== 0) axesG.appendChild(mkTxt(v, { x: toSvgX(v), y: totalH - margin + 18, fill: '#6e7681', 'font-size': 11, 'text-anchor': 'middle' }));
-    for (let v = Math.ceil(yMin); v <= Math.floor(yMax); v++)
-      if (v !== 0) axesG.appendChild(mkTxt(v, { x: margin - 8, y: toSvgY(v) + 4, fill: '#6e7681', 'font-size': 11, 'text-anchor': 'end' }));
-    axesG.appendChild(mkTxt('x₁', { x: (margin + leftW - margin) / 2, y: totalH - 5, fill: '#8b949e', 'font-size': 12, 'text-anchor': 'middle' }));
-    const yl = mkTxt('x₂', { x: 12, y: totalH / 2, fill: '#8b949e', 'font-size': 12, 'text-anchor': 'middle' });
-    yl.setAttribute('transform', `rotate(-90, 12, ${totalH / 2})`);
-    axesG.appendChild(yl);
+  function runGD(eta) {
+    let K = 0.0, alpha = -0.8;
+    const losses = [], sharps = [];
+    for (let s = 0; s <= N_STEPS; s++) {
+      const { loss, dK, dA, sharp } = computeAll(K, alpha);
+      losses.push(loss);
+      sharps.push(sharp);
+      if (s < N_STEPS) { K -= eta * dK; alpha -= eta * dA; }
+    }
+    return { losses, sharps };
   }
 
-  // ── Dynamic: contours, flow path, loss plot ───────────────────────────────
-  function drawContours(l1, l2, thetaDeg) {
-    contoursG.innerHTML = '';
-    const lBig = Math.max(l1, l2), lSml = Math.min(l1, l2);
-    const sx = (leftW - 2*margin) / (xMax - xMin), sy = (totalH - 2*margin) / (yMax - yMin);
-    [0.5, 1, 2, 3, 5, 8, 12].forEach(c => {
-      const rx = Math.sqrt(2*c / lSml) * sx, ry = Math.sqrt(2*c / lBig) * sy;
-      if (rx > leftW || ry > totalH) return;
-      contoursG.appendChild(mkEl('ellipse', {
-        cx: toSvgX(0), cy: toSvgY(0), rx, ry,
-        transform: `rotate(${-thetaDeg}, ${toSvgX(0)}, ${toSvgY(0)})`,
-        fill: 'none', stroke: '#30363d', 'stroke-width': 1
-      }));
-    });
+  function toX(step) { return xLeft + (step / N_STEPS) * panelW; }
+  function toLossY(v, logMin, logMax) {
+    const lv = Math.log10(Math.max(v, 1e-15));
+    return lossBot - (Math.min(logMax, Math.max(logMin, lv)) - logMin) / (logMax - logMin) * (lossBot - lossTop);
   }
+  const SHARP_MIN = 0.02, SHARP_MAX = 0.04;
+  function toSharpY(v) { return sharpBot - (Math.min(SHARP_MAX, Math.max(SHARP_MIN, v)) - SHARP_MIN) / (SHARP_MAX - SHARP_MIN) * (sharpBot - sharpTop); }
 
-  function drawLossAxes() {
+  function drawLossPanel(losses, logMin, logMax) {
     lossGridG.innerHTML = ''; lossAxesG.innerHTML = '';
-    for (let ti = 0; ti <= T_MAX; ti++) {
-      const sx = toLossSvgX(ti);
-      lossGridG.appendChild(mkEl('line', { x1: sx, y1: margin, x2: sx, y2: totalH - margin, stroke: '#21262d', 'stroke-width': 1 }));
-      lossAxesG.appendChild(mkTxt(ti, { x: sx, y: totalH - margin + 18, fill: '#6e7681', 'font-size': 11, 'text-anchor': 'middle' }));
+    [0,500,1000,1500,2000,2500].forEach(t => {
+      lossGridG.appendChild(mk('line',{x1:toX(t),y1:lossTop,x2:toX(t),y2:lossBot,stroke:'#21262d','stroke-width':1}));
+    });
+    for (let e = Math.ceil(logMin); e <= Math.floor(logMax); e++) {
+      const sy = toLossY(Math.pow(10, e), logMin, logMax);
+      lossGridG.appendChild(mk('line',{x1:xLeft,y1:sy,x2:xRight,y2:sy,stroke:'#21262d','stroke-width':1}));
+      lossAxesG.appendChild(mkTxt('10'+sup(e),{x:xLeft-4,y:sy+4,fill:'#6e7681','font-size':10,'text-anchor':'end'}));
     }
-    const logMax = Math.ceil(Math.log10(lossMax));
-    for (let exp = -8; exp <= logMax; exp += 2) {
-      const sy = toLossSvgY(Math.pow(10, exp));
-      if (sy < margin || sy > totalH - margin) continue;
-      lossGridG.appendChild(mkEl('line', { x1: rightX + margin, y1: sy, x2: rightX + rightW - margin, y2: sy, stroke: '#21262d', 'stroke-width': 1 }));
-      lossAxesG.appendChild(mkTxt('10' + sup(exp), { x: rightX + margin - 8, y: sy + 4, fill: '#6e7681', 'font-size': 11, 'text-anchor': 'end' }));
+    lossAxesG.appendChild(mk('line',{x1:xLeft,y1:lossTop,x2:xLeft,y2:lossBot,stroke:'#484f58','stroke-width':1.5}));
+    lossAxesG.appendChild(mk('line',{x1:xLeft,y1:lossBot,x2:xRight,y2:lossBot,stroke:'#484f58','stroke-width':1.5}));
+    const midY = (lossTop + lossBot) / 2;
+    lossAxesG.appendChild(mkTxt('Loss',{x:14,y:midY,fill:'#8b949e','font-size':12,'text-anchor':'middle',transform:`rotate(-90,14,${midY})`}));
+    lossAxesG.appendChild(mkTxt('Loss vs Step',{x:xLeft+panelW/2,y:lossTop-8,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+    let d = '';
+    for (let i = 0; i <= N_STEPS; i++) {
+      const sx = toX(i), ly = toLossY(losses[i], logMin, logMax);
+      d += (i ? ` L ${sx} ${ly}` : `M ${sx} ${ly}`);
     }
-    lossAxesG.appendChild(mkEl('line', { x1: rightX + margin, y1: totalH - margin, x2: rightX + rightW - margin, y2: totalH - margin, stroke: '#484f58', 'stroke-width': 1.5 }));
-    lossAxesG.appendChild(mkEl('line', { x1: rightX + margin, y1: margin, x2: rightX + margin, y2: totalH - margin, stroke: '#484f58', 'stroke-width': 1.5 }));
-    lossAxesG.appendChild(mkTxt('t', { x: rightX + margin + (rightW - 2*margin) / 2, y: totalH - 5, fill: '#8b949e', 'font-size': 12, 'text-anchor': 'middle' }));
-    const yl = mkTxt('f(x(t))', { x: rightX + 12, y: totalH / 2, fill: '#8b949e', 'font-size': 12, 'text-anchor': 'middle' });
-    yl.setAttribute('transform', `rotate(-90, ${rightX + 12}, ${totalH / 2})`);
-    lossAxesG.appendChild(yl);
+    lossPathEl.setAttribute('d', d);
   }
 
-  // ── Main update ───────────────────────────────────────────────────────────
+  function drawSharpPanel(sharps, critVal) {
+    sharpGridG.innerHTML = ''; sharpAxesG.innerHTML = '';
+    [0,500,1000,1500,2000,2500].forEach(t => {
+      const sx = toX(t);
+      sharpGridG.appendChild(mk('line',{x1:sx,y1:sharpTop,x2:sx,y2:sharpBot,stroke:'#21262d','stroke-width':1}));
+      sharpAxesG.appendChild(mkTxt(t,{x:sx,y:sharpBot+14,fill:'#6e7681','font-size':10,'text-anchor':'middle'}));
+    });
+    for (let i = 0; i <= 4; i++) {
+      const v = SHARP_MIN + (i / 4) * (SHARP_MAX - SHARP_MIN), sy = toSharpY(v);
+      sharpGridG.appendChild(mk('line',{x1:xLeft,y1:sy,x2:xRight,y2:sy,stroke:'#21262d','stroke-width':1}));
+      sharpAxesG.appendChild(mkTxt(v.toFixed(3),{x:xLeft-4,y:sy+4,fill:'#6e7681','font-size':10,'text-anchor':'end'}));
+    }
+    sharpAxesG.appendChild(mk('line',{x1:xLeft,y1:sharpTop,x2:xLeft,y2:sharpBot,stroke:'#484f58','stroke-width':1.5}));
+    sharpAxesG.appendChild(mk('line',{x1:xLeft,y1:sharpBot,x2:xRight,y2:sharpBot,stroke:'#484f58','stroke-width':1.5}));
+    const midY = (sharpTop + sharpBot) / 2;
+    sharpAxesG.appendChild(mkTxt('Sharpness',{x:14,y:midY,fill:'#8b949e','font-size':12,'text-anchor':'middle',transform:`rotate(-90,14,${midY})`}));
+    sharpAxesG.appendChild(mkTxt('Sharpness vs Step',{x:xLeft+panelW/2,y:sharpTop-8,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+    sharpAxesG.appendChild(mkTxt('Step',{x:xLeft+panelW/2,y:sharpBot+28,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+    let d = '';
+    for (let i = 0; i <= N_STEPS; i++) {
+      const sx = toX(i), sy = toSharpY(sharps[i]);
+      d += (i ? ` L ${sx} ${sy}` : `M ${sx} ${sy}`);
+    }
+    sharpPathEl.setAttribute('d', d);
+    // Critical stability line S = 2/η
+    const csy = toSharpY(critVal);
+    if (csy >= sharpTop && csy <= sharpBot) {
+      critLineEl.setAttribute('x1', xLeft);  critLineEl.setAttribute('y1', csy);
+      critLineEl.setAttribute('x2', xRight); critLineEl.setAttribute('y2', csy);
+      critLineEl.setAttribute('stroke-opacity', 1);
+      critLabelEl.setAttribute('x', xRight - 4); critLabelEl.setAttribute('y', csy - 4);
+      critLabelEl.setAttribute('text-anchor', 'end');
+      critLabelEl.setAttribute('visibility', 'visible');
+      critLabelEl.textContent = `S=2/\u03b7\u2248${critVal.toFixed(4)}`;
+    } else {
+      critLineEl.setAttribute('stroke-opacity', 0);
+      critLabelEl.setAttribute('visibility', 'hidden');
+    }
+  }
+
   function update() {
-    const l1    = parseFloat(document.querySelector('[data-param="gf-lambda1"]').value);
-    const l2    = parseFloat(document.querySelector('[data-param="gf-lambda2"]').value);
-    const theta = parseFloat(document.querySelector('[data-param="gf-theta"]').value);
-    document.querySelector('[data-readout="gf-lambda1"]').textContent = l1.toFixed(1);
-    document.querySelector('[data-readout="gf-lambda2"]').textContent = l2.toFixed(1);
-    document.querySelector('[data-readout="gf-theta"]').textContent   = theta + '°';
+    if (!freqs) return;
+    const eta = parseFloat(etaSlider.value);
+    etaReadout.textContent = eta;
+    const { losses, sharps } = runGD(eta);
 
-    const A = buildA(l1, l2, theta);
-    lossMax = Math.pow(10, Math.ceil(Math.log10(quadLoss(x0, y0, A) * 2)));
+    let logMin = Infinity, logMax = -Infinity;
+    for (const v of losses) {
+      if (v > 0) { const lv = Math.log10(v); if (lv < logMin) logMin = lv; if (lv > logMax) logMax = lv; }
+    }
+    logMin = Math.floor(logMin) - 1;
+    logMax = Math.ceil(logMax);
 
-    const { pts, losses } = computeFlow(x0, y0, l1, l2, theta);
-
-    drawContours(l1, l2, theta);
-    drawLossAxes();
-
-    // Flow path on left plot
-    flowPath.setAttribute('d', pts.reduce((d, [px, py], i) =>
-      d + (i === 0 ? `M ${toSvgX(px)} ${toSvgY(py)}` : ` L ${toSvgX(px)} ${toSvgY(py)}`), ''));
-
-    // Loss curve on right plot
-    lossPath.setAttribute('d', losses.reduce((d, loss, i) =>
-      d + (i === 0 ? `M ${toLossSvgX(0)} ${toLossSvgY(loss)}` : ` L ${toLossSvgX(T_MAX * i / N_PTS)} ${toLossSvgY(loss)}`), ''));
-
-    startDot.setAttribute('cx', toSvgX(x0));
-    startDot.setAttribute('cy', toSvgY(y0));
-
-    infoDiv.innerHTML = `λ<sub>1</sub> = ${l1.toFixed(1)} &nbsp;|&nbsp; λ<sub>2</sub> = ${l2.toFixed(1)} &nbsp;|&nbsp; f(x(0)) = ${quadLoss(x0, y0, A).toFixed(3)} &nbsp;|&nbsp; f(x(5)) = ${losses[losses.length-1].toExponential(2)}`;
+    drawLossPanel(losses, logMin, logMax);
+    drawSharpPanel(sharps, 2 / eta);
+    infoDiv.innerHTML = `\u03b7 = ${eta} &nbsp;|&nbsp; 2/\u03b7 \u2248 ${(2/eta).toFixed(4)}`;
   }
 
-  drawGrid();
-  drawAxes();
-  update();
+  fetch('/assets/shared/data/zipf-hamlet.json')
+    .then(r => r.json())
+    .then(data => {
+      freqs    = data.freqs;
+      ranks    = freqs.map((_, i) => i + 1);
+      logRanks = ranks.map(r => Math.log(r));
+      update();
+    });
 
-  document.querySelectorAll('#gf-widget input[type="range"]').forEach(el => el.addEventListener('input', update));
-
-  document.getElementById('gf-reset').addEventListener('click', () => {
-    x0 = x0_default; y0 = y0_default;
-    document.querySelector('[data-param="gf-lambda1"]').value = 4;
-    document.querySelector('[data-param="gf-lambda2"]').value = 1;
-    document.querySelector('[data-param="gf-theta"]').value   = 30;
-    update();
-  });
-
-  svg.style.cursor = 'crosshair';
-  svg.addEventListener('click', e => {
-    const rect = svg.getBoundingClientRect();
-    const sx = (e.clientX - rect.left) * (totalW / rect.width);
-    const sy = (e.clientY - rect.top)  * (totalH / rect.height);
-    if (sx > leftW) return;
-    const nx = toDataX(sx), ny = toDataY(sy);
-    if (nx >= xMin && nx <= xMax && ny >= yMin && ny <= yMax) { x0 = nx; y0 = ny; update(); }
-  });
+  etaSlider.addEventListener('input', update);
 })();
+
+// Non-convex contour widget (Figure 5 — Zipf NLLS loss landscape)
+(function() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const W = 500, H = 400;
+  const ML = 60, MR = 20, MT = 30, MB = 45;
+  const PW = W - ML - MR, PH = H - MT - MB; // 420 x 325
+  const K_MIN = -0.03, K_MAX = 0.07;
+  const A_MIN = -1.0, A_MAX = -0.4;
+  const LOG_MIN = -6, LOG_MAX = -4;
+  const N_STEPS = 1500;
+  const GN = 100;
+
+  const VIR = [[68,1,84],[59,82,139],[33,144,140],[93,201,99],[253,231,37]];
+  function viridis(t) {
+    t = Math.max(0, Math.min(1, t));
+    const s = t * 4, lo = Math.floor(s), hi = Math.min(lo+1, 4), f = s - lo;
+    return `rgb(${Math.round(VIR[lo][0]+f*(VIR[hi][0]-VIR[lo][0]))},${Math.round(VIR[lo][1]+f*(VIR[hi][1]-VIR[lo][1]))},${Math.round(VIR[lo][2]+f*(VIR[hi][2]-VIR[lo][2]))})`;
+  }
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+  function txt(text, attrs) { const e = el('text', attrs); e.textContent = text; return e; }
+
+  const cw = PW / GN, ch = PH / GN;
+  function toX(K)     { return ML + (K - K_MIN) / (K_MAX - K_MIN) * PW; }
+  function toY(alpha) { return MT + (A_MAX - alpha) / (A_MAX - A_MIN) * PH; }
+
+  const N_SEGS = 20;
+
+  const heatmapG  = document.getElementById('nc-heatmap');
+  const axesG     = document.getElementById('nc-axes');
+  const trajSegsG = document.getElementById('nc-traj-segs');
+  const startCirc = document.getElementById('nc-start');
+  const endCirc   = document.getElementById('nc-end');
+  const etaSliderNc  = document.querySelector('[data-param="nc-eta"]');
+  const etaReadoutNc = document.querySelector('[data-readout="nc-eta"]');
+  const infoDivNc    = document.getElementById('nc-info');
+
+  function lerpColor(c0, c1, t) {
+    return `rgb(${Math.round(c0[0]+t*(c1[0]-c0[0]))},${Math.round(c0[1]+t*(c1[1]-c0[1]))},${Math.round(c0[2]+t*(c1[2]-c0[2]))})`;
+  }
+
+  let freqs = null, ranks = null, logRanks = null;
+
+  function buildHeatmap() {
+    const N = freqs.length;
+
+    for (let gj = 0; gj < GN; gj++) {
+      const alpha = A_MAX - ((gj + 0.5) / GN) * (A_MAX - A_MIN);
+      const rAlpha = new Float64Array(N);
+      for (let n = 0; n < N; n++) rAlpha[n] = Math.exp(logRanks[n] * alpha);
+
+      for (let gi = 0; gi < GN; gi++) {
+        const K = K_MIN + ((gi + 0.5) / GN) * (K_MAX - K_MIN);
+        let loss = 0;
+        for (let n = 0; n < N; n++) { const r = freqs[n] - K * rAlpha[n]; loss += r * r; }
+        loss /= 2 * N;
+        const t = Math.max(0, Math.min(1, (Math.log10(Math.max(loss, 1e-12)) - LOG_MIN) / (LOG_MAX - LOG_MIN)));
+        heatmapG.appendChild(el('rect', {
+          x: ML + gi * cw, y: MT + gj * ch,
+          width: cw + 0.5, height: ch + 0.5,
+          fill: viridis(t)
+        }));
+      }
+    }
+
+    // Axes
+    axesG.appendChild(el('line', {x1:ML, y1:MT, x2:ML, y2:MT+PH, stroke:'#484f58', 'stroke-width':1.5}));
+    axesG.appendChild(el('line', {x1:ML, y1:MT+PH, x2:ML+PW, y2:MT+PH, stroke:'#484f58', 'stroke-width':1.5}));
+    [-0.02, 0, 0.02, 0.04, 0.06].forEach(K => {
+      const x = toX(K);
+      axesG.appendChild(el('line', {x1:x, y1:MT+PH, x2:x, y2:MT+PH+4, stroke:'#484f58', 'stroke-width':1}));
+      axesG.appendChild(txt(K.toFixed(2), {x, y:MT+PH+14, fill:'#6e7681', 'font-size':10, 'text-anchor':'middle'}));
+    });
+    [-1.0, -0.8, -0.6, -0.4].forEach(a => {
+      const y = toY(a);
+      axesG.appendChild(el('line', {x1:ML, y1:y, x2:ML-4, y2:y, stroke:'#484f58', 'stroke-width':1}));
+      axesG.appendChild(txt(a.toFixed(1), {x:ML-6, y:y+4, fill:'#6e7681', 'font-size':10, 'text-anchor':'end'}));
+    });
+    const midY = MT + PH/2;
+    axesG.appendChild(txt('K', {x:ML+PW/2, y:MT+PH+30, fill:'#8b949e', 'font-size':12, 'text-anchor':'middle'}));
+    axesG.appendChild(txt('\u03b1', {x:14, y:midY+4, fill:'#8b949e', 'font-size':12, 'text-anchor':'middle', transform:`rotate(-90,14,${midY})`}));
+    axesG.appendChild(txt('Zipf Non-Negative Least Squares Loss', {x:ML+PW/2, y:MT-8, fill:'#8b949e', 'font-size':12, 'text-anchor':'middle'}));
+  }
+
+  function runGD(eta) {
+    const N = freqs.length;
+    let K = 0.0, alpha = -0.8;
+    const traj = [[K, alpha]];
+    for (let s = 0; s < N_STEPS; s++) {
+      let dK = 0, dA = 0;
+      for (let n = 0; n < N; n++) {
+        const ra = Math.exp(logRanks[n] * alpha);
+        const yh = K * ra;
+        const res = freqs[n] - yh;
+        dK -= ra * res;
+        dA -= logRanks[n] * yh * res;
+      }
+      dK /= N; dA /= N;
+      K -= eta * dK;
+      alpha -= eta * dA;
+      traj.push([K, alpha]);
+    }
+    return traj;
+  }
+
+  function update() {
+    if (!freqs) return;
+    const eta = parseFloat(etaSliderNc.value);
+    etaReadoutNc.textContent = eta;
+
+    const traj = runGD(eta);
+
+    const [Kf, af] = traj[N_STEPS];
+    let finalLoss = 0;
+    for (let n = 0; n < freqs.length; n++) {
+      const r = freqs[n] - Kf * Math.exp(logRanks[n] * af);
+      finalLoss += r * r;
+    }
+    finalLoss /= 2 * freqs.length;
+    infoDivNc.textContent = `\u03b7 = ${eta} \u00a0|\u00a0 final loss = ${finalLoss.toExponential(3)}`;
+
+    trajSegsG.innerHTML = '';
+
+    const stepsPerSeg = Math.ceil(N_STEPS / N_SEGS);
+    const startColor = [63, 185, 80];   // #3fb950
+    const endColor   = [247, 129, 102]; // #f78166
+    for (let s = 0; s < N_SEGS; s++) {
+      const t  = s / (N_SEGS - 1);
+      const i0 = s * stepsPerSeg;
+      const i1 = Math.min((s + 1) * stepsPerSeg, N_STEPS);
+      let d = '';
+      for (let i = i0; i <= i1; i++) {
+        const x = toX(traj[i][0]), y = toY(traj[i][1]);
+        d += (i === i0 ? `M${x} ${y}` : ` L${x} ${y}`);
+      }
+      trajSegsG.appendChild(el('path', {
+        d, fill: 'none', stroke: lerpColor(startColor, endColor, t),
+        'stroke-width': 1.5, 'stroke-linejoin': 'round'
+      }));
+    }
+
+    startCirc.setAttribute('cx', toX(traj[0][0]));
+    startCirc.setAttribute('cy', toY(traj[0][1]));
+    endCirc.setAttribute('cx', toX(traj[N_STEPS][0]));
+    endCirc.setAttribute('cy', toY(traj[N_STEPS][1]));
+  }
+
+  fetch('/assets/shared/data/zipf-hamlet.json')
+    .then(r => r.json())
+    .then(data => {
+      freqs    = data.freqs;
+      ranks    = freqs.map((_, i) => i + 1);
+      logRanks = ranks.map(r => Math.log(r));
+      buildHeatmap();
+      update();
+    });
+
+  etaSliderNc.addEventListener('input', update);
+})();
+
+// Gradient Components widget (Figure 7 — Zipf NLLS eigenvector decomposition)
+(function() {
+  const W = 700, H = 480;
+  const ETA = 70, N_STEPS = 750;
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // Panel layout — shared x-axis
+  const mLeft = 65, mRight = 20;
+  const sharpTop = 30,  sharpBot = 210;
+  const compTop  = 245, compBot  = 450;
+  const xLeft = mLeft, xRight = W - mRight;
+  const panelW = xRight - xLeft;
+
+  const SHARP_MIN = 0.02, SHARP_MAX = 0.04;
+
+  const sharpGridG  = document.getElementById('gc-sharp-grid');
+  const sharpAxesG  = document.getElementById('gc-sharp-axes');
+  const sharpPathEl = document.getElementById('gc-sharp-path');
+  const critLineEl  = document.getElementById('gc-crit-line');
+  const critLabelEl = document.getElementById('gc-crit-label');
+  const compGridG   = document.getElementById('gc-comp-grid');
+  const compAxesG   = document.getElementById('gc-comp-axes');
+  const v1PathEl    = document.getElementById('gc-v1-path');
+  const v2PathEl    = document.getElementById('gc-v2-path');
+
+  let freqs = null, ranks = null, logRanks = null;
+
+  function mk(tag, attrs) {
+    const el = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+  function mkTxt(text, attrs) { const el = mk('text', attrs); el.textContent = text; return el; }
+
+  function computeAll(K, alpha) {
+    const N = freqs.length;
+    let dK = 0, dA = 0, h11 = 0, h12 = 0, h22 = 0;
+    for (let i = 0; i < N; i++) {
+      const ra  = Math.pow(ranks[i], alpha);
+      const lr  = logRanks[i];
+      const yh  = K * ra;
+      const res = freqs[i] - yh;
+      dK  -= ra * res;
+      dA  -= lr * yh * res;
+      h11 += ra * ra;
+      h12 += K * ra * ra * lr - res * ra * lr;
+      h22 += yh * lr * yh * lr - res * K * ra * lr * lr;
+    }
+    dK /= N; dA /= N; h11 /= N; h12 /= N; h22 /= N;
+    const disc  = Math.sqrt((h11 - h22) * (h11 - h22) + 4 * h12 * h12);
+    const sharp = (h11 + h22 + disc) / 2;
+
+    let v1x, v1y;
+    if (Math.abs(h12) > 1e-14) {
+      const nx = sharp - h22, ny = h12;
+      const norm = Math.sqrt(nx * nx + ny * ny);
+      v1x = nx / norm; v1y = ny / norm;
+    } else {
+      v1x = h11 >= h22 ? 1 : 0;
+      v1y = h11 >= h22 ? 0 : 1;
+    }
+    const v2x = -v1y, v2y = v1x;
+
+    return { dK, dA, sharp, c1: dK * v1x + dA * v1y, c2: dK * v2x + dA * v2y };
+  }
+
+  function runGD() {
+    let K = 0.0, alpha = -0.8;
+    const sharps = [], c1s = [], c2s = [];
+    for (let s = 0; s <= N_STEPS; s++) {
+      const { dK, dA, sharp, c1, c2 } = computeAll(K, alpha);
+      sharps.push(sharp); c1s.push(c1); c2s.push(c2);
+      if (s < N_STEPS) { K -= ETA * dK; alpha -= ETA * dA; }
+    }
+    return { sharps, c1s, c2s };
+  }
+
+  function toX(step) { return xLeft + (step / N_STEPS) * panelW; }
+  function toSharpY(v) {
+    return sharpBot - (Math.min(SHARP_MAX, Math.max(SHARP_MIN, v)) - SHARP_MIN) / (SHARP_MAX - SHARP_MIN) * (sharpBot - sharpTop);
+  }
+
+  function drawSharpPanel(sharps) {
+    sharpGridG.innerHTML = ''; sharpAxesG.innerHTML = '';
+    const ticks = [0, 150, 300, 450, 600, 750];
+    ticks.forEach(t => {
+      sharpGridG.appendChild(mk('line',{x1:toX(t),y1:sharpTop,x2:toX(t),y2:sharpBot,stroke:'#21262d','stroke-width':1}));
+    });
+    for (let i = 0; i <= 4; i++) {
+      const v = SHARP_MIN + (i / 4) * (SHARP_MAX - SHARP_MIN), sy = toSharpY(v);
+      sharpGridG.appendChild(mk('line',{x1:xLeft,y1:sy,x2:xRight,y2:sy,stroke:'#21262d','stroke-width':1}));
+      sharpAxesG.appendChild(mkTxt(v.toFixed(3),{x:xLeft-4,y:sy+4,fill:'#6e7681','font-size':10,'text-anchor':'end'}));
+    }
+    sharpAxesG.appendChild(mk('line',{x1:xLeft,y1:sharpTop,x2:xLeft,y2:sharpBot,stroke:'#484f58','stroke-width':1.5}));
+    sharpAxesG.appendChild(mk('line',{x1:xLeft,y1:sharpBot,x2:xRight,y2:sharpBot,stroke:'#484f58','stroke-width':1.5}));
+    const midY = (sharpTop + sharpBot) / 2;
+    sharpAxesG.appendChild(mkTxt('Sharpness',{x:14,y:midY,fill:'#8b949e','font-size':12,'text-anchor':'middle',transform:`rotate(-90,14,${midY})`}));
+    sharpAxesG.appendChild(mkTxt('Sharpness vs Step',{x:xLeft+panelW/2,y:sharpTop-8,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+    let d = '';
+    for (let i = 0; i <= N_STEPS; i++) {
+      const sx = toX(i), sy = toSharpY(sharps[i]);
+      d += (i ? ` L ${sx} ${sy}` : `M ${sx} ${sy}`);
+    }
+    sharpPathEl.setAttribute('d', d);
+    const critVal = 2 / ETA;
+    const csy = toSharpY(critVal);
+    if (csy >= sharpTop && csy <= sharpBot) {
+      critLineEl.setAttribute('x1', xLeft);  critLineEl.setAttribute('y1', csy);
+      critLineEl.setAttribute('x2', xRight); critLineEl.setAttribute('y2', csy);
+      critLineEl.setAttribute('stroke-opacity', 1);
+      critLabelEl.setAttribute('x', xLeft + 4); critLabelEl.setAttribute('y', csy - 4);
+      critLabelEl.setAttribute('text-anchor', 'start');
+      critLabelEl.setAttribute('visibility', 'visible');
+      critLabelEl.textContent = `S=2/\u03b7\u2248${critVal.toFixed(4)}`;
+    }
+  }
+
+  function drawCompPanel(c1s, c2s) {
+    compGridG.innerHTML = ''; compAxesG.innerHTML = '';
+
+    let maxAbs = 1e-10;
+    for (let i = 0; i <= N_STEPS; i++) {
+      maxAbs = Math.max(maxAbs, Math.abs(c1s[i]), Math.abs(c2s[i]));
+    }
+    const cLim = maxAbs * 1.05;
+
+    function toCompY(v) {
+      return compBot - (Math.min(cLim, Math.max(-cLim, v)) + cLim) / (2 * cLim) * (compBot - compTop);
+    }
+
+    const ticks = [0, 150, 300, 450, 600, 750];
+    ticks.forEach(t => {
+      compGridG.appendChild(mk('line',{x1:toX(t),y1:compTop,x2:toX(t),y2:compBot,stroke:'#21262d','stroke-width':1}));
+      compAxesG.appendChild(mkTxt(t,{x:toX(t),y:compBot+14,fill:'#6e7681','font-size':10,'text-anchor':'middle'}));
+    });
+    [-1, -0.5, 0, 0.5, 1].forEach(s => {
+      const v = s * cLim, cy = toCompY(v);
+      compGridG.appendChild(mk('line',{x1:xLeft,y1:cy,x2:xRight,y2:cy,stroke:'#21262d','stroke-width':1}));
+      compAxesG.appendChild(mkTxt(v.toExponential(1),{x:xLeft-4,y:cy+4,fill:'#6e7681','font-size':10,'text-anchor':'end'}));
+    });
+    compAxesG.appendChild(mk('line',{x1:xLeft,y1:compTop,x2:xLeft,y2:compBot,stroke:'#484f58','stroke-width':1.5}));
+    compAxesG.appendChild(mk('line',{x1:xLeft,y1:compBot,x2:xRight,y2:compBot,stroke:'#484f58','stroke-width':1.5}));
+    const zy = toCompY(0);
+    compAxesG.appendChild(mk('line',{x1:xLeft,y1:zy,x2:xRight,y2:zy,stroke:'#484f58','stroke-width':1,'stroke-dasharray':'3,3'}));
+    const midY = (compTop + compBot) / 2;
+    compAxesG.appendChild(mkTxt('\u2207f\u00b7v\u2096',{x:14,y:midY,fill:'#8b949e','font-size':12,'text-anchor':'middle',transform:`rotate(-90,14,${midY})`}));
+    compAxesG.appendChild(mkTxt('Gradient Components vs Step',{x:xLeft+panelW/2,y:compTop-8,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+    compAxesG.appendChild(mkTxt('Step',{x:xLeft+panelW/2,y:compBot+28,fill:'#8b949e','font-size':12,'text-anchor':'middle'}));
+
+    let d1 = '', d2 = '';
+    for (let i = 0; i <= N_STEPS; i++) {
+      const sx = toX(i);
+      d1 += (i ? ` L ${sx} ${toCompY(c1s[i])}` : `M ${sx} ${toCompY(c1s[i])}`);
+      d2 += (i ? ` L ${sx} ${toCompY(c2s[i])}` : `M ${sx} ${toCompY(c2s[i])}`);
+    }
+    v1PathEl.setAttribute('d', d1);
+    v2PathEl.setAttribute('d', d2);
+  }
+
+  fetch('/assets/shared/data/zipf-hamlet.json')
+    .then(r => r.json())
+    .then(data => {
+      freqs    = data.freqs;
+      ranks    = freqs.map((_, i) => i + 1);
+      logRanks = ranks.map(r => Math.log(r));
+      const { sharps, c1s, c2s } = runGD();
+      drawSharpPanel(sharps);
+      drawCompPanel(c1s, c2s);
+    });
+})();
+
 </script>
