@@ -84,14 +84,28 @@ Use Kramdown footnote syntax throughout. **Never** use HTML `<sup>` tags or pare
 This is the main claim.[^fn1]
 ```
 
-**Definition (at the very end of the post, after all body text):**
+**Definition (after all body text, before scripts):**
 ```markdown
 [^fn1]: Footnote text here, which can include math like $$\beta^\star = (A^TA)^{-1}A^Tb$$.
 ```
 
 - Label convention: `[^fn1]`, `[^fn2]`, etc. for numbered footnotes; `[^keyword]` for named footnotes (e.g. `[^denormal]`, `[^twoscomp]`).
-- Definitions go at the very end of the file, after `{% include widget-scripts.html %}` and `<script>` blocks when those are present.
+- Definitions go after all body text but **before** `{% include widget-scripts.html %}` and `<script>` blocks.
 - No blank line required between footnote definitions.
+
+**End-of-file order:**
+
+```markdown
+[body text and figures]
+
+[^fn1]: ...
+[^fn2]: ...
+
+{% include widget-scripts.html %}
+<script>
+...
+</script>
+```
 
 ---
 
