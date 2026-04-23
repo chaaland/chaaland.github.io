@@ -332,7 +332,7 @@ Notice that for $$\eta$$ below ~57, the loss decreases monotonically and the sha
 
 After $$\eta> 57$$, we see two things occur.
 The first is that _loss spikes_ begin appearing and we no longer observe a monotone decreasing loss during gradient descent.
-The second is that the sharpness begins exceeding the critical sharpness and then rapidly plunging back down below it.
+The second is that the sharpness begins exceeding the critical sharpness and then rapidly plunges back down below it.
 This is very different than the quadratic case where once we exceeded the critical threshold, gradient descent diverged.
 
 Also notice that as we increase $$\eta$$, we see more oscillations around the critical sharpness with an exponentially decaying envelope.
@@ -398,7 +398,7 @@ $$
 g_k(a+\sigma u) \approx g_k(a) + \sigma S(a)u_k + \frac{\sigma^2}{2}u^T \nabla^2 g_k(a) u.
 $$
 
-We can also simplify the final term involving the hessian of the gradient (a third derivative!) using the definition $$g_k(a) = \partial f(a)/\partial x_k$$ and the identity $$x^TAx = \sum_{i=1}^N\sum_{j=1}^N A_{ij}x_ix_j$$
+We can also simplify the final term involving the hessian of the gradient (a third derivative!) using the definition $$g_k(a) = \partial f(a)/\partial x_k$$ and the identity $$x^TAx = \sum_{i=1}^d\sum_{j=1}^d A_{ij}x_ix_j$$
 
 $$
 \begin{align*}
@@ -452,7 +452,7 @@ When the perturbation along the dominant eigenvector of the hessian gets too lar
 
 ## Conclusion
 
-
+Loss spikes are not noise. They are a predictable consequence of gradient descent briefly violating the edge of stability before snapping back. For quadratics, the stability condition $$\eta < 2/S$$ is global, and crossing it sends the optimizer into immediate divergence. For general objectives, sharpness varies along the trajectory, so a learning rate that behaved stably early in training can locally violate the condition as the optimizer enters sharper regions. When it does, the quadratic term in the Taylor expansion of the gradient takes over, pointing in the direction of $$-\nabla S$$. This drives the optimizer toward flatter regions, sharpness falls back below $$2/\eta$$, and stable descent resumes. The spike is the mechanism, not a glitch. Without that restoring force, there would be no recovery.
 
 [^grad-general]: More precisely, $$\nabla_x \tfrac{1}{2}x^T A x = \tfrac{1}{2}(A + A^T)x$$. When $$A$$ is symmetric this reduces to $$Ax$$.
 
