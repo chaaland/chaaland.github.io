@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.2"
+__generated_with = "0.23.5"
 app = marimo.App(width="medium")
 
 
@@ -56,7 +56,7 @@ def f_tilted_ellipse(x: float, y: float) -> float:
 @app.function
 def f_periodic(x: float, y: float) -> float:
     import math
-    return math.sin(x) * math.sin(y) - 0.5
+    return math.sin(math.pi * x) * math.sin(math.pi * y) - 0.5
 
 
 @app.cell
@@ -128,7 +128,7 @@ def _(Point: "TypeAlias", ScalarField: "TypeAlias", Segment: "TypeAlias", np):
 
 
 @app.cell
-def _(
+def ellipse_inset(
     GRID_LINE_COLOR,
     INSIDE_COLOR,
     OUTSIDE_COLOR,
@@ -305,6 +305,69 @@ def _(
     _ax.set_ylim(-2.3, 2.3)
     _ax.grid(True, linestyle=":", linewidth=0.5, color="gray", alpha=0.3)
     mo.hstack([_fig, n_slider], align="center", justify="start")
+    return
+
+
+@app.cell
+def _(INSIDE_COLOR, OUTSIDE_COLOR, plt):
+    _cx0_s, _cx1_s, _cy0_s, _cy1_s = -1.0, 1.0, -1.0, 1.0
+    _corners_s = [(_cx0_s, _cy0_s), (_cx1_s, _cy0_s), (_cx1_s, _cy1_s), (_cx0_s, _cy1_s)]
+    _fv_s = [f_tilted_ellipse(x, y) for x, y in _corners_s]
+
+    _cr_s = []
+    for _k in range(4):
+        _nk = (_k + 1) % 4
+        _fa_s, _fb_s = _fv_s[_k], _fv_s[_nk]
+        if (_fa_s > 0) != (_fb_s > 0):
+            _t_s = _fa_s / (_fa_s - _fb_s)
+            _cr_s.append((
+                _corners_s[_k][0] + _t_s * (_corners_s[_nk][0] - _corners_s[_k][0]),
+                _corners_s[_k][1] + _t_s * (_corners_s[_nk][1] - _corners_s[_k][1]),
+            ))
+
+    _pairings = [
+        ([(_cr_s[0], _cr_s[1]), (_cr_s[2], _cr_s[3])], "Option A: adjacent pairing\n(inside connected through center)"),
+        ([(_cr_s[0], _cr_s[3]), (_cr_s[1], _cr_s[2])], "Option B: skip pairing\n(inside splits into two pockets)"),
+    ]
+
+    _c_ha_s = ["right", "left",  "left",  "right"]
+    _c_va_s = ["top",   "top",   "bottom", "bottom"]
+    _c_dx_s = [-0.12,   0.12,    0.12,   -0.12]
+    _c_dy_s = [-0.15,  -0.15,    0.15,    0.15]
+
+    _fig_amb, _axes_amb = plt.subplots(1, 2, figsize=(10, 5))
+    for _ax_amb, (_segs_amb, _title_amb) in zip(_axes_amb, _pairings):
+        _ax_amb.plot(
+            [c[0] for c in _corners_s] + [_corners_s[0][0]],
+            [c[1] for c in _corners_s] + [_corners_s[0][1]],
+            color="#555555", linewidth=1.5, zorder=2,
+        )
+        for _k_amb, ((_px, _py), _fval) in enumerate(zip(_corners_s, _fv_s)):
+            _col = INSIDE_COLOR if _fval < 0 else OUTSIDE_COLOR
+            _ax_amb.plot(_px, _py, "o", color=_col, markersize=13, zorder=5, clip_on=False)
+            _ax_amb.text(
+                _px + _c_dx_s[_k_amb], _py + _c_dy_s[_k_amb],
+                f"$f({_px:.0f},\\ {_py:.0f}) = {_fval:.2f}$",
+                ha=_c_ha_s[_k_amb], va=_c_va_s[_k_amb], fontsize=9, color=_col, fontweight="bold",
+            )
+        for _px, _py in _cr_s:
+            _ax_amb.plot(_px, _py, "D", color=INSIDE_COLOR, markersize=9, zorder=6,
+                         markeredgecolor="white", markeredgewidth=0.8)
+        for _p1_amb, _p2_amb in _segs_amb:
+            _ax_amb.plot([_p1_amb[0], _p2_amb[0]], [_p1_amb[1], _p2_amb[1]],
+                         color=INSIDE_COLOR, linewidth=2.5, zorder=4)
+        _ax_amb.set_aspect("equal")
+        _ax_amb.set_xlim(_cx0_s - 1.5, _cx1_s + 1.5)
+        _ax_amb.set_ylim(_cy0_s - 1.5, _cy1_s + 1.5)
+        _ax_amb.set_title(_title_amb, fontsize=10)
+        _ax_amb.spines[["top", "right"]].set_visible(False)
+        _ax_amb.grid(True, linestyle=":", linewidth=0.5, color="gray", alpha=0.3)
+        _ax_amb.set_xlabel("x")
+        _ax_amb.set_ylabel("y")
+
+    _fig_amb.suptitle("Case 10 (1010₂) — saddle ambiguity", fontsize=12, fontweight="bold")
+    _fig_amb.tight_layout()
+    _fig_amb
     return
 
 
@@ -543,7 +606,7 @@ def _(
     plt,
 ):
     _n = n_slider_periodic.value
-    _lim = 2 * np.pi
+    _lim = 3.0
     _xs = np.linspace(-_lim, _lim, _n)
     _ys = np.linspace(-_lim, _lim, _n)
     _fg, _segs = march_squares(_xs, _ys, f_periodic)
@@ -555,7 +618,7 @@ def _(
     _xd = np.linspace(-_lim, _lim, 500)
     _yd = np.linspace(-_lim, _lim, 500)
     _Xd, _Yd = np.meshgrid(_xd, _yd)
-    _ax.contour(_xd, _yd, np.sin(_Xd) * np.sin(_Yd) - 0.5, levels=[0],
+    _ax.contour(_xd, _yd, np.sin(np.pi * _Xd) * np.sin(np.pi * _Yd) - 0.5, levels=[0],
                 colors=[REFERENCE_COLOR], linewidths=1, linestyles="--", alpha=0.6)
 
     for _xi in _xs:
@@ -581,7 +644,7 @@ def _(
     _ax.set_aspect("equal")
     _ax.set_xlabel("x")
     _ax.set_ylabel("y")
-    _ax.set_title(rf"Square marching — {_n}×{_n} grid ($\sin x \cdot \sin y = \frac{{1}}{{2}}$)")
+    _ax.set_title(rf"Square marching — {_n}×{_n} grid ($\sin(\pi x) \cdot \sin(\pi y) = \frac{{1}}{{2}}$)")
     _ax.spines[["top", "right"]].set_visible(False)
     _ax.set_xlim(-_lim - 0.3, _lim + 0.3)
     _ax.set_ylim(-_lim - 0.3, _lim + 0.3)
