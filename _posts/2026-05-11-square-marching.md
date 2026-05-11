@@ -2,7 +2,7 @@
 title: "Marching Squares"
 categories:
   - Algorithms
-date: 2026-05-01 19:00:00 +0000
+date: 2026-05-11 19:00:00 +0000
 mathjax: true
 tags:
   - Algorithms
@@ -22,7 +22,7 @@ $$
 $$
 
 Informally, this corresponds to slicing the surface with a horizontal plane at height $$c$$ and graphing the curve that the intersection traces out onto the 2D plane.
-They are essentially a 2D projection of 3D surface where the height information is encoded in the curve itself (i.e. distinct curves have distinct heights).
+They are essentially a 2D projection of a 3D surface where the height information is encoded in the curve itself (i.e. distinct curves have distinct heights).
 
 Figure 1 shows the level sets of the function $$f(x,y) = \sin(\pi x)\sin(\pi y)$$.
 
@@ -44,7 +44,7 @@ It turns out there is a simple and elegant algorithm for drawing level sets with
 
 ## Paraboloid Level Sets
 
-Consider the function $$f(x,y) = x^2/4 + y^2$$.
+We work with $$f(x,y) = x^2/4 + y^2$$ for the rest of this post because its level sets have a closed form we can compare against.
 The level sets take the form
 
 $$
@@ -82,22 +82,22 @@ Figure 3 shows a 4 by 4 grid for the level set $$x^2/4+y^2=1$$.
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 3: A 4×4 grid covering the domain. Blue corners lie inside the c = 1 ellipse (f(x,y) &lt; 1); grey corners lie outside. The dashed curve is the exact level set.</figcaption>
 </div>
 
-The python code below shows how to implement this subroutine.
+The Python code below shows how to implement this subroutine.
 
 {% highlight python %}
 import numpy as np
 
 def f(x: float, y: float) -> float:
-    return x**2 / 4 + y**2 - 1
+    return x**2 / 4 + y**2
 
-def label_corners(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
-    """Return a boolean grid where True means the corner is inside (f < 0)."""
-    return np.array([[f(x, y) < 0 for x in xs] for y in ys])
+def label_corners(xs: np.ndarray, ys: np.ndarray, c: float) -> np.ndarray:
+    """Return a boolean grid where True means the corner is inside (f < c)."""
+    return np.array([[f(x, y) < c for x in xs] for y in ys])
 
 xs = np.linspace(-3, 3, 5)   # 5 points → 4×4 grid of cells
 ys = np.linspace(-2, 2, 5)
 
-inside = label_corners(xs, ys)
+inside = label_corners(xs, ys, c=1)
 {% endhighlight %}
 
 The next part of the algorithm is to examine each cell and determine if there are any edges where the level set crosses.
@@ -112,29 +112,30 @@ y_{cross} &= \frac{c-f_b}{f_a - f_b} y_a + \left(1-\frac{c - f_b}{f_a - f_b}\rig
 \end{align*}
 $$
 
-This is a weighted averaged of the $$x$$ and $$y$$-coordinates, weighted by how close $$c$$ is to the corresponding values of $$f$$ at each corner.
-We can easily enumerate the crossings for a given cell with the following python code
+This is a weighted average of the $$x$$ and $$y$$-coordinates, weighted by how close $$c$$ is to the corresponding values of $$f$$ at each corner.
+We can easily enumerate the crossings for a given cell with the following Python code
 
 {% highlight python %}
 from typing import TypeAlias
 
 Point: TypeAlias = tuple[float, float]
 
-def find_crossings(corners: list[Point], fvals: list[float]) -> list[Point]:
+def find_crossings(corners: list[Point], fvals: list[float], c: float) -> list[Point]:
     """Return the edge crossing points for one cell of the marching squares grid."""
     crossings = []
     for k in range(4):
         nk = (k + 1) % 4
         fa, fb = fvals[k], fvals[nk]
-        if (fa > 0) != (fb > 0):            # edge straddles the level set
-            t = fa / (fa - fb)              # interpolation parameter ∈ (0, 1)
+        if (fa > c) != (fb > c):            # edge straddles the level set
             xa, ya = corners[k]
             xb, yb = corners[nk]
-            crossings.append((xa + t * (xb - xa), ya + t * (yb - ya)))
+            w = (c - fb) / (fa - fb)        # weight for corner a; (1-w) for corner b
+            crossings.append((w * xa + (1 - w) * xb, w * ya + (1 - w) * yb))
     return crossings
 {% endhighlight %}
 
-## Linear Interpolation on Crossing Edges
+If the cell has 2 crossings, then we connect the two points with a line and this becomes our approximation of the level set's trajectory through the current cell.
+Figure 4 illustrates approximating the ellipse level sets using a coarse 4 by 4 grid of cells.
 
 <style>
 #sm-widget { max-width: 100%; }
@@ -148,19 +149,135 @@ def find_crossings(corners: list[Point], fvals: list[float]) -> list[Point]:
   <div class="sm-panels">
     <div class="sm-panel">
       <svg class="widget-plot" id="sm-left-svg" viewBox="0 0 300 260" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="sm-panel-title">5×5 grid — click a cell</div>
+      <div class="sm-panel-title">4×4 grid of cells — click a cell</div>
     </div>
     <div class="sm-panel">
       <svg class="widget-plot" id="sm-right-svg" viewBox="0 0 300 260" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="sm-panel-title">Cell detail</div>
     </div>
   </div>
-  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Click any cell in the left panel to inspect it. Blue dots are inside the ellipse (f &lt; 0), grey dots are outside. Diamonds mark where the contour crosses each edge; the t value gives the interpolation parameter along that edge.</figcaption>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Click any cell in the left panel to inspect it. Blue dots are inside the ellipse (f &lt; 1), grey dots are outside. Diamonds mark where the contour crosses each edge; the w value gives the weight assigned to that corner in the linear interpolation.</figcaption>
 </div>
+
+Notice how each cell has either zero or one line segment.
+But what about more complicated level sets?
+What other configurations could occur?
 
 ## The Saddle Ambiguity
 
-## Examples and Convergence
+Since each corner can have a value either above or below the level set value (i.e. gray or blue), and there are 4 corners, there are $$2^4=16$$ different configurations.
+However, because of symmetry, there are only 5 distinct cases that need to be enumerated which are shown in Figure 5.
+
+<style>
+#cases-widget { max-width: 100%; }
+</style>
+
+<div class="widget-container" id="cases-widget">
+  <svg class="widget-plot" id="cases-svg" viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet"></svg>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 5: The five crossing cases for a marching squares cell, with one representative shown for each. The 2<sup>4</sup> = 16 total corner configurations group into these 5 cases: all corners the same (0 crossings), one inside corner (2 crossings), two adjacent inside corners (2 crossings), three inside corners (2 crossings), and two diagonally opposite inside corners — the saddle case (4 crossings).</figcaption>
+</div>
+
+The first four of these cases are unambiguous because they either require no line segment or there is exactly one line segment that can be drawn based on the two crossing points.
+However, the fifth case is genuinely ambiguous.
+There are four crossings and two different ways to pair the points to create line segments.
+
+We can resolve this ambiguity by computing $$f(x,y)$$ at the center of the cell.
+Figure 6 shows how each value determines the correct pairing.
+
+<style>
+#saddle-widget { max-width: 100%; }
+</style>
+
+<div class="widget-container" id="saddle-widget">
+  <svg class="widget-plot" id="saddle-svg" viewBox="0 0 480 155" preserveAspectRatio="xMidYMid meet"></svg>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 6: Resolving the saddle ambiguity by sampling f at the cell center. Left: with two diagonally opposite inside corners there are four crossings and two geometrically valid pairings. Middle: if f at the cell center is below c, the two blue corners form one connected interior region and the level set arcs around each grey corner. Right: if f at the cell center is above c, each blue corner is an isolated island and the level set arcs around each separately.</figcaption>
+</div>
+
+Figure 7 shows an ellipse rotated by 45 degrees whose $$c = 1$$ level set requires resolving the saddle ambiguity on a 4×4 grid.
+
+<style>
+#fig7-widget { max-width: 100%; }
+.fig7-panels { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.fig7-panel  { flex: 1; min-width: 280px; }
+.fig7-panel-title { text-align: center; font-size: 0.85rem; color: #8b949e; margin-top: 6px; font-style: italic; }
+@media (max-width: 640px) { .fig7-panels { flex-direction: column; align-items: center; } }
+</style>
+
+<div class="widget-container" id="fig7-widget">
+  <div class="fig7-panels">
+    <div class="fig7-panel">
+      <svg class="widget-plot" id="fig7-left-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="fig7-panel-title">4×4 grid (tilted 45°) — click a cell</div>
+    </div>
+    <div class="fig7-panel">
+      <svg class="widget-plot" id="fig7-right-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="fig7-panel-title">Cell detail</div>
+    </div>
+  </div>
+  <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 7: The grid is for the tilted ellipse f(x,y) = 5x²/8 &minus; 3xy/4 + 5y²/8 = 1 (the c=1 level set of a 45°-rotated ellipse). The center cell is a saddle case: all four edges are crossed. The star marks where f is sampled to resolve the ambiguity; because f(0,0) &lt; 0 the center is inside, so the two inside corners are connected and the level set arcs around each outside corner separately.</figcaption>
+</div>
+
+The Python code below implements the full algorithm
+
+<details>
+<summary>Python Code</summary>
+
+{% highlight python %}
+Segment: TypeAlias = tuple[Point, Point]
+
+def resolve_saddle(
+    corners: list[Point], fvals: list[float], crossings: list[Point], c: float
+) -> list[Segment]:
+    """Resolve the 4-crossing saddle ambiguity by sampling the cell center."""
+    cx = sum(p[0] for p in corners) / 4
+    cy = sum(p[1] for p in corners) / 4
+    center_inside = f(cx, cy) < c
+    if (fvals[0] < c) == center_inside:
+        # BL and center share status: arc around the two corners of opposite status
+        return [(crossings[0], crossings[1]), (crossings[2], crossings[3])]
+    else:
+        return [(crossings[0], crossings[3]), (crossings[1], crossings[2])]
+
+def marching_squares(xs: np.ndarray, ys: np.ndarray, c: float) -> list[Segment]:
+    """Return all contour segments approximating the level set f(x, y) = c."""
+    segments = []
+    for j in range(len(ys) - 1):
+        for i in range(len(xs) - 1):
+            corners = [
+                (xs[i],     ys[j]    ),  # BL
+                (xs[i + 1], ys[j]    ),  # BR
+                (xs[i + 1], ys[j + 1]),  # TR
+                (xs[i],     ys[j + 1]),  # TL
+            ]
+            fvals = [f(x, y) for x, y in corners]
+            crossings = find_crossings(corners, fvals, c)
+            if len(crossings) == 2:
+                segments.append((crossings[0], crossings[1]))
+            elif len(crossings) == 4:
+                segments.extend(resolve_saddle(corners, fvals, crossings, c))
+    return segments
+
+xs = np.linspace(-3, 3, 50)
+ys = np.linspace(-2, 2, 50)
+segments = marching_squares(xs, ys, c=1)
+{% endhighlight %}
+
+</details>
+
+## Conclusion
+
+Marching squares answers the question "how do you draw the curve defined by $$f(x, y) = c$$ without solving that equation?"
+Surprisingly, the answer is to never solve it at all.
+Marching squares proceeds by 
+
+- classifying each grid corner as inside or outside the level set
+- locating where the boundary crosses each edge by linear interpolation
+- connecting the crossings.
+
+Fourteen of the sixteen possible corner configurations are unambiguous. The one exception is the saddle case, where two diagonally opposite corners are inside and four edge crossings admit two geometrically valid pairings. A single extra evaluation of $$f$$ at the cell center resolves the ambiguity: whichever pairing connects corners that share interior status with the center is correct.
+
+The curve defined by $$f(x, y) = c$$ can be drawn to arbitrary precision using nothing more sophisticated than linear interpolation!
+
 
 [^fn2]: Checking whether $$f(x,y) > c$$ or $$f(x,y) < c$$ is equivalent to checking the sign of $$g(x,y) = f(x,y) - c$$, so without loss of generality the algorithm tracks the zero level set of $$g$$.
 [^fn1]: The $$c = 1$$ ellipse can be parameterized as $$x(\theta) = 2\cos(\theta)$$, $$y(\theta) = \sin(\theta)$$ for $$\theta \in [0, 2\pi)$$; more generally $$x(\theta) = 2\sqrt{c}\cos(\theta)$$, $$y(\theta) = \sqrt{c}\sin(\theta)$$. Most level sets do not admit such a closed form, which is why marching squares works from function evaluations alone.
@@ -495,8 +612,8 @@ def find_crossings(corners: list[Point], fvals: list[float]) -> list[Point]:
   function f(x, y) { return x * x / 4 + y * y - 1; }
 
   function edgeCrossing(ax, ay, fa, bx, by, fb) {
-    var t = fa / (fa - fb);
-    return { x: ax + t * (bx - ax), y: ay + t * (by - ay), t: t };
+    var w = -fb / (fa - fb);   // (c - fb)/(fa - fb) with c=1 already subtracted into f
+    return { x: w * ax + (1 - w) * bx, y: w * ay + (1 - w) * by, w: w };
   }
 
   function cellCrossings(ci, cj) {
@@ -715,7 +832,7 @@ def find_crossings(corners: list[Point], fvals: list[float]) -> list[Point]:
       else if (Math.abs(cr.x - x1) < eps)  { offX = 13; offY =   4; anchor = 'start';  }  // right
       else if (Math.abs(cr.y - y1) < eps)  { offX =  0; offY = -13; anchor = 'middle'; }  // top
       else                                  { offX =-13; offY =   4; anchor = 'end';    }  // left
-      svgR.appendChild(txt('t=' + cr.t.toFixed(3), {
+      svgR.appendChild(txt('w=' + cr.w.toFixed(3), {
         x: px + offX, y: py + offY, 'text-anchor': anchor,
         fill: C_CONTOUR, 'font-size': 9, 'font-family': 'monospace'
       }));
@@ -771,5 +888,571 @@ def find_crossings(corners: list[Point], fvals: list[float]) -> list[Point]:
 
   drawLeft();
   drawRight();
+})();
+
+// ── Figure 5: crossing cases ──────────────────────────────────────────────────
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function txt(content, attrs) { var e = el('text', attrs); e.textContent = content; return e; }
+
+  var svg = document.getElementById('cases-svg');
+  if (!svg) return;
+
+  var C_BG      = '#0d1117';
+  var C_INSIDE  = '#6aabcf';
+  var C_OUTSIDE = '#8b949e';
+  var C_BORDER  = '#444c56';
+  var C_TEXT    = '#c9d1d9';
+
+  // Layout: 5 panels of width PW, each containing a CELL×CELL square
+  var PW = 120, CELL = 72, CX0 = 24, CY0 = 26;
+
+  // SVG coords for each corner: 0=BL, 1=BR, 2=TR, 3=TL (y increases downward)
+  var CX = [CX0,        CX0 + CELL, CX0 + CELL, CX0       ];
+  var CY = [CY0 + CELL, CY0 + CELL, CY0,        CY0       ];
+
+  function cSVG(pi, k)  { return [pi * PW + CX[k], CY[k]]; }
+  function midSVG(pi, e) {
+    var a = cSVG(pi, e), b = cSVG(pi, (e + 1) % 4);
+    return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  }
+
+  var cases = [
+    { title: 'All same',   sub: '0 crossings', ins: [false, false, false, false] },
+    { title: '1 corner',   sub: '2 crossings', ins: [true,  false, false, false] },
+    { title: '2 adjacent', sub: '2 crossings', ins: [true,  true,  false, false] },
+    { title: '3 corners',  sub: '2 crossings', ins: [true,  true,  false, true ] },
+    { title: '2 diagonal', sub: '4 crossings', ins: [true,  false, true,  false] }
+  ];
+
+  svg.appendChild(el('rect', { x: 0, y: 0, width: 600, height: 150, fill: C_BG }));
+
+  cases.forEach(function (cas, pi) {
+    var ins = cas.ins;
+
+    svg.appendChild(txt(cas.title, {
+      x: pi * PW + PW / 2, y: 14,
+      'text-anchor': 'middle', fill: C_TEXT, 'font-size': 9, 'font-family': 'monospace'
+    }));
+
+    svg.appendChild(el('rect', {
+      x: pi * PW + CX0, y: CY0, width: CELL, height: CELL,
+      fill: 'none', stroke: C_BORDER, 'stroke-width': 1
+    }));
+
+    // Collect edges that straddle the level set
+    var crossEdges = [];
+    for (var e = 0; e < 4; e++) if (ins[e] !== ins[(e + 1) % 4]) crossEdges.push(e);
+
+    // Pair crossings into line segments
+    var segs = [];
+    if (crossEdges.length === 2) {
+      segs = [[crossEdges[0], crossEdges[1]]];
+    } else if (crossEdges.length === 4) {
+      if (ins[0]) segs = [[crossEdges[0], crossEdges[3]], [crossEdges[1], crossEdges[2]]];
+      else        segs = [[crossEdges[0], crossEdges[1]], [crossEdges[2], crossEdges[3]]];
+    }
+
+    segs.forEach(function (seg) {
+      var ma = midSVG(pi, seg[0]), mb = midSVG(pi, seg[1]);
+      svg.appendChild(el('line', {
+        x1: ma[0], y1: ma[1], x2: mb[0], y2: mb[1],
+        stroke: C_INSIDE, 'stroke-width': 2
+      }));
+    });
+
+    crossEdges.forEach(function (e) {
+      var m = midSVG(pi, e), d = 4;
+      svg.appendChild(el('polygon', {
+        points: m[0] + ',' + (m[1] - d) + ' ' + (m[0] + d) + ',' + m[1] + ' ' +
+                m[0] + ',' + (m[1] + d) + ' ' + (m[0] - d) + ',' + m[1],
+        fill: C_INSIDE, stroke: C_BG, 'stroke-width': 0.8
+      }));
+    });
+
+    for (var k = 0; k < 4; k++) {
+      var c = cSVG(pi, k);
+      svg.appendChild(el('circle', { cx: c[0], cy: c[1], r: 4, fill: ins[k] ? C_INSIDE : C_OUTSIDE }));
+    }
+
+    svg.appendChild(txt(cas.sub, {
+      x: pi * PW + PW / 2, y: CY0 + CELL + 18,
+      'text-anchor': 'middle', fill: C_OUTSIDE, 'font-size': 9, 'font-family': 'monospace'
+    }));
+  });
+})();
+
+// ── Figure 7: tilted ellipse cell inspector (saddle case) ────────────────────
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function txt(content, attrs) { var e = el('text', attrs); e.textContent = content; return e; }
+
+  // ── math ─────────────────────────────────────────────────────────────────
+  // f(x,y) = 5x²/8 - 3xy/4 + 5y²/8 - 1  (tilted 45° ellipse, semi-axes a=2, b=1)
+  function f(x, y) { return 5*x*x/8 - 3*x*y/4 + 5*y*y/8 - 1; }
+
+  // 4 grid points → 3×3 cells
+  var XS = [-3, -1, 1, 3];
+  var YS = [-3, -1, 1, 3];
+
+  function edgeCrossing(ax, ay, fa, bx, by, fb) {
+    var w = -fb / (fa - fb);  // (c-fb)/(fa-fb) with c=0 (f already shifted by -1)
+    return { x: w * ax + (1 - w) * bx, y: w * ay + (1 - w) * by, w: w };
+  }
+
+  function cellCrossings(ci, cj) {
+    var corners = [
+      [XS[ci],     YS[cj]    ],  // k=0 lower-left
+      [XS[ci + 1], YS[cj]    ],  // k=1 lower-right
+      [XS[ci + 1], YS[cj + 1]], // k=2 upper-right
+      [XS[ci],     YS[cj + 1]]  // k=3 upper-left
+    ];
+    var fv = corners.map(function (c) { return f(c[0], c[1]); });
+    var crossed = [];
+    for (var k = 0; k < 4; k++) {
+      var nk = (k + 1) % 4;
+      if ((fv[k] > 0) !== (fv[nk] > 0)) {
+        var cr = edgeCrossing(corners[k][0], corners[k][1], fv[k],
+                              corners[nk][0], corners[nk][1], fv[nk]);
+        cr.edge = k;  // which edge (0=bottom,1=right,2=top,3=left)
+        crossed.push(cr);
+      }
+    }
+    var mx = (XS[ci] + XS[ci + 1]) / 2;
+    var my = (YS[cj] + YS[cj + 1]) / 2;
+    var centerFval = f(mx, my);
+    var centerIn = centerFval < 0;
+    var segs = [];
+    if (crossed.length === 2) {
+      segs = [[crossed[0], crossed[1]]];
+    } else if (crossed.length === 4) {
+      // asymptotic decider: case 10 (BL+TR inside, BR+TL outside)
+      // fv bits: case = sum of (fv[k]>0)<<k
+      var caseNum = 0;
+      for (var ki = 0; ki < 4; ki++) if (fv[ki] > 0) caseNum += (1 << ki);
+      // case 5 = 0101 (BL+TR outside), case 10 = 1010 (BL+TR inside)
+      // adjacent pairing when (case5) != centerIn
+      if ((caseNum === 5) !== centerIn) {
+        segs = [[crossed[0], crossed[1]], [crossed[2], crossed[3]]];
+      } else {
+        segs = [[crossed[0], crossed[3]], [crossed[1], crossed[2]]];
+      }
+    }
+    return { segs: segs, corners: corners, fv: fv, crossed: crossed,
+             mx: mx, my: my, centerFval: centerFval, centerIn: centerIn };
+  }
+
+  // ── colors ───────────────────────────────────────────────────────────────
+  var C_BG      = '#0d1117';
+  var C_INSIDE  = '#6aabcf';
+  var C_OUTSIDE = '#8b949e';
+  var C_CONTOUR = '#6aabcf';
+  var C_REF     = '#3a4a56';
+  var C_GRID    = '#21262d';
+  var C_SEL     = '#6abf85';
+  var C_TEXT    = '#c9d1d9';
+  var C_CENTER  = '#8b949e';  // star / center annotation
+
+  // ── left panel layout (300×300) ──────────────────────────────────────────
+  var LW = 300, LH = 300;
+  var LPD = { t: 22, r: 15, b: 38, l: 42 };
+  var LPW = LW - LPD.l - LPD.r;
+  var LPH = LH - LPD.t - LPD.b;
+  var LX0 = -3.8, LX1 = 3.8, LY0 = -3.8, LY1 = 3.8;
+  function lx(x) { return LPD.l + (x - LX0) / (LX1 - LX0) * LPW; }
+  function ly(y) { return LPD.t + (LY1 - y) / (LY1 - LY0) * LPH; }
+
+  // ── right panel layout (300×300) ─────────────────────────────────────────
+  var RW = 300, RH = 300;
+  var RPD = { t: 22, r: 20, b: 38, l: 42 };
+  var RPW = RW - RPD.l - RPD.r;
+  var RPH = RH - RPD.t - RPD.b;
+  var rX0, rX1, rY0, rY1;
+  function rx(x) { return RPD.l + (x - rX0) / (rX1 - rX0) * RPW; }
+  function ry(y) { return RPD.t + (rY1 - y) / (rY1 - rY0) * RPH; }
+
+  // ── state ────────────────────────────────────────────────────────────────
+  var selI = 1, selJ = 1;  // center cell by default (the saddle cell)
+
+  // ── DOM ──────────────────────────────────────────────────────────────────
+  var svgL = document.getElementById('fig7-left-svg');
+  var svgR = document.getElementById('fig7-right-svg');
+  if (!svgL || !svgR) return;
+
+  // ── reference ellipse points (tilted 45°) ────────────────────────────────
+  // parametric: rotate (2cosθ, sinθ) by 45° → x=(2cosθ-sinθ)/√2, y=(2cosθ+sinθ)/√2
+  var SQ2 = Math.sqrt(2);
+  function refPt(theta) {
+    return [
+      (2 * Math.cos(theta) - Math.sin(theta)) / SQ2,
+      (2 * Math.cos(theta) + Math.sin(theta)) / SQ2
+    ];
+  }
+
+  // ── draw left ────────────────────────────────────────────────────────────
+  function drawLeft() {
+    svgL.innerHTML = '';
+    svgL.appendChild(el('rect', { x: 0, y: 0, width: LW, height: LH, fill: C_BG }));
+
+    // grid lines
+    XS.forEach(function (x) {
+      svgL.appendChild(el('line', { x1: lx(x), y1: LPD.t, x2: lx(x), y2: LH - LPD.b,
+        stroke: C_GRID, 'stroke-width': 1 }));
+    });
+    YS.forEach(function (y) {
+      svgL.appendChild(el('line', { x1: LPD.l, y1: ly(y), x2: LW - LPD.r, y2: ly(y),
+        stroke: C_GRID, 'stroke-width': 1 }));
+    });
+
+    // clickable cell rects
+    for (var ci = 0; ci < 3; ci++) {
+      for (var cj = 0; cj < 3; cj++) {
+        var isSel = (ci === selI && cj === selJ);
+        var rx0_ = lx(XS[ci]), ry0_ = ly(YS[cj + 1]);
+        var rx1_ = lx(XS[ci + 1]), ry1_ = ly(YS[cj]);
+        var cellRect = el('rect', {
+          x: rx0_, y: ry0_, width: rx1_ - rx0_, height: ry1_ - ry0_,
+          fill: isSel ? 'rgba(106,191,133,0.09)' : 'transparent',
+          stroke: isSel ? C_SEL : 'transparent',
+          'stroke-width': isSel ? 2 : 0,
+          cursor: 'pointer'
+        });
+        (function (i, j, r) {
+          r.addEventListener('click', function () { selI = i; selJ = j; drawLeft(); drawRight(); });
+          r.addEventListener('mouseenter', function () {
+            if (i !== selI || j !== selJ) r.setAttribute('fill', 'rgba(255,255,255,0.05)');
+          });
+          r.addEventListener('mouseleave', function () {
+            if (i !== selI || j !== selJ) r.setAttribute('fill', 'transparent');
+          });
+        })(ci, cj, cellRect);
+        svgL.appendChild(cellRect);
+      }
+    }
+
+    // reference ellipse (dashed)
+    var lepts = [];
+    for (var ti = 0; ti <= 200; ti++) {
+      var pt = refPt(ti / 200 * 2 * Math.PI);
+      lepts.push(lx(pt[0]) + ',' + ly(pt[1]));
+    }
+    svgL.appendChild(el('path', { d: 'M ' + lepts.join(' L '), fill: 'none',
+      stroke: C_REF, 'stroke-width': 1.5, 'stroke-dasharray': '5,3', opacity: 0.8 }));
+
+    // contour segments for all cells
+    for (var si = 0; si < 3; si++) {
+      for (var sj = 0; sj < 3; sj++) {
+        var result = cellCrossings(si, sj);
+        result.segs.forEach(function (seg) {
+          svgL.appendChild(el('line', {
+            x1: lx(seg[0].x), y1: ly(seg[0].y),
+            x2: lx(seg[1].x), y2: ly(seg[1].y),
+            stroke: C_CONTOUR, 'stroke-width': 2.5
+          }));
+        });
+      }
+    }
+
+    // corner dots
+    XS.forEach(function (x) {
+      YS.forEach(function (y) {
+        svgL.appendChild(el('circle', { cx: lx(x), cy: ly(y), r: 3,
+          fill: f(x, y) < 0 ? C_INSIDE : C_OUTSIDE }));
+      });
+    });
+
+    // axes
+    svgL.appendChild(el('line', { x1: LPD.l, y1: LH - LPD.b, x2: LW - LPD.r, y2: LH - LPD.b,
+      stroke: C_OUTSIDE, 'stroke-width': 1 }));
+    svgL.appendChild(el('line', { x1: LPD.l, y1: LPD.t, x2: LPD.l, y2: LH - LPD.b,
+      stroke: C_OUTSIDE, 'stroke-width': 1 }));
+    [-3, 0, 3].forEach(function (v) {
+      var ppx = lx(v);
+      svgL.appendChild(el('line', { x1: ppx, y1: LH - LPD.b, x2: ppx, y2: LH - LPD.b + 4,
+        stroke: C_OUTSIDE, 'stroke-width': 1 }));
+      svgL.appendChild(txt(v, { x: ppx, y: LH - LPD.b + 15, 'text-anchor': 'middle',
+        fill: C_OUTSIDE, 'font-size': 10, 'font-family': 'monospace' }));
+    });
+    [-3, 0, 3].forEach(function (v) {
+      var ppy = ly(v);
+      svgL.appendChild(el('line', { x1: LPD.l - 4, y1: ppy, x2: LPD.l, y2: ppy,
+        stroke: C_OUTSIDE, 'stroke-width': 1 }));
+      svgL.appendChild(txt(v, { x: LPD.l - 7, y: ppy + 4, 'text-anchor': 'end',
+        fill: C_OUTSIDE, 'font-size': 10, 'font-family': 'monospace' }));
+    });
+    svgL.appendChild(txt('x', { x: LPD.l + LPW / 2, y: LH - 4, 'text-anchor': 'middle',
+      fill: C_OUTSIDE, 'font-size': 11, 'font-family': 'monospace' }));
+    var midYL = LPD.t + LPH / 2;
+    svgL.appendChild(txt('y', { x: 10, y: midYL, 'text-anchor': 'middle',
+      fill: C_OUTSIDE, 'font-size': 11, 'font-family': 'monospace',
+      transform: 'rotate(-90,10,' + midYL + ')' }));
+  }
+
+  // ── draw right ───────────────────────────────────────────────────────────
+  function drawRight() {
+    svgR.innerHTML = '';
+
+    var ci = selI, cj = selJ;
+    var x0 = XS[ci], x1 = XS[ci + 1], y0 = YS[cj], y1 = YS[cj + 1];
+    var cellW = x1 - x0, cellH = y1 - y0;
+    rX0 = x0 - 0.6 * cellW;  rX1 = x1 + 0.6 * cellW;
+    rY0 = y0 - 0.6 * cellH;  rY1 = y1 + 0.6 * cellH;
+
+    svgR.appendChild(el('rect', { x: 0, y: 0, width: RW, height: RH, fill: C_BG }));
+
+    // clip path for reference ellipse
+    var clipId = 'fig7-rclip';
+    var defs = el('defs', {});
+    var cp = el('clipPath', { id: clipId });
+    cp.appendChild(el('rect', { x: RPD.l, y: RPD.t, width: RPW, height: RPH }));
+    defs.appendChild(cp);
+    svgR.appendChild(defs);
+
+    // reference ellipse arc (clipped)
+    var repts = [];
+    for (var ti = 0; ti <= 300; ti++) {
+      var pt = refPt(ti / 300 * 2 * Math.PI);
+      repts.push(rx(pt[0]) + ',' + ry(pt[1]));
+    }
+    svgR.appendChild(el('path', { d: 'M ' + repts.join(' L '), fill: 'none',
+      stroke: C_REF, 'stroke-width': 1.5, 'stroke-dasharray': '5,3', opacity: 0.8,
+      'clip-path': 'url(#' + clipId + ')' }));
+
+    // cell border
+    svgR.appendChild(el('rect', {
+      x: rx(x0), y: ry(y1), width: rx(x1) - rx(x0), height: ry(y0) - ry(y1),
+      fill: 'none', stroke: '#444c56', 'stroke-width': 1.5
+    }));
+
+    var result = cellCrossings(ci, cj);
+
+    // contour segments
+    result.segs.forEach(function (seg) {
+      svgR.appendChild(el('line', {
+        x1: rx(seg[0].x), y1: ry(seg[0].y),
+        x2: rx(seg[1].x), y2: ry(seg[1].y),
+        stroke: C_CONTOUR, 'stroke-width': 2.5
+      }));
+    });
+
+    // crossing diamonds + t labels (pushed outward from the cell boundary)
+    var eps = 0.01;
+    result.crossed.forEach(function (cr) {
+      var ppx = rx(cr.x), ppy = ry(cr.y), d = 6;
+      svgR.appendChild(el('polygon', {
+        points: ppx + ',' + (ppy - d) + ' ' + (ppx + d) + ',' + ppy + ' ' +
+                ppx + ',' + (ppy + d) + ' ' + (ppx - d) + ',' + ppy,
+        fill: C_CONTOUR, stroke: C_BG, 'stroke-width': 1.2
+      }));
+      // push label outward from whichever edge the crossing sits on
+      var offX, offY, anchor;
+      if (Math.abs(cr.y - y0) < eps)      { offX =  0; offY =  17; anchor = 'middle'; }  // bottom
+      else if (Math.abs(cr.x - x1) < eps) { offX = 14; offY =   4; anchor = 'start';  }  // right
+      else if (Math.abs(cr.y - y1) < eps) { offX =  0; offY = -13; anchor = 'middle'; }  // top
+      else                                 { offX =-14; offY =   4; anchor = 'end';    }  // left
+      svgR.appendChild(txt('w=' + cr.w.toFixed(3), {
+        x: ppx + offX, y: ppy + offY, 'text-anchor': anchor,
+        fill: C_CONTOUR, 'font-size': 9, 'font-family': 'monospace'
+      }));
+    });
+
+    // corner dots + f-value labels (outward from each corner)
+    var cornerOffsets = [
+      { dx: -14, dy: 17, anchor: 'end'   },  // k=0 lower-left
+      { dx:  14, dy: 17, anchor: 'start' },  // k=1 lower-right
+      { dx:  14, dy:-12, anchor: 'start' },  // k=2 upper-right
+      { dx: -14, dy:-12, anchor: 'end'   }   // k=3 upper-left
+    ];
+    result.corners.forEach(function (c, k) {
+      var fval = result.fv[k];
+      var inside = fval < 0;
+      var ppx = rx(c[0]), ppy = ry(c[1]);
+      svgR.appendChild(el('circle', { cx: ppx, cy: ppy, r: 4,
+        fill: inside ? C_INSIDE : C_OUTSIDE }));
+      var off = cornerOffsets[k];
+      svgR.appendChild(txt((fval >= 0 ? '+' : '') + fval.toFixed(2), {
+        x: ppx + off.dx, y: ppy + off.dy, 'text-anchor': off.anchor,
+        fill: inside ? C_INSIDE : C_OUTSIDE,
+        'font-size': 9, 'font-family': 'monospace', 'font-weight': 'bold'
+      }));
+    });
+
+    // asymptotic decider: star at cell center + annotation
+    if (result.crossed.length === 4) {
+      var cx = rx(result.mx), cy = ry(result.my);
+      // draw a 5-pointed star using a polygon with 10 points
+      var starPts = [];
+      for (var si = 0; si < 10; si++) {
+        var angle = si * Math.PI / 5 - Math.PI / 2;
+        var r = (si % 2 === 0) ? 7 : 3;
+        starPts.push((cx + r * Math.cos(angle)).toFixed(1) + ',' +
+                     (cy + r * Math.sin(angle)).toFixed(1));
+      }
+      svgR.appendChild(el('polygon', {
+        points: starPts.join(' '),
+        fill: result.centerIn ? C_INSIDE : C_OUTSIDE,
+        stroke: C_BG, 'stroke-width': 0.8
+      }));
+      // annotation label
+      var label = 'f(' + result.mx.toFixed(1) + ',' + result.my.toFixed(1) + ')=' +
+                  (result.centerFval >= 0 ? '+' : '') + result.centerFval.toFixed(2) +
+                  (result.centerIn ? ' (in)' : ' (out)');
+      // place label to lower-right of center, with a short leader line
+      var lx2 = cx + 14, ly2 = cy + 22;
+      svgR.appendChild(el('line', { x1: cx + 5, y1: cy + 5, x2: lx2 - 2, y2: ly2 - 8,
+        stroke: C_CENTER, 'stroke-width': 0.8 }));
+      svgR.appendChild(txt(label, {
+        x: lx2, y: ly2, 'text-anchor': 'start',
+        fill: C_CENTER, 'font-size': 8.5, 'font-family': 'monospace'
+      }));
+    }
+
+    // axes
+    svgR.appendChild(el('line', { x1: RPD.l, y1: RH - RPD.b, x2: RW - RPD.r, y2: RH - RPD.b,
+      stroke: C_OUTSIDE, 'stroke-width': 1 }));
+    svgR.appendChild(el('line', { x1: RPD.l, y1: RPD.t, x2: RPD.l, y2: RH - RPD.b,
+      stroke: C_OUTSIDE, 'stroke-width': 1 }));
+    [x0, x1].forEach(function (v) {
+      var ppx = rx(v);
+      svgR.appendChild(el('line', { x1: ppx, y1: RH - RPD.b, x2: ppx, y2: RH - RPD.b + 4,
+        stroke: C_OUTSIDE, 'stroke-width': 1 }));
+      svgR.appendChild(txt(v, { x: ppx, y: RH - RPD.b + 15, 'text-anchor': 'middle',
+        fill: C_OUTSIDE, 'font-size': 10, 'font-family': 'monospace' }));
+    });
+    [y0, y1].forEach(function (v) {
+      var ppy = ry(v);
+      svgR.appendChild(el('line', { x1: RPD.l - 4, y1: ppy, x2: RPD.l, y2: ppy,
+        stroke: C_OUTSIDE, 'stroke-width': 1 }));
+      svgR.appendChild(txt(v, { x: RPD.l - 7, y: ppy + 4, 'text-anchor': 'end',
+        fill: C_OUTSIDE, 'font-size': 10, 'font-family': 'monospace' }));
+    });
+    svgR.appendChild(txt('x', { x: RPD.l + RPW / 2, y: RH - 4, 'text-anchor': 'middle',
+      fill: C_OUTSIDE, 'font-size': 11, 'font-family': 'monospace' }));
+    var midYR = RPD.t + RPH / 2;
+    svgR.appendChild(txt('y', { x: 10, y: midYR, 'text-anchor': 'middle',
+      fill: C_OUTSIDE, 'font-size': 11, 'font-family': 'monospace',
+      transform: 'rotate(-90,10,' + midYR + ')' }));
+  }
+
+  drawLeft();
+  drawRight();
+})();
+
+// ── Figure 6: saddle ambiguity resolution ─────────────────────────────────────
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function txt(content, attrs) { var e = el('text', attrs); e.textContent = content; return e; }
+
+  var svg = document.getElementById('saddle-svg');
+  if (!svg) return;
+
+  var C_BG      = '#0d1117';
+  var C_INSIDE  = '#6aabcf';
+  var C_OUTSIDE = '#8b949e';
+  var C_BORDER  = '#444c56';
+  var C_TEXT    = '#c9d1d9';
+  var C_ALT     = '#c09035';  // amber for the alternate pairing
+
+  // Layout: 3 panels of width PW, each with a CELL×CELL square
+  var PW = 160, CELL = 90, CX0 = 35, CY0 = 30;
+
+  // Saddle configuration: BL=inside, BR=outside, TR=inside, TL=outside
+  var ins = [true, false, true, false];
+
+  // Corner SVG coords: 0=BL, 1=BR, 2=TR, 3=TL  (y increases downward)
+  var CX = [CX0, CX0 + CELL, CX0 + CELL, CX0       ];
+  var CY = [CY0 + CELL, CY0 + CELL, CY0,  CY0       ];
+
+  function cSVG(pi, k)   { return [pi * PW + CX[k], CY[k]]; }
+  function midSVG(pi, e) { var a = cSVG(pi, e), b = cSVG(pi, (e+1)%4); return [(a[0]+b[0])/2, (a[1]+b[1])/2]; }
+  function ctrSVG(pi)    { return [pi * PW + CX0 + CELL/2, CY0 + CELL/2]; }
+
+  svg.appendChild(el('rect', { x: 0, y: 0, width: 480, height: 155, fill: C_BG }));
+
+  var panels = [
+    { title: 'Saddle case',    sub: 'which pairing?', centerIn: null  },
+    { title: 'Center inside',  sub: 'f(center) < c',  centerIn: true  },
+    { title: 'Center outside', sub: 'f(center) > c',  centerIn: false }
+  ];
+
+  panels.forEach(function (pan, pi) {
+    svg.appendChild(txt(pan.title, {
+      x: pi * PW + PW / 2, y: 16, 'text-anchor': 'middle',
+      fill: C_TEXT, 'font-size': 9.5, 'font-family': 'monospace'
+    }));
+    svg.appendChild(el('rect', {
+      x: pi * PW + CX0, y: CY0, width: CELL, height: CELL,
+      fill: 'none', stroke: C_BORDER, 'stroke-width': 1
+    }));
+
+    if (pan.centerIn === null) {
+      // Both pairings shown dashed: blue = arcs around blue corners, amber = arcs around grey corners
+      [[0,3],[1,2]].forEach(function (seg) {
+        var ma = midSVG(pi, seg[0]), mb = midSVG(pi, seg[1]);
+        svg.appendChild(el('line', { x1:ma[0],y1:ma[1],x2:mb[0],y2:mb[1],
+          stroke: C_INSIDE, 'stroke-width': 1.5, 'stroke-dasharray': '4,3' }));
+      });
+      [[0,1],[2,3]].forEach(function (seg) {
+        var ma = midSVG(pi, seg[0]), mb = midSVG(pi, seg[1]);
+        svg.appendChild(el('line', { x1:ma[0],y1:ma[1],x2:mb[0],y2:mb[1],
+          stroke: C_ALT, 'stroke-width': 1.5, 'stroke-dasharray': '4,3' }));
+      });
+      var ctr = ctrSVG(pi);
+      svg.appendChild(txt('?', { x: ctr[0], y: ctr[1] + 5, 'text-anchor': 'middle',
+        fill: C_TEXT, 'font-size': 16, 'font-family': 'monospace', 'font-weight': 'bold' }));
+    } else {
+      // Center inside  → interior connects the two blue corners → arc around each grey corner
+      // Center outside → blue corners are isolated islands    → arc around each blue corner
+      var segs = pan.centerIn ? [[0,1],[2,3]] : [[0,3],[1,2]];
+      segs.forEach(function (seg) {
+        var ma = midSVG(pi, seg[0]), mb = midSVG(pi, seg[1]);
+        svg.appendChild(el('line', { x1:ma[0],y1:ma[1],x2:mb[0],y2:mb[1],
+          stroke: C_INSIDE, 'stroke-width': 2 }));
+      });
+      var ctr = ctrSVG(pi);
+      svg.appendChild(el('circle', { cx: ctr[0], cy: ctr[1], r: 4.5,
+        fill: pan.centerIn ? C_INSIDE : C_OUTSIDE, stroke: C_BG, 'stroke-width': 0.8 }));
+    }
+
+    // Crossing diamonds on all 4 edges
+    for (var e = 0; e < 4; e++) {
+      var m = midSVG(pi, e), d = 4;
+      svg.appendChild(el('polygon', {
+        points: m[0]+','+(m[1]-d)+' '+(m[0]+d)+','+m[1]+' '+m[0]+','+(m[1]+d)+' '+(m[0]-d)+','+m[1],
+        fill: C_INSIDE, stroke: C_BG, 'stroke-width': 0.8
+      }));
+    }
+    // Corner dots
+    for (var k = 0; k < 4; k++) {
+      var c = cSVG(pi, k);
+      svg.appendChild(el('circle', { cx: c[0], cy: c[1], r: 5,
+        fill: ins[k] ? C_INSIDE : C_OUTSIDE }));
+    }
+
+    svg.appendChild(txt(pan.sub, {
+      x: pi * PW + PW / 2, y: CY0 + CELL + 18, 'text-anchor': 'middle',
+      fill: C_OUTSIDE, 'font-size': 9, 'font-family': 'monospace'
+    }));
+  });
 })();
 </script>

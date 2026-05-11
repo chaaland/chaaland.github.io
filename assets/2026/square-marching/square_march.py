@@ -372,7 +372,7 @@ def _(INSIDE_COLOR, OUTSIDE_COLOR, plt):
 
 
 @app.cell
-def _(
+def rotate_ellipse_zoom(
     GRID_LINE_COLOR,
     INSIDE_COLOR,
     OUTSIDE_COLOR,
