@@ -73,33 +73,39 @@ $$
 \end{equation}
 $$
 
-Now that we have a simple 1D problem, we can graph an example to see what the objective might look like.
+Now that we have a simple 1D problem, we can graph an example to see what the objective looks like.
+With $$N=1$$, the objective is just a single absolute value term with a kink at $$\beta = r_1/x_1$$.
 
-<figure class="half">
+<figure style="max-width: 75%; margin: 0 auto;">
     <a href="/assets/2026/golden-section/images/1d-abs-deviation-00.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-00.png"></a>
-    <a href="/assets/2026/golden-section/images/1d-abs-deviation-01.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-01.png"></a>
-    <figcaption>Figure 1: Left: individual absolute value terms. Right: their mean (the objective to minimize), showing kinks at the zeros of each term.</figcaption>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 1: N = 1: the objective is a single absolute value term (grey) whose mean (black) is identical to it, with one kink.</figcaption>
 </figure>
 
-One observation worth noting from Figure 1 is that the graph of the average of the absolute values has non-differentiable points ("kinks") at the vertices of the original absolute value terms.
+With $$N=2$$, the objective becomes the mean of two such terms.
 
-Figure 2 shows the average of several absolute value terms of the form $$\lvert \beta_k x_{ik} - y_i\rvert $$ and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
+<figure style="max-width: 75%; margin: 0 auto;">
+    <a href="/assets/2026/golden-section/images/1d-abs-deviation-01.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-01.png"></a>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 2: N = 2: two absolute value terms (grey) and their mean (black). The mean is piecewise linear with a kink at the zero of each term.</figcaption>
+</figure>
+
+One observation worth noting is that the graph of the average of the absolute values has non-differentiable points ("kinks") at the vertices of the original absolute value terms.
+Figure 3 shows the objective with $$N=6$$ and $$N=7$$ data points and we can see that the kinks in the graph of the mean occur at exactly the non-differentiable points of each absolute value term.
 
 <figure class="half">
-    <a href="/assets/2026/golden-section/images/1d-abs-deviation-04.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-04.png"></a>
+    <a href="/assets/2026/golden-section/images/1d-abs-deviation-05.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-05.png"></a>
     <a href="/assets/2026/golden-section/images/1d-abs-deviation-06.png"><img src="/assets/2026/golden-section/images/1d-abs-deviation-06.png"></a>
-    <figcaption>Figure 2: Notice how the kinks in the black curve exactly coincide with the vertices of the absolute terms that make it up.</figcaption>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 3: N = 6 and N = 7: the kinks in the black curve exactly coincide with the vertices of the absolute value terms that make it up.</figcaption>
 </figure>
 
 Since these kinks occur at the non-differentiable points of each absolute value term, they occur exactly when $$\beta_k x_{ik} - r_i = 0$$.
 More precisely, kinks occur at values when $$\beta_k = r_i / x_{ik}$$ for each $$i=1,\ldots, N$$.
 
-From the figure, it should be clear that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
+From the figures, it should be clear that the minimum will always lie between $$\min\{r_1/x_1, \ldots, r_n/x_n\}$$ and $$\max\{r_1/x_1, \ldots, r_n/x_n\}$$.
 If the objective is convex[^fn2] and we can bound the minimizer $$\beta_k^\star$$, can we come up with an algorithm to iteratively shrink the bounds on the minimizer?
 
-# Interval Shrinking
+# Three-Point Search
 
-We can start by initializing our algorithm with
+Since the minimum is guaranteed to lie between the smallest and largest knot, we initialize our search with
 
 $$
 \begin{align*}
@@ -108,9 +114,35 @@ b &=\max\{r_1/x_1, \ldots, r_n/x_n\}.
 \end{align*}
 $$
 
-From the discussion above, it is guaranteed that $$a \le \beta^\star_k \le b$$.
+It is guaranteed that $$a \le \beta^\star_k \le b$$.
 
-In order to iteratively shrink our interval $$[a, b]$$ in which the solution lies, we need to evaluate the objective at some points inside of the interval.
+A natural first attempt is to place a single interior probe $$x_1$$ inside the bracket $$[a, b]$$.
+Together with the two endpoints, this gives three points from which to infer where the minimum lies.
+Suppose we evaluate the objective at $$a < x_1 < b$$ and observe their function values.
+
+<figure style="max-width: 75%; margin: 0 auto;">
+    <a href="/assets/2026/golden-section/images/three_points_probes_only.png"><img src="/assets/2026/golden-section/images/three_points_probes_only.png"></a>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Three probe points with observed function values. Since f(x₁) is the smallest, the minimum lies somewhere in [a, b].</figcaption>
+</figure>
+
+Since $$f(x_1) < f(a)$$ and $$f(x_1) < f(b)$$, we know the minimum is somewhere in $$[a, b]$$.
+But do the the three values tell us how we can safely discard either $$[a, x_1]$$ or $$[x_1, b]$$?
+
+As Figure 5 shows, the answer is no.
+The same three probe values are consistent with a function whose minimum lies to the left of $$x_1$$ _and_ with a function whose minimum lies to the right of $$x_1$$.
+
+<figure class="half">
+    <a href="/assets/2026/golden-section/images/three_points_left_min.png"><img src="/assets/2026/golden-section/images/three_points_left_min.png"></a>
+    <a href="/assets/2026/golden-section/images/three_points_right_min.png"><img src="/assets/2026/golden-section/images/three_points_right_min.png"></a>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 5: Two different convex functions that agree on all three probe values yet have their minima in different subintervals.</figcaption>
+</figure>
+
+Because we cannot rule out either subinterval, three points are not enough to shrink the bracket past $$[a, b]$$.
+To make progress we need a fourth evaluation point.
+
+# Four-Point Search
+
+In order to iteratively shrink our interval $$[a, b]$$ in which the solution lies, we need to evaluate the objective at two points inside of the interval.
 We can define two new points to evaluate inside the interval by taking an offset from each of the endpoints.
 
 Letting $$L=b-a$$, the length of the bounding interval, we can define
@@ -124,24 +156,39 @@ $$
 
 where $$\rho \in (0.5, 1)$$ ensures $$a < x_1 < x_2 < b$$.
 
-There are three possible configurations we can end up in as shown in Figure 3.
+There are three possible configurations we can end up in.
+Figure 6 shows the four probe values $$f(a)$$, $$f(x_1)$$, $$f(x_2)$$, $$f(b)$$ for each case.
+
+<figure class="third">
+    <a href="/assets/2026/golden-section/images/case_1_bare.png"><img src="/assets/2026/golden-section/images/case_1_bare.png"></a>
+    <a href="/assets/2026/golden-section/images/case_2_bare.png"><img src="/assets/2026/golden-section/images/case_2_bare.png"></a>
+    <a href="/assets/2026/golden-section/images/case_3_bare.png"><img src="/assets/2026/golden-section/images/case_3_bare.png"></a>
+    <figcaption>Figure 6: The four probe values for three distinct placements of x₁ and x₂ within [a, b].</figcaption>
+</figure>
+
+In the left-most plot, the minimum must lie in $$[x_1, x_2]$$ or $$[x_2, b]$$.
+In the middle plot, the minimum must lie in $$[x_1, x_2]$$ or $$[x_2, b]$$.
+And in the right-most plot, the minimum must lie in $$[a, x_1]$$ or $$[x_1, x_2]$$
+
+Figure 7 shows the same three cases with the underlying objective revealed.
+
 <figure class="third">
     <a href="/assets/2026/golden-section/images/case_1.png"><img src="/assets/2026/golden-section/images/case_1.png"></a>
     <a href="/assets/2026/golden-section/images/case_2.png"><img src="/assets/2026/golden-section/images/case_2.png"></a>
     <a href="/assets/2026/golden-section/images/case_3.png"><img src="/assets/2026/golden-section/images/case_3.png"></a>
-    <figcaption>Figure 3: The three distinct cases of the two interior points falling to the left of the minimum, straddling the minimum, and to the right of the minimum.</figcaption>
+    <figcaption>Figure 7: The three distinct cases of the two interior points falling to the left of the minimum, straddling the minimum, and to the right of the minimum.</figcaption>
 </figure>
 
 At the start of the algorithm, we'll have found $$a$$ and $$b$$ in $$\mathcal{O}(N)$$ time.
 For a given $$\rho$$, we can then compute $$x_1$$ and $$x_2$$.
 Suppose we evaluate the objective at these new points, and find $$f(x_1) < f(x_2)$$.
 
-Looking at the first subplot of Figure 3, we can see that this scenario would be impossible.
-For a convex function, when both interior points are to the left of the minimum, the function is decreasing (negative subgradient), so $$f(x_1) > f(x_2)$$..
+Looking at the first subplot of Figure 6, we can see that this scenario would be impossible.
+For a convex function, when both interior points are to the left of the minimum, the function is decreasing (negative subgradient), so $$f(x_1) > f(x_2)$$.
 
 However, both the second and third subplot are potentially consistent with the observation that $$f(x_1) < f(x_2)$$.
 If we _knew_ we were in situation two, we could shrink the interval from $$[a,b]$$ down to $$[x_1, x_2]$$.
-On the other hand, if we _knew_ were in situation three, we could shrink the interval to $$[a, x_1]$$.
+On the other hand, if we _knew_ we were in situation three, we could shrink the interval to $$[a, x_1]$$.
 
 Since we cannot distinguish between cases 2 and 3, we must retain all points consistent with either case, namely the union of the two intervals, $$[a, x_2]$$.
 
@@ -207,9 +254,17 @@ What if we could choose $$\rho$$ so that we could reuse the objective evaluation
 
 # Golden-Section
 
-To avoid having to compute the objective function at _two_ new points each iteration, we can attempt to set $$\rho$$ so that one of our interior points ($$x_1$$ or $$x_2$$) becomes an interior point in the _next_ iteration.
+Figure 8 shows that for an arbitrary $$\rho$$, we need to evaluate _two_ new interior points.
 
-At initialization we have
+<figure class="half">
+    <a href="/assets/2026/golden-section/images/rho_06.png"><img src="/assets/2026/golden-section/images/rho_06.png"></a>
+    <a href="/assets/2026/golden-section/images/rho_07.png"><img src="/assets/2026/golden-section/images/rho_07.png"></a>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 8: For ρ = 0.6 and ρ = 0.7, all probe positions in iteration 1 (diamonds) are new evaluations with none carrying over from iteration 0 (circles).</figcaption>
+</figure>
+
+We can see from the figure that there is a value of $$\rho$$ between 0.6 and 0.7 that results in the previous iteration's $$x_1$$ becoming the next iteration's $$x_2$$.
+
+We can derive the value of $$\rho$$ that requires evaluating just one new interation point by noting that at initialization we have
 
 $$
 \begin{align*}
@@ -248,8 +303,14 @@ Using the quadratic formula and discarding the negative solution, we find
 $$\rho = {-1 + \sqrt{5} \over 2} \approx 0.61803.$$
 
 By setting $$\rho$$ to this value, we ensure we can reuse the objective value at $$f(x_1)$$ and only need to compute the objective at $$x'_1$$ saving us $$\mathcal{O}(N)$$ computation.
+Figure 9 confirms this: $$x_1$$ from iteration 0 (filled circle) reappears as $$x_2$$ in iteration 1 (faded circle), connected by the dotted line.
 
-The widget in Figure 4 visually demonstrates the golden section algorithm and how points are reused from iteration to iteration.
+<figure style="max-width: 75%; margin: 0 auto;">
+    <a href="/assets/2026/golden-section/images/rho_golden_section.png"><img src="/assets/2026/golden-section/images/rho_golden_section.png"></a>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 9: For ρ = 1/φ ≈ 0.618, x₁ from iteration 0 is reused as x₂ in iteration 1 with only one new evaluation (diamond) needed per iteration.</figcaption>
+</figure>
+
+The widget in Figure 10 visually demonstrates the golden section algorithm and how points are reused from iteration to iteration.
 
 <div class="widget-container" id="golden-section-widget">
   <div class="widget-controls">
@@ -288,7 +349,7 @@ The widget in Figure 4 visually demonstrates the golden section algorithm and ho
     </div>
   </div>
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">
-    Figure 4: Golden section search on f(β) = mean(|β·xᵢ − yᵢ|) with 7 data points.
+    Figure 10: Golden section search on f(β) = mean(|β·xᵢ − yᵢ|) with 7 data points.
     Dashed lines show: <span style="color:#f85149">a</span> (left), <span style="color:#58a6ff">x₁</span> (interior left), <span style="color:#3fb950">x₂</span> (interior right), <span style="color:#d29922">b</span> (right).
   </figcaption>
 </div>
