@@ -65,7 +65,7 @@ What if we could instead reduce the multi-dimensional optimization down to a ser
 
 This is the idea of coordinate descent.
 Instead of optimizing over all $$\beta_1,\ldots,\beta_d$$ jointly, we cycle through each variable holding the others fixed and optimize over just one variable.
-For a specific coordinate $$k$$, since all other $$\beta_j (j\ne k)$$ are held fixed, the term $$\sum_{j\ne k} \beta_j x_{ij}$$ is constant with respect to $$\beta_k$$, so we can rewrite the residual as $$r_i = y_i - Σ_{j\ne k} \beta_j x_{ij}$$. Now the subproblem becomes a single-variable optimization:
+For a specific coordinate $$k$$, since all other $$\beta_j (j\ne k)$$ are held fixed, the term $$\sum_{j\ne k} \beta_j x_{ij}$$ is constant with respect to $$\beta_k$$, so we can rewrite the residual as $$r_i = y_i - \sum_{j\ne k} \beta_j x_{ij}$$. Now the subproblem becomes a single-variable optimization:
 
 $$
 \begin{equation}
@@ -105,7 +105,7 @@ If the objective is convex[^fn2] and we can bound the minimizer $$\beta_k^\star$
 
 # Three-Point Search
 
-Since the minimum is guaranteed to lie between the smallest and largest knot, we initialize our search with
+Since the minimum is guaranteed to lie between the smallest and largest kink, we initialize our search with
 
 $$
 \begin{align*}
@@ -122,11 +122,11 @@ Suppose we evaluate the objective at $$a < x_1 < b$$ and observe their function 
 
 <figure style="max-width: 75%; margin: 0 auto;">
     <a href="/assets/2026/golden-section/images/three_points_probes_only.png"><img src="/assets/2026/golden-section/images/three_points_probes_only.png"></a>
-    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Three probe points with observed function values. Since f(x₁) is the smallest, the minimum lies somewhere in [a, b].</figcaption>
+    <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 4: Three probe points with observed function values. Even knowing f(x₁) &lt; f(a) and f(x₁) &lt; f(b), we cannot determine whether the minimum lies in [a, x₁] or [x₁, b].</figcaption>
 </figure>
 
 Since $$f(x_1) < f(a)$$ and $$f(x_1) < f(b)$$, we know the minimum is somewhere in $$[a, b]$$.
-But do the the three values tell us how we can safely discard either $$[a, x_1]$$ or $$[x_1, b]$$?
+But do the three values tell us how we can safely discard either $$[a, x_1]$$ or $$[x_1, b]$$?
 
 As Figure 5 shows, the answer is no.
 The same three probe values are consistent with a function whose minimum lies to the left of $$x_1$$ _and_ with a function whose minimum lies to the right of $$x_1$$.
@@ -264,7 +264,7 @@ Figure 8 shows that for an arbitrary $$\rho$$, we need to evaluate _two_ new int
 
 We can see from the figure that there is a value of $$\rho$$ between 0.6 and 0.7 that results in the previous iteration's $$x_1$$ becoming the next iteration's $$x_2$$.
 
-We can derive the value of $$\rho$$ that requires evaluating just one new interation point by noting that at initialization we have
+We can derive the value of $$\rho$$ that requires evaluating just one new iteration point by noting that at initialization we have
 
 $$
 \begin{align*}
