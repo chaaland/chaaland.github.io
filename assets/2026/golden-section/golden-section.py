@@ -15,7 +15,7 @@ def imports():
 
     IMAGE_DIR = Path("images")
     IMAGE_DIR.mkdir(exist_ok=True)
-    return IMAGE_DIR, functools, np, plt
+    return IMAGE_DIR, functools, np, pl, plt
 
 
 @app.cell
@@ -67,8 +67,10 @@ def plot_helpers(plt):
     def remove_spines(ax):
         for spine in ["top", "right"]:
             ax.spines[spine].set_visible(False)
+        for spine in ["bottom", "left"]:
+            ax.spines[spine].set_color("#cccccc")
 
-    return ABSCISSA_COLORS, PALETTE, make_cartesian_plane
+    return ABSCISSA_COLORS, PALETTE, make_cartesian_plane, remove_spines
 
 
 @app.cell
@@ -692,6 +694,95 @@ def case_3(ABSCISSA_COLORS, IMAGE_DIR, PALETTE, make_cartesian_plane, np, plt):
     make_cartesian_plane(_ax)
     _fig.tight_layout()
     _fig.savefig(IMAGE_DIR / "case_3.png")
+    plt.show()
+    return
+
+
+@app.cell
+def rho_benchmark_data(pl):
+    benchmark_df = pl.read_csv("benchmark_rho.csv")
+    trace_df = pl.read_csv("benchmark_rho_trace.csv")
+    return benchmark_df, trace_df
+
+
+@app.cell
+def rho_benchmark_helpers(PALETTE):
+    _METHOD_COLORS = {"golden": PALETTE["x1"], "two_thirds": PALETTE["x2"]}
+    _METHOD_LABELS = {"golden": "ρ = 1/φ  (golden section)", "two_thirds": "ρ = 2/3"}
+
+    def plot_rho_benchmark(ax, df, pl, metric, ylabel, remove_spines):
+        for method in ["golden", "two_thirds"]:
+            sub = df.filter(pl.col("method") == method).sort("n")
+            ax.plot(
+                sub["n"],
+                sub[metric],
+                marker="o",
+                markersize=6,
+                markeredgecolor="white",
+                markeredgewidth=1.2,
+                color=_METHOD_COLORS[method],
+                label=_METHOD_LABELS[method],
+            )
+
+        ax.set_xscale("log")
+        ax.set_xlabel("N  (number of terms in objective)")
+        ax.set_ylabel(ylabel)
+        remove_spines(ax)
+        ax.legend(frameon=False, loc="best")
+
+    return (plot_rho_benchmark,)
+
+
+@app.cell
+def rho_trace_plot(IMAGE_DIR, PALETTE, pl, plt, remove_spines, trace_df):
+    _method_colors = {"golden": PALETTE["x1"], "two_thirds": PALETTE["x2"]}
+    _method_labels = {"golden": "ρ = 1/φ  (golden section)", "two_thirds": "ρ = 2/3"}
+
+    _fig, _ax = plt.subplots()
+    for _method in ["golden", "two_thirds"]:
+        _sub = trace_df.filter(pl.col("method") == _method).sort("n_evals")
+        _ax.plot(
+            _sub["n_evals"],
+            _sub["width"],
+            marker="o",
+            markersize=5,
+            markeredgecolor="white",
+            markeredgewidth=1.0,
+            color=_method_colors[_method],
+            label=_method_labels[_method],
+        )
+
+    _ax.set_yscale("log")
+    _ax.set_xlabel("number of objective evaluations")
+    _ax.set_ylabel("interval width  $b - a$")
+    remove_spines(_ax)
+    _ax.legend(frameon=False, loc="best")
+    _fig.tight_layout()
+    _fig.savefig(IMAGE_DIR / "rho_trace_width.png")
+    plt.show()
+    return
+
+
+@app.cell
+def rho_benchmark_plot_time(
+    IMAGE_DIR,
+    benchmark_df,
+    pl,
+    plot_rho_benchmark,
+    plt,
+    remove_spines,
+):
+    _fig, _ax = plt.subplots()
+    plot_rho_benchmark(
+        _ax,
+        benchmark_df,
+        pl,
+        metric="time_s",
+        ylabel="best wall-clock time [s]",
+        remove_spines=remove_spines,
+    )
+    _fig.tight_layout()
+    _fig.savefig(IMAGE_DIR / "rho_sweep_time.png")
     plt.show()
     return
 
