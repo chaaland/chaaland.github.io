@@ -6,16 +6,16 @@ LOGARITHM_LOOKUP = [math.log(1 + 2.0**-k) for k in range(100)]
 def log(x: float, n_iters: int = 30):
     assert n_iters < 30
 
-    log_x = 0
-    x_hat = 1
+    log_acc = 0
+    arg_acc = 1
     factor = 1
     for k in range(n_iters):
-        tmp = x_hat + x_hat * factor  # x * (1 + 2**-k)
-        if tmp <= x:
-            log_x += LOGARITHM_LOOKUP[k]
-            x_hat = tmp
+        candidate = arg_acc + arg_acc * factor
+        if candidate <= x:
+            arg_acc = candidate
+            log_acc += LOGARITHM_LOOKUP[k]
         factor /= 2
-    return log_x
+    return log_acc
 
 
 def log_alt(x: float, n_iters: int = 30) -> float:
@@ -34,14 +34,13 @@ def log_alt(x: float, n_iters: int = 30) -> float:
 
 
 def exp(x: float, n_iters: int = 30) -> float:
-    # y = e^x
-    log_y = 0
-    y_hat = 1
-
+    log_acc = 0
+    arg_acc = 1
+    factor = 1
     for k in range(n_iters):
-        tmp = log_y + LOGARITHM_LOOKUP[k]
-        if tmp < x:
-            log_y = tmp
-            y_hat = y_hat + y_hat / 2**k  # x * (1 + 2**-k)
-
-    return y_hat
+        candidate = log_acc + LOGARITHM_LOOKUP[k]
+        if candidate < x:
+            log_acc = candidate
+            arg_acc = arg_acc + arg_acc * factor
+        factor /= 2
+    return arg_acc
