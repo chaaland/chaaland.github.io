@@ -51,7 +51,7 @@ Consider the simplest case of minimizing the 1D quadratic $$f(x) = \frac{S}{2}x^
   <figcaption style="font-size: 0.9rem; color: #8b949e; margin-top: 12px;">Figure 1: Larger S makes the parabola steeper and smaller S makes it flatter.</figcaption>
 </div>
 
-The gradient/derivate is $$\nabla f(x) = Sx$$, so gradient descent becomes
+The gradient/derivative is $$\nabla f(x) = Sx$$, so gradient descent becomes
 
 $$x_{k+1} = x_k - \eta \cdot S x_k = (1 - S\eta) x_k$$
 
@@ -339,7 +339,7 @@ Also notice that as we increase $$\eta$$, we see more oscillations around the cr
 Simultaneously, we see larger and more frequent loss spikes.
 After around $$\eta=90$$, we see oscillations in the sharpness display an exponentially _growing_ envelope as well as the loss diverging.
 
-To understand what causes the sharpness to suddently decrease after exceeding the critical sharpness, Figure 7 decomposes the gradient at each step into its components along the dominant eigenvector $$v_1$$ (sharpest direction) and the non-dominant eigenvector $$v_2$$ of the local Hessian $$\nabla^2 f$$.
+To understand what causes the sharpness to suddenly decrease after exceeding the critical sharpness, Figure 7 decomposes the gradient at each step into its components along the dominant eigenvector $$v_1$$ (sharpest direction) and the non-dominant eigenvector $$v_2$$ of the local Hessian $$\nabla^2 f$$.
 
 <div class="widget-container" id="gc-widget">
   <svg class="widget-plot" id="gc-svg" viewBox="0 0 700 480" preserveAspectRatio="xMidYMid meet">
