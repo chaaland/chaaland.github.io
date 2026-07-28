@@ -5,16 +5,17 @@ app = marimo.App(width="medium")
 
 
 @app.cell
-def _():
+def imports():
     import marimo as mo
     import matplotlib.pyplot as plt
     import numpy as np
 
+    plt.rcParams["font.family"] = "monospace"
     return mo, np, plt
 
 
 @app.cell
-def _():
+def color_constants():
     INSIDE_COLOR = "#2a6ebb"
     OUTSIDE_COLOR = "#aaaaaa"
     REFERENCE_COLOR = "#999999"
@@ -23,7 +24,7 @@ def _():
 
 
 @app.cell
-def _(INSIDE_COLOR, np, plt):
+def plot_ellipse_reference(INSIDE_COLOR, np, plt):
     t = np.linspace(0, 2 * np.pi, 500)
     x_ellipse = 2 * np.cos(t)
     y_ellipse = np.sin(t)
@@ -60,7 +61,7 @@ def f_periodic(x: float, y: float) -> float:
 
 
 @app.cell
-def _():
+def type_aliases():
     from collections.abc import Callable
     from typing import TypeAlias
 
@@ -71,7 +72,151 @@ def _():
 
 
 @app.cell
-def _(Point: "TypeAlias", ScalarField: "TypeAlias", Segment: "TypeAlias", np):
+def plot_ellipse_squared_contour(np, plt):
+    from matplotlib.colors import PowerNorm
+
+    _r = np.linspace(0, 2.5, 300)
+    _theta = np.linspace(0, 2 * np.pi, 300)
+    _R, _Theta = np.meshgrid(_r, _theta)
+    _Xd = 2 * _R * np.cos(_Theta)
+    _Yd = _R * np.sin(_Theta)
+    _Zd = f_ellipse(_Xd, _Yd) ** 2
+
+    _fig, _ax = plt.subplots(figsize=(6, 4))
+    _norm = PowerNorm(gamma=0.35, vmin=0, vmax=_Zd.max())
+    _cs = _ax.contourf(_Xd, _Yd, _Zd, levels=30, cmap="viridis", norm=_norm)
+    _fig.colorbar(_cs, ax=_ax, label=r"$f(x,y)^2$")
+    _ax.set_aspect("equal")
+    _ax.set_xlim(-3, 3)
+    _ax.set_ylim(-2, 2)
+    _ax.set_xlabel("x")
+    _ax.set_ylabel("y")
+    _ax.set_title(r"$f(x,y)^2 = \left(\frac{x^2}{4} + y^2 - 1\right)^2$")
+    _ax.spines[["top", "right"]].set_visible(False)
+    _fig
+    return
+
+
+@app.cell
+def plot_ellipse_squared_surface(INSIDE_COLOR, np, plt):
+    _r = np.linspace(0, 1.5, 60)
+    _theta = np.linspace(0, 2 * np.pi, 60)
+    _R, _Theta = np.meshgrid(_r, _theta)
+    _Xs = 2 * _R * np.cos(_Theta)
+    _Ys = _R * np.sin(_Theta)
+    _Zs = f_ellipse(_Xs, _Ys) ** 2
+
+    _fig = plt.figure(figsize=(6.5, 5.5))
+    _ax = _fig.add_subplot(projection="3d")
+    _ax.plot_wireframe(_Xs, _Ys, _Zs, color=INSIDE_COLOR, linewidth=0.6)
+    _ax.set_xlim(-3, 3)
+    _ax.set_ylim(-3, 3)
+    _ax.set_box_aspect((6, 6, np.ptp(_Zs)))
+    _ax.set_xlabel("x")
+    _ax.set_ylabel("y")
+    _ax.set_zlabel(r"$f(x,y)^2$", labelpad=12)
+    _ax.set_title(r"$f(x,y)^2 = \left(\frac{x^2}{4} + y^2 - 1\right)^2$")
+    _fig.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.05)
+    _fig
+    return
+
+
+@app.cell
+def plot_lm_trajectories(REFERENCE_COLOR, np, plt):
+    def _residual(p):
+        x, y = p
+        return f_ellipse(x, y)
+
+    def _jacobian(p):
+        x, y = p
+        return np.array([x / 2, 2 * y])
+
+    def _lm_step(p, r, J, lam):
+        JtJ = np.outer(J, J)
+        A = JtJ + lam * np.eye(2)
+        delta = np.linalg.solve(A, -r * J)
+        p_trial = p + delta
+        if abs(_residual(p_trial)) < abs(r):
+            return p_trial, lam / 10
+        return p, lam * 10
+
+    def _run_lm(p0, n_iter=25, lam0=1.0):
+        p = np.array(p0, dtype=float)
+        lam = lam0
+        traj = [p.copy()]
+        for _ in range(n_iter):
+            r = _residual(p)
+            J = _jacobian(p)
+            p, lam = _lm_step(p, r, J, lam)
+            traj.append(p.copy())
+        return np.array(traj)
+
+    _starts = [
+        (2.8, 0.2), (0.2, 1.8), (-2.8, -0.2), (-0.2, -1.8), (2.0, 1.5), (-2.0, -1.5),
+        (0.5, 0.2), (-0.5, -0.2),
+    ]
+    _trajectories = [_run_lm(p0) for p0 in _starts]
+
+    # curated qualitative palette (avoids the default tab10 cycle)
+    _traj_colors = [
+        "#dc2626", "#2563eb", "#059669", "#d97706",
+        "#7c3aed", "#0891b2", "#db2777", "#65a30d",
+    ]
+
+    _t_ref = np.linspace(0, 2 * np.pi, 500)
+
+    with plt.rc_context({
+        "font.size": 11,
+        "text.color": "#1e1e1e",
+        "axes.labelcolor": "#1e1e1e",
+        "axes.edgecolor": "#cccccc",
+        "xtick.color": "#888888",
+        "ytick.color": "#888888",
+        "figure.dpi": 150,
+    }):
+        _fig, _ax = plt.subplots(figsize=(6, 5))
+        _ax.plot(2 * np.cos(_t_ref), np.sin(_t_ref), color=REFERENCE_COLOR,
+                  linewidth=1.5, linestyle="--", alpha=0.7, zorder=1)
+
+        for _i, _traj in enumerate(_trajectories):
+            _c = _traj_colors[_i % len(_traj_colors)]
+            _ax.plot(_traj[:, 0], _traj[:, 1], color=_c, linewidth=1.4, alpha=0.85, zorder=2)
+
+            # arrow at the biggest step to show direction of travel
+            _seglens = np.linalg.norm(np.diff(_traj, axis=0), axis=1)
+            _k = int(np.argmax(_seglens))
+            _ax.annotate(
+                "", xy=tuple(_traj[_k + 1]), xytext=tuple(_traj[_k]),
+                arrowprops={"arrowstyle": "-|>", "color": _c, "lw": 1.3, "alpha": 0.9, "shrinkA": 0, "shrinkB": 0},
+                zorder=3,
+            )
+
+            # hollow ring = start, solid dot = converged
+            _ax.plot(_traj[0, 0], _traj[0, 1], "o", color="white", markersize=7,
+                      markeredgecolor=_c, markeredgewidth=1.8, zorder=4)
+            _ax.plot(_traj[-1, 0], _traj[-1, 1], "o", color=_c, markersize=8,
+                      markeredgecolor="white", markeredgewidth=1.2, zorder=4)
+
+        _ax.set_aspect("equal")
+        _ax.set_xlim(-3.3, 3.3)
+        _ax.set_ylim(-2.3, 2.3)
+        _ax.set_xlabel("x")
+        _ax.set_ylabel("y")
+        _ax.spines[["top", "right"]].set_visible(False)
+        _ax.tick_params(length=4, width=1)
+        _fig.tight_layout()
+
+    _fig
+    return
+
+
+@app.cell
+def define_march_squares(
+    Point: "TypeAlias",
+    ScalarField: "TypeAlias",
+    Segment: "TypeAlias",
+    np,
+):
     def _interp(corners: list[Point], fv: list[float], a: int, b: int) -> Point:
         xa, ya = corners[a]
         xb, yb = corners[b]
@@ -248,13 +393,13 @@ def ellipse_inset(
 
 
 @app.cell
-def _(mo):
+def create_grid_slider(mo):
     n_slider = mo.ui.slider(2, 16, value=3, step=1, label="Grid size")
     return (n_slider,)
 
 
 @app.cell
-def _(
+def plot_interactive_ellipse(
     GRID_LINE_COLOR,
     INSIDE_COLOR,
     OUTSIDE_COLOR,
@@ -309,7 +454,7 @@ def _(
 
 
 @app.cell
-def _(INSIDE_COLOR, OUTSIDE_COLOR, plt):
+def plot_saddle_ambiguity(INSIDE_COLOR, OUTSIDE_COLOR, plt):
     _cx0_s, _cx1_s, _cy0_s, _cy1_s = -1.0, 1.0, -1.0, 1.0
     _corners_s = [(_cx0_s, _cy0_s), (_cx1_s, _cy0_s), (_cx1_s, _cy1_s), (_cx0_s, _cy1_s)]
     _fv_s = [f_tilted_ellipse(x, y) for x, y in _corners_s]
@@ -524,13 +669,13 @@ def rotate_ellipse_zoom(
 
 
 @app.cell
-def _(mo):
+def create_tilted_grid_slider(mo):
     n_slider_tilted = mo.ui.slider(2, 16, value=3, step=1, label="Grid size")
     return (n_slider_tilted,)
 
 
 @app.cell
-def _(
+def plot_interactive_tilted_ellipse(
     GRID_LINE_COLOR,
     INSIDE_COLOR,
     OUTSIDE_COLOR,
@@ -588,13 +733,13 @@ def _(
 
 
 @app.cell
-def _(mo):
+def create_periodic_grid_slider(mo):
     n_slider_periodic = mo.ui.slider(2, 32, value=9, step=1, label="Grid size")
     return (n_slider_periodic,)
 
 
 @app.cell
-def _(
+def plot_interactive_periodic(
     GRID_LINE_COLOR,
     INSIDE_COLOR,
     OUTSIDE_COLOR,
