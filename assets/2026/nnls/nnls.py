@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.5"
+__generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
 
@@ -1224,6 +1224,197 @@ def forecast_clamp_plot(
 
 
 @app.cell
+def degenerate_cone_md(mo):
+    mo.md(r"""
+    ### Four forecasts, two drivers
+
+    Now suppose two more analysts join, so the combiner sees
+
+    $$f_1 = 3X_1 + 2X_2, \quad f_2 = X_1 + X_2, \quad f_3 = 3X_1 + X_2, \quad f_4 = X_1$$
+
+    All four are built from the same two drivers, so $F$ has rank 2 and $F^\top F$ is
+    exactly singular. In coefficient space the four vectors still span a cone. Its edges
+    are $f_2$ and $f_4$, while $f_1$ and $f_3$ sit inside it and add nothing to what is
+    reachable.
+
+    The target $y = (2, 1)$ now lies between $f_1$ and $f_3$, inside the inner cone, so
+    the fit is exact. The trouble is that it is exact in more than one way. Any pair of
+    forecasts with one on each side of $y$ reaches it with non-negative weights, which
+    gives four different two-forecast answers:
+
+    | Pair | $w = (w_1, w_2, w_3, w_4)$ |
+    |------|----------------------------|
+    | $f_1, f_3$ | $(1/3,\; 0,\; 1/3,\; 0)$ |
+    | $f_2, f_3$ | $(0,\; 1/2,\; 1/2,\; 0)$ |
+    | $f_1, f_4$ | $(1/2,\; 0,\; 0,\; 1/2)$ |
+    | $f_2, f_4$ | $(0,\; 1,\; 0,\; 1)$ |
+
+    Every weighted average of these rows is also an exact non-negative fit. The loss is
+    zero on that whole set, so the NNLS objective has no way to prefer one point over
+    another. The combined forecast is unique. The weights are not.
+
+    The Lawson-Hanson solver still returns a single answer, highlighted below. It admits
+    $f_1$ first because $f_1$ has the largest inner product with $y$, then $f_3$ because
+    it has the largest inner product with what is left over. At that point the residual
+    is zero and nothing else can enter. That choice comes from the solver's entry rule,
+    not from the objective.
+    """)
+    return
+
+
+@app.cell
+def degenerate_cone_plot(
+    A1,
+    A2,
+    B_COLOR,
+    CONE,
+    DARK,
+    DIM,
+    GRID,
+    R,
+    SPINE,
+    cone_fill_polygon,
+    draw_vector,
+    mo,
+    nnls,
+    np,
+    plt,
+):
+    from fractions import Fraction as _Fraction
+
+    # Coefficient vectors, in the order of the weight vector w = (w1, w2, w3, w4)
+    _F = np.array([[3.0, 2.0], [1.0, 1.0], [3.0, 1.0], [1.0, 0.0]])
+    _colors = [A1, A2, "#0d9488", "#db2777"]  # teal / pink for the two extra forecasts
+    _target = np.array([2.0, 1.0])
+
+    # f2 and f4 are the edges of the cone; f1 and f3 bracket y from inside it
+    _outer, _inner = (1, 3), (0, 2)
+    # Each pair with one forecast on either side of y reproduces it exactly
+    _pairs = [(0, 2), (1, 2), (0, 3), (1, 3)]
+
+    # X1 and X2 are orthonormal in the population, so the NNLS problem on the data
+    # is the same as NNLS on the coefficient vectors themselves
+    _w_solver = nnls(_F.T, _target)[0]
+
+
+    def _tex(x, coef=False):
+        frac = _Fraction(float(x)).limit_denominator(12)
+        if coef and frac == 1:
+            return ""
+        if frac.denominator == 1:
+            return str(frac.numerator)
+        return rf"\frac{{{frac.numerator}}}{{{frac.denominator}}}"
+
+
+    _fig, _axes = plt.subplots(2, 2, figsize=(10, 8.6), sharex=True, sharey=True)
+    _ray_kw = {"color": CONE, "lw": 0.9, "ls": "--", "alpha": 0.5, "zorder": 2}
+    _comp_kw = {"mutation_scale": 13, "lw": 3.2, "alpha": 0.40}
+
+    for _ax, (_i, _j) in zip(_axes.flat, _pairs):
+        _wi, _wj = np.linalg.solve(_F[[_i, _j]].T, _target)
+        _w = np.zeros(len(_F))
+        _w[[_i, _j]] = _wi, _wj
+        _picked = np.allclose(_w, _w_solver, atol=1e-8)
+
+        for _sp in _ax.spines.values():
+            _sp.set_edgecolor(B_COLOR if _picked else SPINE)
+            _sp.set_linewidth(1.6 if _picked else 0.8)
+
+        # Full cone, with the inner cone shaded a second time
+        for _a, _b in (_outer, _inner):
+            _poly_x, _poly_y, _ray1, _ray2 = cone_fill_polygon(
+                np.arctan2(_F[_a, 1], _F[_a, 0]), np.arctan2(_F[_b, 1], _F[_b, 0]), R
+            )
+            _ax.fill(_poly_x, _poly_y, color=CONE, alpha=0.08, zorder=1)
+            _ax.plot([0, R * np.cos(_ray1)], [0, R * np.sin(_ray1)], **_ray_kw)
+            _ax.plot([0, R * np.cos(_ray2)], [0, R * np.sin(_ray2)], **_ray_kw)
+
+        for _k, _v in enumerate(_F):
+            draw_vector(
+                _ax, _v, rf"$f_{_k + 1}$", _colors[_k], label_offset=0.2, alpha=1.0 if _k in (_i, _j) else 0.22
+            )
+
+        # Tip-to-tail: w_i f_i from the origin, then w_j f_j from its tip, landing on y
+        _mid = _wi * _F[_i]
+        _ax.annotate(
+            "",
+            xy=tuple(_mid),
+            xytext=(0.0, 0.0),
+            arrowprops={"arrowstyle": "-|>", "color": _colors[_i], **_comp_kw},
+            zorder=5,
+        )
+        _ax.annotate(
+            "",
+            xy=tuple(_target),
+            xytext=tuple(_mid),
+            arrowprops={"arrowstyle": "-|>", "color": _colors[_j], **_comp_kw},
+            zorder=5,
+        )
+        _ax.scatter(*_mid, color=DIM, s=22, zorder=6, linewidths=0)
+
+        # Target y
+        _ax.annotate(
+            "",
+            xy=tuple(_target),
+            xytext=(0.0, 0.0),
+            arrowprops={"arrowstyle": "-|>", "color": DARK, "lw": 1.4, "mutation_scale": 14},
+            zorder=6,
+        )
+        _ax.text(
+            _target[0] + 0.1, _target[1] - 0.08, r"$y$", fontsize=13, color=DARK, ha="left", va="top", fontweight="bold"
+        )
+        _ax.scatter(
+            *_target,
+            color=B_COLOR if _picked else DARK,
+            s=160 if _picked else 30,
+            marker="*" if _picked else "o",
+            zorder=7,
+            linewidths=0,
+        )
+
+        if _picked:
+            _ax.text(
+                0.97,
+                0.05,
+                "returned by Lawson-Hanson",
+                transform=_ax.transAxes,
+                fontsize=9,
+                color=B_COLOR,
+                ha="right",
+                va="bottom",
+                fontweight="bold",
+            )
+
+        _ax.scatter([0], [0], color=DIM, s=16, zorder=6, linewidths=0)
+        _ax.axhline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
+        _ax.axvline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
+        _ax.grid(True, color=GRID, lw=0.8, zorder=0)
+
+        _ax.set_xlim(-0.3, 3.7)
+        _ax.set_ylim(-0.3, 2.5)
+        _ax.set_aspect("equal")
+        _ax.tick_params(labelsize=8, length=3, width=0.6)
+        _w_tex = r",\ ".join(_tex(_x) for _x in _w)
+        _ax.set_title(
+            rf"$y = {_tex(_wi, coef=True)}\,f_{_i + 1} + {_tex(_wj, coef=True)}\,f_{_j + 1}$"
+            + "\n"
+            + rf"$w = ({_w_tex})$",
+            fontsize=10,
+            pad=8,
+        )
+
+    for _ax in _axes[-1]:
+        _ax.set_xlabel("coefficient of $X_1$", fontsize=10)
+    for _ax in _axes[:, 0]:
+        _ax.set_ylabel("coefficient of $X_2$", fontsize=10)
+
+    _fig.suptitle("Four exact non-negative fits to the same target", fontsize=11)
+    plt.tight_layout(pad=0.6, h_pad=2.2, rect=(0, 0, 1, 0.97))
+    mo.mpl.interactive(_fig)
+    return
+
+
+@app.cell
 def pgd_intro(mo):
     mo.md(r"""
     ### Method 1: Projected Gradient Descent
@@ -1847,13 +2038,6 @@ def hl_plot_3var(
 
 
 @app.cell
-def cone_sliders(mo, np):
-    theta1_slider = mo.ui.slider(0, 2 * np.pi, step=0.05, value=np.pi / 6, label="θ₁")
-    theta2_slider = mo.ui.slider(0, 2 * np.pi, step=0.05, value=2 * np.pi / 3, label="θ₂")
-    return theta1_slider, theta2_slider
-
-
-@app.cell
 def cone_helpers(np):
     def cone_fill_polygon(theta1, theta2, R, n=300):
         """Fill polygon for the convex cone between two rays, sweeping the shorter arc."""
@@ -1869,7 +2053,7 @@ def cone_helpers(np):
         return poly_x, poly_y, t1, t1 + delta_ccw
 
 
-    def draw_vector(ax, v, label, color, label_offset=0.22):
+    def draw_vector(ax, v, label, color, label_offset=0.22, alpha=1.0):
         """Draw a 2D vector from the origin with a clean arrow and label."""
         angle = np.arctan2(v[1], v[0])
         ax.annotate(
@@ -1881,6 +2065,7 @@ def cone_helpers(np):
                 "color": color,
                 "lw": 2.0,
                 "mutation_scale": 16,
+                "alpha": alpha,
             },
             zorder=4,
         )
@@ -1890,6 +2075,7 @@ def cone_helpers(np):
             label,
             fontsize=14,
             color=color,
+            alpha=alpha,
             ha="center",
             va="center",
             fontweight="bold",
@@ -1902,186 +2088,7 @@ def cone_helpers(np):
 def cone_style():
     lim = 3.5
     R = 1000.0  # large enough that the arc lies far outside the plot limits
-    return R, lim
-
-
-@app.cell
-def cone_plot(
-    A1,
-    A2,
-    CONE,
-    DIM,
-    GRID,
-    R,
-    SPINE,
-    cone_fill_polygon,
-    draw_vector,
-    lim,
-    mo,
-    np,
-    plt,
-    theta1_slider,
-    theta2_slider,
-):
-    theta1 = theta1_slider.value
-    theta2 = theta2_slider.value
-
-    a1 = np.array([np.cos(theta1), np.sin(theta1)])
-    a2 = np.array([np.cos(theta2), np.sin(theta2)])
-
-    poly_x, poly_y, ray1, ray2 = cone_fill_polygon(theta1, theta2, R)
-
-    fig, ax = plt.subplots(figsize=(5.5, 5.5))
-
-    for spine in ax.spines.values():
-        spine.set_edgecolor(SPINE)
-        spine.set_linewidth(0.8)
-
-    ax.fill(poly_x, poly_y, color=CONE, alpha=0.10, zorder=1)
-
-    ray_kw = {"color": CONE, "lw": 0.9, "ls": "--", "alpha": 0.5, "zorder": 2}
-    ax.plot([0, R * np.cos(ray1)], [0, R * np.sin(ray1)], **ray_kw)
-    ax.plot([0, R * np.cos(ray2)], [0, R * np.sin(ray2)], **ray_kw)
-
-    angle_arc = np.linspace(ray1, ray2, 80)
-    ax.plot(0.45 * np.cos(angle_arc), 0.45 * np.sin(angle_arc), color=DIM, lw=0.9, alpha=0.7, zorder=3)
-
-    draw_vector(ax, a1, r"$\mathbf{a}_1$", A1)
-    draw_vector(ax, a2, r"$\mathbf{a}_2$", A2)
-
-    ax.scatter([0], [0], color=DIM, s=16, zorder=6, linewidths=0)
-    ax.axhline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
-    ax.axvline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
-    ax.grid(True, color=GRID, lw=0.8, zorder=0)
-
-    ax.set_xlim(-lim, lim)
-    ax.set_ylim(-lim, lim)
-    ax.set_aspect("equal")
-    ax.tick_params(labelsize=8, length=3, width=0.6)
-
-    ax.set_title(
-        r"$\mathcal{C} = \{\, \lambda_1\,\mathbf{a}_1 + \lambda_2\,\mathbf{a}_2"
-        r"\;\mid\; \lambda_1,\, \lambda_2 \geq 0 \,\}$",
-        fontsize=11,
-        pad=12,
-    )
-    plt.tight_layout(pad=0.6)
-
-    controls = mo.vstack(
-        [
-            mo.md(f"**a₁** angle θ₁: {theta1_slider}"),
-            mo.md(f"**a₂** angle θ₂: {theta2_slider}"),
-        ]
-    )
-    mo.hstack([controls, mo.mpl.interactive(fig)], align="center")
-    return
-
-
-@app.cell
-def lambda_sliders(mo):
-    lambda1_slider = mo.ui.slider(0, 3, step=0.05, value=1.5, label="λ₁")
-    lambda2_slider = mo.ui.slider(0, 3, step=0.05, value=1.0, label="λ₂")
-    return lambda1_slider, lambda2_slider
-
-
-@app.cell
-def nnls_decomp_plot(
-    A1,
-    A2,
-    B_COLOR,
-    CONE,
-    DIM,
-    GRID,
-    R,
-    SPINE,
-    cone_fill_polygon,
-    draw_vector,
-    lambda1_slider,
-    lambda2_slider,
-    lim,
-    mo,
-    np,
-    plt,
-):
-    _ALPHA_COMP = 0.45
-
-    _theta1 = np.pi / 6
-    _theta2 = 2 * np.pi / 3
-    _lambda1 = lambda1_slider.value
-    _lambda2 = lambda2_slider.value
-
-    _a1 = np.array([np.cos(_theta1), np.sin(_theta1)])
-    _a2 = np.array([np.cos(_theta2), np.sin(_theta2)])
-    _mid = _lambda1 * _a1
-    _b = _mid + _lambda2 * _a2
-
-    _poly_x, _poly_y, _ray1, _ray2 = cone_fill_polygon(_theta1, _theta2, R)
-
-    _fig, _ax = plt.subplots(figsize=(5.5, 5.5))
-
-    for _spine in _ax.spines.values():
-        _spine.set_edgecolor(SPINE)
-        _spine.set_linewidth(0.8)
-
-    _ax.fill(_poly_x, _poly_y, color=CONE, alpha=0.10, zorder=1)
-    _ray_kw = {"color": CONE, "lw": 0.9, "ls": "--", "alpha": 0.5, "zorder": 2}
-    _ax.plot([0, R * np.cos(_ray1)], [0, R * np.sin(_ray1)], **_ray_kw)
-    _ax.plot([0, R * np.cos(_ray2)], [0, R * np.sin(_ray2)], **_ray_kw)
-
-    draw_vector(_ax, _a1, r"$\mathbf{a}_1$", A1)
-    draw_vector(_ax, _a2, r"$\mathbf{a}_2$", A2)
-
-    # Tip-to-tail: λ₁a₁ from origin, then λ₂a₂ from its tip
-    _comp_kw = {"mutation_scale": 14, "lw": 1.8, "alpha": _ALPHA_COMP}
-    _ax.annotate("", xy=_mid, xytext=(0.0, 0.0), arrowprops={"arrowstyle": "-|>", "color": A1, **_comp_kw}, zorder=4)
-    _ax.annotate("", xy=_b, xytext=_mid, arrowprops={"arrowstyle": "-|>", "color": A2, **_comp_kw}, zorder=4)
-
-    _ax.scatter([_mid[0]], [_mid[1]], color=DIM, s=18, zorder=6, linewidths=0)
-
-    # Result vector b
-    _ax.annotate(
-        "",
-        xy=_b,
-        xytext=(0.0, 0.0),
-        arrowprops={"arrowstyle": "-|>", "color": B_COLOR, "lw": 2.0, "mutation_scale": 16},
-        zorder=5,
-    )
-    _b_angle = np.arctan2(_b[1], _b[0])
-    _ax.text(
-        _b[0] + 0.22 * np.cos(_b_angle),
-        _b[1] + 0.22 * np.sin(_b_angle),
-        r"$\mathbf{b}$",
-        fontsize=14,
-        color=B_COLOR,
-        ha="center",
-        va="center",
-        fontweight="bold",
-    )
-
-    _ax.scatter([0], [0], color=DIM, s=16, zorder=7, linewidths=0)
-    _ax.axhline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
-    _ax.axvline(0, color=DIM, lw=0.6, alpha=0.5, zorder=1)
-    _ax.grid(True, color=GRID, lw=0.8, zorder=0)
-
-    _ax.set_xlim(-lim, lim)
-    _ax.set_ylim(-lim, lim)
-    _ax.set_aspect("equal")
-    _ax.tick_params(labelsize=8, length=3, width=0.6)
-    _ax.set_title(
-        r"$\mathbf{b} = \lambda_1\,\mathbf{a}_1 + \lambda_2\,\mathbf{a}_2$",
-        fontsize=11,
-        pad=12,
-    )
-    plt.tight_layout(pad=0.6)
-
-    _controls = mo.vstack(
-        [
-            mo.md(f"λ₁: {lambda1_slider}"),
-            mo.md(f"λ₂: {lambda2_slider}"),
-        ]
-    )
-    mo.hstack([_controls, mo.mpl.interactive(_fig)], align="center", gap="0.5rem")
-    return
+    return (R,)
 
 
 if __name__ == "__main__":
