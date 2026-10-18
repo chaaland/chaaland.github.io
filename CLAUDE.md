@@ -36,7 +36,7 @@ This is a **Jekyll-based technical blog** deployed to GitHub Pages at `chaaland.
 ├── index.html           # Homepage
 ├── about.md             # About page
 ├── Gemfile              # Ruby dependencies
-└── .ruby-version        # Ruby 3.1.4
+└── .ruby-version        # Ruby 3.3.5
 ```
 
 ## Key Technologies
@@ -74,7 +74,7 @@ bundle exec jekyll build
 
 ## Important Notes
 
-- Ruby version 3.1.4 is required (see `.ruby-version`)
+- Ruby version 3.3.5 is required (see `.ruby-version`); the GitHub Actions deploy (`.github/workflows/jekyll-gh-pages.yml`) builds with Ruby 3.3 from `Gemfile.lock`
 - Analytics: Google Universal Analytics (G-FL4HTN0JH2)
 - Permalinks: `/:categories/:title/`
 - Do NOT enter plan mode for informational questions or simple single-file edits — only use it for multi-step work spanning multiple files
