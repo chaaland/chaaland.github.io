@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.5"
+__generated_with = "0.25.1"
 app = marimo.App(width="full", app_title="Covariance Estimation")
 
 
@@ -789,24 +789,32 @@ def plot_full_covariance_grid(
 
 @app.cell
 def define_iterated_ewma(ewma_covariance_estimate, np):
-    def iterated_ewma(returns: np.ndarray, h_vol: float, h_corr: float) -> np.ndarray:
-        N, T = returns.shape
-        covs = ewma_covariance_estimate(returns, beta=0.5 ** (1 / h_vol))  # (N, N, T)
-        std_devs = np.diagonal(covs, axis1=0, axis2=1) ** 0.5  # (T, N)
-        std_devs = std_devs.T
+    def _one_step_ahead(x: np.ndarray) -> np.ndarray:
+        """Shift the last axis right by one so x[..., t] only uses data through t-1.
 
-        N, T = returns.shape
-        returns_standardized = returns / std_devs  # (N, T)
+        The EWMA recursion at index t has already absorbed r_t (a nowcast), but the paper's
+        predictor for day t may only see r_1, ..., r_{t-1}. Day 0 has no history, so it
+        falls back to the first estimate.
+        """
+        return np.concatenate([x[..., :1], x[..., :-1]], axis=-1)
+
+    def iterated_ewma(returns: np.ndarray, h_vol: float, h_corr: float) -> np.ndarray:
+        """
+        IEWMA predictor. Returns covariance predictions of shape (N, N, T), where
+        entry [..., t] is the prediction for day t made from returns[:, :t] only.
+        """
+        covs = ewma_covariance_estimate(returns, beta=0.5 ** (1 / h_vol))  # (N, N, T)
+        std_devs = _one_step_ahead(np.diagonal(covs, axis1=0, axis2=1).T ** 0.5)  # (N, T)
+
+        returns_standardized = returns / std_devs  # (N, T), sigma_t excludes r_t
         winsorized_returns = np.clip(returns_standardized, a_min=-4.2, a_max=4.2)
 
         R = ewma_covariance_estimate(winsorized_returns, 0.5 ** (1 / h_corr))  # (N, N, T)
-        std_devs_R = np.diagonal(R, axis1=0, axis2=1) ** 0.5  # (T, N)
-        std_devs_R = std_devs_R.T
-
+        std_devs_R = np.diagonal(R, axis1=0, axis2=1).T ** 0.5  # (N, T)
         R_corr = R / std_devs_R[None, :, :] / std_devs_R[:, None, :]  # (N, N, T)
-        cov_mat = std_devs[None, :, :] * R_corr * std_devs[:, None, :]
+        R_corr = _one_step_ahead(R_corr)
 
-        return cov_mat
+        return std_devs[None, :, :] * R_corr * std_devs[:, None, :]
 
     return (iterated_ewma,)
 
@@ -885,7 +893,7 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
     _HALF_LIFE_PAIRS = [(10, 21), (21, 63), (63, 125), (125, 250), (250, 500)]
 
     def _precision_cholesky_factors(
-        cov_matrices: list[np.ndarray],  # K arrays, each (N, N, T)
+        cov_matrices: list[np.ndarray],  # K one-step-ahead predictions, each (N, N, T)
     ) -> list[np.ndarray]:
         """Compute L^(k) s.t. (Σ^(k))^{-1} = L^(k) (L^(k))^T for each component k."""
         result = []
@@ -931,7 +939,8 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
         CW-IEWMA (Boyd et al. 2023): for each time t, find mixture weights that maximize
         log-likelihood over [t-look_back, t), then apply them to predict the covariance at t.
 
-        Returns covariance predictions of shape (N, N, T - look_back).
+        Returns covariance predictions of shape (N, N, T - look_back - 1), aligned with
+        dates[look_back + 1:].
         """
         K = len(cov_matrices)
         _, _, T = cov_matrices[0].shape
@@ -939,12 +948,12 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
         L_all = _precision_cholesky_factors(cov_matrices)
 
         cov_preds = []
-        for t in range(look_back, T):
+        for t in range(look_back + 1, T):  # index 0 has no history (see _one_step_ahead)
             w_opt = _solve_optimal_weights([Lk[t - look_back:t] for Lk in L_all], returns[:, t - look_back:t])
             L_t = sum(w_opt[k] * L_all[k][t] for k in range(K))
             cov_preds.append(np.linalg.inv(L_t @ L_t.T))
 
-        return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back)
+        return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
 
     cov_matrices = [
         iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr)
