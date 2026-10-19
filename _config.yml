@@ -72,8 +72,10 @@ footer:
 include:
   - .htaccess
   - _pages
-  - _posts
 exclude:
+  - CLAUDE.md
+  - CONVENTIONS.md
+  - plans
   - "*.sublime-project"
   - "*.sublime-workspace"
   - vendor
