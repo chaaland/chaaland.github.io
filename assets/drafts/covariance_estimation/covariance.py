@@ -580,30 +580,18 @@ def display_convolution_widget(beta_slider, fig, mo, tau_slider):
 
 
 @app.cell
-def ewma_functions(np, scipy):
+def ewma_functions(np):
     def _regularize_covariance(cov: np.ndarray, shrinkage_alpha: float = 0.01):
         cov = (1 - shrinkage_alpha) * cov + shrinkage_alpha * np.diag(np.diag(cov))  # ensure full rank
         return cov
 
 
-    def ewma(samples, beta):
-        _, T = samples.shape
-        weights = beta ** np.arange(T)
-        cum_weight = np.cumsum(weights)[None, :]
-        means = scipy.signal.convolve2d(samples, weights[None, :])[:, :T]
-        means /= cum_weight  # (N, T)
-
-        return means
-
-
     def ewma_cov(samples, beta):
+        # zero-mean EWMA second moment, as in the paper: matches ewma_covariance_estimate
         N, T = samples.shape
         weights = (beta ** np.arange(T))[::-1]
         factor = (1 - beta) / (1 - beta**T)
-        means = ewma(samples, beta)
-        diff = samples - means
-        # diff[:, 1:] -= means[:, :-1]  # subtract mean from one time step previous
-        cov_t = factor * (weights[None, :] * diff) @ diff.T  # (N, N)
+        cov_t = factor * (weights[None, :] * samples) @ samples.T  # (N, N)
         return cov_t
 
 
