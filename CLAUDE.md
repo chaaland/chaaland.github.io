@@ -75,6 +75,6 @@ bundle exec jekyll build
 ## Important Notes
 
 - Ruby version 3.3.5 is required (see `.ruby-version`); the GitHub Actions deploy (`.github/workflows/jekyll-gh-pages.yml`) builds with Ruby 3.3 from `Gemfile.lock`
-- Analytics: Google Universal Analytics (G-FL4HTN0JH2)
+- Analytics: Google Analytics 4 via gtag.js (G-FL4HTN0JH2), configured in `_config.yml`
 - Permalinks: `/:categories/:title/`
 - Do NOT enter plan mode for informational questions or simple single-file edits — only use it for multi-step work spanning multiple files
