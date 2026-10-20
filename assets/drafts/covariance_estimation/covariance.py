@@ -614,10 +614,10 @@ def ewma_functions(np):
         N, T = arr.shape
 
         r_t = arr[:, 0]
-        cov_t = np.outer(r_t, r_t)
-        cov_t = (1 - shrinkage_alpha) * cov_t + shrinkage_alpha * np.diag(np.diag(cov_t))  # ensure full rank
+        cov_t = np.outer(r_t, r_t)  # raw recursion state, never shrunk
 
-        covariances = [cov_t]
+        # shrink only the stored output, so every step is regularized like the naive version
+        covariances = [_regularize_covariance(cov_t, shrinkage_alpha)]
         means = [r_t.copy()]
 
         mean_t = r_t
@@ -630,7 +630,7 @@ def ewma_functions(np):
             cov_t = (beta - beta ** (t + 1)) / (1 - beta ** (t + 1)) * cov_t
             cov_t += (1 - beta) / (1 - beta ** (t + 1)) * np.outer(r_t, r_t)  # (N, N)
 
-            covariances.append(cov_t)
+            covariances.append(_regularize_covariance(cov_t, shrinkage_alpha))
 
         return np.stack(covariances, axis=-1)
 
