@@ -430,7 +430,7 @@ def plot_rolling_window_std_dev(
     )
     _fig.tight_layout(rect=[0, 0, 1, 0.94])
     plt.gcf()
-    return (cov_ma_2,)
+    return
 
 
 @app.cell
@@ -634,7 +634,20 @@ def ewma_functions(np):
 
         return np.stack(covariances, axis=-1)
 
-    return ewma_covariance_estimate, ewma_covariance_estimate_naive
+    def equivalent_window(half_life: float) -> int:
+        """Rolling-window length with the same effective sample size as an EWMA of this half-life.
+
+        Normalized EWMA weights have 1 / sum(w^2) = (1 + beta) / (1 - beta) effective samples,
+        and a rolling window of length M has M, so this makes the two estimators comparable.
+        """
+        beta = 0.5 ** (1 / half_life)
+        return round((1 + beta) / (1 - beta))
+
+    return (
+        equivalent_window,
+        ewma_covariance_estimate,
+        ewma_covariance_estimate_naive,
+    )
 
 
 @app.cell
@@ -646,6 +659,7 @@ def test_correlate2d(np, scipy):
 
 @app.cell
 def plot_ewma_vs_ma_std_dev(
+    equivalent_window,
     ewma_covariance_estimate_naive,
     plt,
     returns_arr,
@@ -661,7 +675,8 @@ def plot_ewma_vs_ma_std_dev(
 
     for _half_life in [5, 20, 60]:
         _cov_ewma = ewma_covariance_estimate_naive(returns_arr, beta=0.5 ** (1 / _half_life))
-        _cov_ma = rolling_window_covariance_estimate(returns_arr, window=_half_life)
+        _window = equivalent_window(_half_life)  # same effective sample size as the EWMA
+        _cov_ma = rolling_window_covariance_estimate(returns_arr, window=_window)
 
         _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
         _fig.patch.set_facecolor("#ffffff")
@@ -671,7 +686,7 @@ def plot_ewma_vs_ma_std_dev(
             _ax.plot(_dates, _cov_ewma[_i, _i, :] ** 0.5,
                      color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="ewma")
             _ax.plot(_dates, _cov_ma[_i, _i, :] ** 0.5,
-                     color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label="ma")
+                     color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label=f"ma ({_window}d)")
             style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4,
                      y_fmt=lambda v, _: f"{v:.1%}")
             _ax.set_ylim(0, 0.06)
@@ -681,7 +696,7 @@ def plot_ewma_vs_ma_std_dev(
 
         _axes.flat[-1].set_visible(False)
         _fig.suptitle(
-            rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {_half_life}d)",
+            rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {_half_life}d, MA window = {_window}d)",
             color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
         )
         _fig.tight_layout(rect=[0, 0, 1, 0.94])
@@ -692,11 +707,12 @@ def plot_ewma_vs_ma_std_dev(
 
 @app.cell
 def plot_ewma_covariance_std_dev(
-    cov_ma_2,
+    equivalent_window,
     ewma_covariance_estimate,
     plt,
     returns_arr,
     returns_wide_df,
+    rolling_window_covariance_estimate,
     style_ax,
     symbol_to_color,
     symbols,
@@ -707,6 +723,8 @@ def plot_ewma_covariance_std_dev(
 
     half_life = 20
     cov_ewma_2 = ewma_covariance_estimate(returns_arr, beta=0.5 ** (1 / half_life))
+    _window = equivalent_window(half_life)  # same effective sample size as the EWMA
+    _cov_ma = rolling_window_covariance_estimate(returns_arr, window=_window)
 
     _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
     _fig.patch.set_facecolor("#ffffff")
@@ -715,8 +733,8 @@ def plot_ewma_covariance_std_dev(
         _c = symbol_to_color[_symbol]
         _ax.plot(_dates, cov_ewma_2[_i, _i, :] ** 0.5,
                  color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="ewma")
-        _ax.plot(_dates, cov_ma_2[_i, _i, :] ** 0.5,
-                 color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label="ma")
+        _ax.plot(_dates, _cov_ma[_i, _i, :] ** 0.5,
+                 color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label=f"ma ({_window}d)")
         style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4,
                  y_fmt=lambda v, _: f"{v:.1%}")
         _ax.set_ylim(0, 0.06)
@@ -726,7 +744,7 @@ def plot_ewma_covariance_std_dev(
 
     _axes.flat[-1].set_visible(False)
     _fig.suptitle(
-        rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {half_life}d)",
+        rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {half_life}d, MA window = {_window}d)",
         color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
     )
     _fig.tight_layout(rect=[0, 0, 1, 0.94])
@@ -809,7 +827,6 @@ def define_iterated_ewma(ewma_covariance_estimate, np):
 
 @app.cell
 def define_plot_covariance_matrices(
-    half_life,
     itertools,
     np,
     plt,
@@ -820,7 +837,7 @@ def define_plot_covariance_matrices(
     _INK = "#111827"
     _DIM = "#6b7280"
 
-    def plot_covariance_matrices(cov_mat: np.ndarray, dates: np.ndarray):
+    def plot_covariance_matrices(cov_mat: np.ndarray, dates: np.ndarray, h_vol: float, h_corr: float):
         _fig, _axes = plt.subplots(5, 5, figsize=(14, 12))
         _fig.patch.set_facecolor("#ffffff")
 
@@ -850,7 +867,7 @@ def define_plot_covariance_matrices(
                 _ax.set_title(_symbol_2, color=_INK, fontsize=8, fontweight="bold", loc="left", pad=4)
 
         _fig.suptitle(
-            f"FAANG  ·  EWMA Correlation & Std Dev  (H = {half_life}d)",
+            rf"FAANG  ·  IEWMA Correlation & Std Dev  ($H^{{vol}}$ = {h_vol}d, $H^{{cor}}$ = {h_corr}d)",
             color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
         )
         _fig.tight_layout(rect=[0, 0, 1, 0.97])
@@ -866,10 +883,11 @@ def run_iterated_ewma(
     returns_arr,
     returns_wide_df,
 ):
-    _cov_mat = iterated_ewma(returns_arr, h_vol=20, h_corr=60)
+    _h_vol, _h_corr = 20, 60
+    _cov_mat = iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr)
     _dates = returns_wide_df["Date"].to_numpy()
 
-    plot_covariance_matrices(_cov_mat, _dates)
+    plot_covariance_matrices(_cov_mat, _dates, _h_vol, _h_corr)
     return
 
 
