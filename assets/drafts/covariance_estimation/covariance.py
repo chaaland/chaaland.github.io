@@ -12,29 +12,21 @@ def imports():
     import polars.selectors as cs
     import matplotlib.pyplot as plt
     import numpy as np
-    import scipy
     import marimo as mo
 
     from pathlib import Path
 
     start_date = datetime.datetime(2020, 1, 1)
     end_date = datetime.datetime(2024, 12, 31)
-    return Path, cs, end_date, mo, np, pl, plt, scipy, start_date, yf
+    return Path, cs, end_date, mo, np, pl, plt, start_date, yf
 
 
-@app.cell
-def plot_helpers():
-    def make_cartesian_plane(ax):
-        ax.spines["top"].set_color("none")
-        ax.spines["bottom"].set_position("zero")
-        ax.spines["left"].set_position("zero")
-        ax.spines["right"].set_color("none")
-
-
-    def remove_spines(ax):
-        ax.spines[["right", "top"]].set_visible(False)
-
-    return make_cartesian_plane, remove_spines
+@app.function
+def make_cartesian_plane(ax):
+    ax.spines["top"].set_color("none")
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["left"].set_position("zero")
+    ax.spines["right"].set_color("none")
 
 
 @app.cell
@@ -45,7 +37,6 @@ def chart_style_helpers():
     _GRID = "#e5e7eb"
     _SPINE = "#d1d5db"
     _DIM = "#6b7280"
-
 
     def style_ax(ax, fig=None, date_interval=6, labelsize=8.5, tick_length=5, pad=6, y_fmt=None):
         if fig is not None:
@@ -85,7 +76,6 @@ def load_stock_data(Path, cs, end_date, pl, start_date, yf):
     symbols = ["META", "AAPL", "AMZN", "NFLX", "GOOG"]
     colors = ["tab:blue", "tab:gray", "tab:purple", "tab:red", "tab:green"]
     symbol_to_color = dict(zip(symbols, colors))
-    window = 5 * 4 * 3  # days in week x weeks in month x weeks in quarter
 
     if data_file.exists():
         df = pl.read_parquet(data_file)
@@ -169,23 +159,6 @@ def check_mean_returns(pl, returns_df):
 
 
 @app.cell
-def define_panel_timeseries_plot(plt, remove_spines, symbol_to_color):
-    def plot_panel_timeseries(df):
-        plt.figure(figsize=(10, 5))
-
-        for _i, ((_ticker,), _sub_df) in enumerate(df.partition_by("Ticker", as_dict=True, maintain_order=True).items()):
-            plt.subplot(2, 3, _i + 1)
-            plt.plot(_sub_df["Date"], _sub_df["Return"], label=_ticker, alpha=0.7, color=symbol_to_color[_ticker])
-            remove_spines(plt.gca())
-            plt.title(_ticker)
-            plt.xticks(rotation=45)
-
-        return plt.gcf()
-
-    return
-
-
-@app.cell
 def plot_return_timeseries(plt, returns_df, style_ax, symbol_to_color):
     _INK = "#111827"
 
@@ -220,6 +193,57 @@ def plot_return_timeseries(plt, returns_df, style_ax, symbol_to_color):
     return
 
 
+@app.cell
+def plot_cumulative_returns(
+    pl,
+    plt,
+    returns_df,
+    style_ax,
+    symbol_to_color,
+    symbols,
+):
+    _INK = "#111827"
+
+    _cumulative_df = returns_df.with_columns(
+        CumReturn=(1 + pl.col("Return")).cum_prod().over("Ticker") - 1,
+    )
+
+    _fig, _ax = plt.subplots(figsize=(10, 4.5))
+    _by_ticker = _cumulative_df.partition_by("Ticker", as_dict=True)
+    for _ticker in symbols:  # same order as the close price legend
+        _sub_df = _by_ticker[(_ticker,)]
+        _c = symbol_to_color[_ticker]
+        _dates = _sub_df["Date"].to_numpy()
+        _cum = _sub_df["CumReturn"].to_numpy()
+        _ax.plot(_dates, _cum, color=_c, linewidth=1.6, alpha=0.9, zorder=2, label=_ticker)
+        _ax.scatter([_dates[-1]], [_cum[-1]], color=_c, s=22, zorder=5, linewidths=0)
+
+    _ax.axhline(0, color="#9ca3af", linewidth=0.8, zorder=1)
+    style_ax(_ax, fig=_fig, date_interval=6, y_fmt=lambda v, _: f"{v:.0%}")
+    _ax.legend(
+        frameon=True,
+        loc="upper left",
+        facecolor="#f9fafb",
+        edgecolor="#d1d5db",
+        labelcolor=_INK,
+        fontsize=8.5,
+        handlelength=1.3,
+        borderpad=0.9,
+        borderaxespad=0.8,
+    )
+    _ax.set_title(
+        "FAANG  ·  Cumulative Return  (2020 – 2024)",
+        color=_INK,
+        fontsize=11,
+        fontweight="bold",
+        loc="left",
+        pad=10,
+    )
+    _fig.tight_layout()
+    plt.gcf()
+    return
+
+
 @app.cell(hide_code=True)
 def section_fixed_window_ma(mo):
     mo.md(r"""
@@ -228,47 +252,73 @@ def section_fixed_window_ma(mo):
     return
 
 
+@app.cell(hide_code=True)
+def ma_returns_window_selector(mo):
+    ma_returns_window_radio = mo.ui.radio(
+        options={"5 days (1 week)": 5, "20 days (1 month)": 20, "60 days (1 quarter)": 60},
+        value="20 days (1 month)",
+        label="MA window",
+        inline=True,
+    )
+    return (ma_returns_window_radio,)
+
+
 @app.cell
-def plot_ma_returns(pl, plt, returns_df, style_ax, symbol_to_color):
+def plot_ma_returns(
+    ma_returns_window_radio,
+    mo,
+    pl,
+    plt,
+    returns_df,
+    style_ax,
+    symbol_to_color,
+    symbols,
+):
     _INK = "#111827"
+    _w = ma_returns_window_radio.value
 
-    for _w in [5, 20, 60]:  # 1 week, 1 month, 1 quarter
-        _returns_ma = returns_df.select(
-            "Ticker",
-            "Date",
-            pl.col("Return").rolling_mean(window_size=_w, min_samples=1).over("Ticker"),
-            pl.row_index().over("Ticker").alias("index"),
-        ).filter(pl.col("index").ge(_w))
+    _returns_ma = returns_df.select(
+        "Ticker",
+        "Date",
+        pl.col("Return").rolling_mean(window_size=_w, min_samples=1).over("Ticker"),
+        pl.row_index().over("Ticker").alias("index"),
+    ).filter(pl.col("index").ge(_w))
+    _by_ticker = _returns_ma.partition_by("Ticker", as_dict=True)
 
-        _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
-        _fig.patch.set_facecolor("#ffffff")
-        for _i, ((_ticker,), _sub_df) in enumerate(
-            _returns_ma.partition_by("Ticker", as_dict=True, maintain_order=True).items()
-        ):
-            _ax = _axes.flat[_i]
-            _ax.plot(
-                _sub_df["Date"].to_numpy(),
-                _sub_df["Return"].to_numpy(),
-                color=symbol_to_color[_ticker],
-                linewidth=1.0,
-                alpha=0.85,
-                zorder=2,
-            )
-            style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4, y_fmt=lambda v, _: f"{v:.1%}")
-            _ax.set_title(_ticker, color=_INK, fontsize=9, fontweight="bold", loc="left", pad=5)
-
-        _axes.flat[-1].set_visible(False)
-        _fig.suptitle(
-            f"FAANG  ·  Close Return MA  (window = {_w}d)",
-            color=_INK,
-            fontsize=11,
-            fontweight="bold",
-            x=0.0,
-            ha="left",
+    _fig, _ax = plt.subplots(figsize=(10, 4.5))
+    for _ticker in symbols:  # same order as the close price legend
+        _sub_df = _by_ticker[(_ticker,)]
+        _ax.plot(
+            _sub_df["Date"].to_numpy(),
+            _sub_df["Return"].to_numpy(),
+            color=symbol_to_color[_ticker],
+            linewidth=1.2,
+            alpha=0.9,
+            zorder=2,
+            label=_ticker,
         )
-        _fig.tight_layout(rect=[0, 0, 1, 0.94])
 
-    plt.show()
+    _ax.axhline(0, color="#9ca3af", linewidth=0.8, zorder=1)
+    style_ax(_ax, fig=_fig, date_interval=6, y_fmt=lambda v, _: f"{v:.1%}")
+    _ax.legend(
+        frameon=False,
+        loc="lower right",
+        bbox_to_anchor=(1.0, 1.0),  # above the axes, level with the title, so it never covers data
+        ncol=5,
+        labelcolor=_INK,
+        fontsize=8.5,
+        handlelength=1.3,
+    )
+    _ax.set_title(
+        f"FAANG  ·  Close Return MA  (window = {_w}d)",
+        color=_INK,
+        fontsize=11,
+        fontweight="bold",
+        loc="left",
+        pad=10,
+    )
+    _fig.tight_layout()
+    mo.vstack([ma_returns_window_radio, _fig])
     return
 
 
@@ -300,7 +350,6 @@ def rolling_window_covariance(np):
             covariances.append(cov_t)
 
         return np.stack(covariances, axis=-1)
-
 
     def rolling_window_covariance_estimate(arr: np.ndarray, window: int) -> np.ndarray:
         N, T = arr.shape  # arr.shape = (stocks, time)
@@ -336,11 +385,25 @@ def prepare_returns_array(returns_df, symbols):
     ma_window = 50
 
     returns_wide_df
-    return ma_window, returns_arr, returns_wide_df
+    return returns_arr, returns_wide_df
+
+
+@app.cell(hide_code=True)
+def ma_window_selector(mo):
+    ma_window_radio = mo.ui.radio(
+        options={"5 days (1 week)": 5, "20 days (1 month)": 20, "60 days (1 quarter)": 60},
+        value="20 days (1 month)",
+        label="MA window",
+        inline=True,
+    )
+    return (ma_window_radio,)
 
 
 @app.cell
 def plot_ma_std_dev_comparison(
+    ma_window_radio,
+    mo,
+    np,
     plt,
     returns_arr,
     returns_wide_df,
@@ -352,76 +415,41 @@ def plot_ma_std_dev_comparison(
     _INK = "#111827"
     _DIM = "#6b7280"
     _dates = returns_wide_df["Date"].to_numpy()
+    _ma_window = ma_window_radio.value
 
-    for _ma_window in [5, 20, 60]:
-        _cov = rolling_window_covariance_estimate_naive(returns_arr, window=_ma_window, demean=False)
-        _cov_dm = rolling_window_covariance_estimate_naive(returns_arr, window=_ma_window, demean=True)
+    def _std_devs(demean):
+        _cov = rolling_window_covariance_estimate_naive(returns_arr, window=_ma_window, demean=demean)
+        return np.stack([_cov[_i, _i, :] ** 0.5 for _i in range(len(symbols))])  # (stocks, time)
 
-        _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
-        _fig.patch.set_facecolor("#ffffff")
-        for _i, _symbol in enumerate(symbols):
-            _ax = _axes.flat[_i]
-            _c = symbol_to_color[_symbol]
-            _ax.plot(_dates, _cov[_i, _i, :] ** 0.5, color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="raw")
-            _ax.plot(
-                _dates,
-                _cov_dm[_i, _i, :] ** 0.5,
-                color=_c,
-                linewidth=1.0,
-                alpha=0.55,
-                linestyle="--",
-                zorder=2,
-                label="demeaned",
-            )
-            style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4, y_fmt=lambda v, _: f"{v:.1%}")
-            _ax.set_ylim(0, 0.05)
-            _ax.set_title(_symbol, color=_INK, fontsize=9, fontweight="bold", loc="left", pad=5)
-            if _i == 0:
-                _ax.legend(frameon=False, fontsize=7, labelcolor=_DIM)
-
-        _axes.flat[-1].set_visible(False)
-        _fig.suptitle(
-            f"FAANG  ·  Rolling Std Dev  (window = {_ma_window}d)",
-            color=_INK,
-            fontsize=11,
-            fontweight="bold",
-            x=0.0,
-            ha="left",
-        )
-        _fig.tight_layout(rect=[0, 0, 1, 0.94])
-
-    plt.show()
-    return
-
-
-@app.cell
-def plot_rolling_window_std_dev(
-    ma_window,
-    plt,
-    returns_arr,
-    returns_wide_df,
-    rolling_window_covariance_estimate,
-    style_ax,
-    symbol_to_color,
-    symbols,
-):
-    _INK = "#111827"
-    _dates = returns_wide_df["Date"].to_numpy()
-
-    cov_ma_2 = rolling_window_covariance_estimate(returns_arr, window=ma_window)
+    _std_raw = _std_devs(demean=False)
+    _std_dm = _std_devs(demean=True)
+    _ymax = 1.05 * max(_std_raw.max(), _std_dm.max())  # shared across panels, so nothing is cut off
 
     _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
     _fig.patch.set_facecolor("#ffffff")
     for _i, _symbol in enumerate(symbols):
         _ax = _axes.flat[_i]
-        _ax.plot(_dates, cov_ma_2[_i, _i, :] ** 0.5, color=symbol_to_color[_symbol], linewidth=1.0, alpha=0.9, zorder=2)
+        _c = symbol_to_color[_symbol]
+        _ax.plot(_dates, _std_raw[_i], color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="raw")
+        _ax.plot(
+            _dates,
+            _std_dm[_i],
+            color=_c,
+            linewidth=1.0,
+            alpha=0.55,
+            linestyle="--",
+            zorder=2,
+            label="demeaned",
+        )
         style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4, y_fmt=lambda v, _: f"{v:.1%}")
-        _ax.set_ylim(0, 0.05)
+        _ax.set_ylim(0, _ymax)
         _ax.set_title(_symbol, color=_INK, fontsize=9, fontweight="bold", loc="left", pad=5)
+        if _i == 0:
+            _ax.legend(frameon=False, fontsize=7, labelcolor=_DIM)
 
     _axes.flat[-1].set_visible(False)
     _fig.suptitle(
-        f"FAANG  ·  Rolling Std Dev  (window = {ma_window}d)",
+        f"FAANG  ·  Rolling Std Dev  (window = {_ma_window}d)",
         color=_INK,
         fontsize=11,
         fontweight="bold",
@@ -429,7 +457,7 @@ def plot_rolling_window_std_dev(
         ha="left",
     )
     _fig.tight_layout(rect=[0, 0, 1, 0.94])
-    plt.gcf()
+    mo.vstack([ma_window_radio, _fig])
     return
 
 
@@ -444,147 +472,10 @@ def section_ewma_formula(mo):
 
 
 @app.cell
-def ewma_kernel_scratch():
-    # _beta = 0.7
-    # plt.figure(figsize=(6, 6))
-
-    # _kernel = _beta ** np.arange(10)
-    # markerline, stemlines, baseline = plt.stem(np.arange(10), _kernel, basefmt=" ")
-    # plt.setp(stemlines, "linewidth", 2)
-    # plt.setp(markerline, markersize=7)
-    # make_cartesian_plane(plt.gca())
-    # plt.tight_layout()
-
-    # plt.figure(figsize=(6, 6))
-    # _y = np.array([0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0, 0 , 0])
-    # markerline, stemlines, baseline = plt.stem(np.arange(len(_y)), _y, "tab:orange", basefmt=" ")
-    # plt.setp(stemlines, "linewidth", 2)
-    # plt.setp(markerline, markersize=7)
-    # make_cartesian_plane(plt.gca())
-    # plt.tight_layout()
-
-    # plt.show()
-    return
-
-
-@app.cell
-def define_discrete_convolution(np):
-    def discrete_convolution(x1, n1, x2, n2):
-        """
-        Compute the discrete convolution of two signals x1[n] and x2[n].
-
-        Parameters:
-        -----------
-        x1 : array-like
-            First discrete signal values.
-        n1 : array-like
-            Corresponding sample indices for x1.
-        x2 : array-like
-            Second discrete signal values.
-        n2 : array-like
-            Corresponding sample indices for x2.
-
-        Returns:
-        --------
-        y : np.ndarray
-            Convolved signal values.
-        n : np.ndarray
-            Corresponding sample indices for the convolution result.
-        """
-        y = np.convolve(x1, x2)
-        n_start = n1[0] + n2[0]
-        n_end = n1[-1] + n2[-1]
-        n = np.arange(n_start, n_end + 1)
-        return y, n
-
-    return (discrete_convolution,)
-
-
-@app.cell
-def ewma_sliders(mo):
-    K = 10
-    beta_slider = mo.ui.slider(0.5, 0.9, 0.05)
-    tau_slider = mo.ui.slider(1, K, 1)
-    return K, beta_slider, tau_slider
-
-
-@app.cell
-def plot_convolution_demo(
-    K,
-    beta_slider,
-    discrete_convolution,
-    make_cartesian_plane,
-    np,
-    plt,
-    tau_slider,
-):
-    _beta = beta_slider.value
-
-    plt.figure(figsize=(6, 6))
-    plt.subplot(221)
-    kernel = _beta ** np.arange(K)
-
-    markerline, stemlines, baseline = plt.stem(np.arange(kernel.size), kernel, basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2)
-    plt.setp(markerline, markersize=7)
-    plt.xlim([-3, 9])
-    make_cartesian_plane(plt.gca())
-
-    plt.subplot(223)
-    _y = np.array([0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0, 0, 0])
-    markerline, stemlines, baseline = plt.stem(np.arange(len(_y)), _y, "tab:orange", basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2)
-    plt.setp(markerline, markersize=7)
-    plt.xlim([-3, 9])
-
-    make_cartesian_plane(plt.gca())
-
-    plt.subplot(222)
-
-    _tau = tau_slider.value
-    _x = np.arange(kernel.size)
-    _x = _tau - _x
-    markerline, stemlines, baseline = plt.stem(_x + 0.1, kernel, basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2, alpha=0.7)
-    plt.setp(markerline, markersize=7, alpha=0.7)
-
-    markerline, stemlines, baseline = plt.stem(np.arange(len(_y)) - 0.1, _y, "tab:orange", basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2)
-    plt.setp(markerline, markersize=7)
-    plt.xlim([-3.1, 9])
-    make_cartesian_plane(plt.gca())
-    plt.tight_layout()
-
-    plt.subplot(224)
-    _out, _x = discrete_convolution(kernel, np.arange(kernel.size), _y, np.arange(_y.size))
-    markerline, stemlines, baseline = plt.stem(_x[:_tau], _out[:_tau], "g", basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2, alpha=0.5)
-    plt.setp(markerline, markersize=7, alpha=0.5)
-    markerline, stemlines, baseline = plt.stem(_x[_tau], _out[_tau], "g", basefmt=" ")
-    plt.setp(stemlines, "linewidth", 2)
-    plt.setp(markerline, markersize=7)
-
-    plt.xlim([-3.1, 9])
-    plt.ylim([0, 3])
-    make_cartesian_plane(plt.gca())
-    plt.tight_layout()
-
-    fig = plt.gcf()
-    return (fig,)
-
-
-@app.cell
-def display_convolution_widget(beta_slider, fig, mo, tau_slider):
-    mo.hstack([fig, mo.md(f"tau: {tau_slider}"), mo.md(f"beta: {beta_slider}")])
-    return
-
-
-@app.cell
 def ewma_functions(np):
     def _regularize_covariance(cov: np.ndarray, shrinkage_alpha: float = 0.01):
         cov = (1 - shrinkage_alpha) * cov + shrinkage_alpha * np.diag(np.diag(cov))  # ensure full rank
         return cov
-
 
     def ewma_cov(samples, beta):
         # zero-mean EWMA second moment, as in the paper: matches ewma_covariance_estimate
@@ -593,7 +484,6 @@ def ewma_functions(np):
         factor = (1 - beta) / (1 - beta**T)
         cov_t = factor * (weights[None, :] * samples) @ samples.T  # (N, N)
         return cov_t
-
 
     def ewma_covariance_estimate_naive(arr, beta: float, shrinkage_alpha: float = 0.01):
         # arr.shape = (stocks, time)
@@ -608,7 +498,6 @@ def ewma_functions(np):
 
         return np.stack(covariances, axis=-1)
 
-
     def ewma_covariance_estimate(arr: np.ndarray, beta: float, shrinkage_alpha: float = 0.01):
         # arr.shape = (stocks, time)
         N, T = arr.shape
@@ -618,15 +507,10 @@ def ewma_functions(np):
 
         # shrink only the stored output, so every step is regularized like the naive version
         covariances = [_regularize_covariance(cov_t, shrinkage_alpha)]
-        means = [r_t.copy()]
 
-        mean_t = r_t
         for t in range(1, T):
             r_t = arr[:, t]
 
-            a_1 = (beta - beta ** (t + 1)) / (1 - beta ** (t + 1))
-            a_2 = (1 - beta) / (1 - beta ** (t + 1))
-            mean_t = a_1 * mean_t + a_2 * r_t
             cov_t = (beta - beta ** (t + 1)) / (1 - beta ** (t + 1)) * cov_t
             cov_t += (1 - beta) / (1 - beta ** (t + 1)) * np.outer(r_t, r_t)  # (N, N)
 
@@ -651,64 +535,72 @@ def ewma_functions(np):
 
 
 @app.cell
-def test_correlate2d(np, scipy):
-    _in2 = (0.5 ** np.arange(5))[None, ::-1]
-    scipy.signal.correlate2d(np.ones((3, 5)), _in2)
+def check_ewma_naive_matches_fast(
+    ewma_covariance_estimate,
+    ewma_covariance_estimate_naive,
+    np,
+    returns_arr,
+):
+    # the naive O(T^3) version is only a correctness check, so run it on a short slice
+    _slice = returns_arr[:, :200]
+    for _half_life in [5, 20, 60]:
+        _beta = 0.5 ** (1 / _half_life)
+        np.testing.assert_allclose(
+            ewma_covariance_estimate_naive(_slice, _beta),
+            ewma_covariance_estimate(_slice, _beta),
+            atol=1e-12,
+        )
     return
+
+
+@app.cell(hide_code=True)
+def section_ewma_vs_ma(mo):
+    mo.md(r"""
+    ### Comparing EWMA and a rolling window
+
+    An EWMA is parameterized by a half-life $H$ and a rolling window by a length $M$. These are not
+    the same kind of "memory", so matching $M = H$ would be misleading: the EWMA still puts weight on
+    data far older than $H$ days, while the window drops it entirely.
+
+    A fairer comparison matches how *noisy* the two estimators are. Any estimator of the form
+    $\hat{\Sigma} = \sum_i w_i r_i r_i^T$ with weights summing to one has variance proportional to
+    the sum of squared weights (for i.i.d. returns),
+
+    $$\mathrm{Var}(\hat{\Sigma}) \propto \sum_i w_i^2 \quad\Longleftrightarrow\quad N_{\text{eff}} = {1 \over \sum_i w_i^2},$$
+
+    where $N_{\text{eff}}$ is the *effective sample size*. For a rolling window, $w_i = 1/M$ on $M$
+    samples, so $N_{\text{eff}} = M$. For the EWMA, the normalized weights are
+    $w_i = (1-\beta)\beta^i$ (with $i$ the age of the sample), so
+
+    $$\sum_i w_i^2 = (1-\beta)^2 \sum_{i \ge 0} \beta^{2i} = {(1-\beta)^2 \over 1-\beta^2} = {1-\beta \over 1+\beta}
+    \quad\Longrightarrow\quad N_{\text{eff}} = {1+\beta \over 1-\beta}, \qquad \beta = 2^{-1/H}.$$
+
+    Setting $M = N_{\text{eff}}$ gives a rolling window whose estimates are about as noisy as the EWMA's.
+    For the half-lives below this gives $H = 5, 20, 60 \Rightarrow M = 14, 58, 173$ days. Any remaining
+    difference in the plots is then about *shape* (smooth decay vs. a hard cutoff), not noise level:
+    the window shows abrupt jumps when a large return enters and, $M$ days later, leaves.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def ewma_half_life_selector(mo):
+    ewma_half_life_radio = mo.ui.radio(
+        options={"5 days": 5, "20 days": 20, "60 days": 60},
+        value="20 days",
+        label="EWMA half-life",
+        inline=True,
+    )
+    return (ewma_half_life_radio,)
 
 
 @app.cell
 def plot_ewma_vs_ma_std_dev(
     equivalent_window,
-    ewma_covariance_estimate_naive,
-    plt,
-    returns_arr,
-    returns_wide_df,
-    rolling_window_covariance_estimate,
-    style_ax,
-    symbol_to_color,
-    symbols,
-):
-    _INK = "#111827"
-    _DIM = "#6b7280"
-    _dates = returns_wide_df["Date"].to_numpy()
-
-    for _half_life in [5, 20, 60]:
-        _cov_ewma = ewma_covariance_estimate_naive(returns_arr, beta=0.5 ** (1 / _half_life))
-        _window = equivalent_window(_half_life)  # same effective sample size as the EWMA
-        _cov_ma = rolling_window_covariance_estimate(returns_arr, window=_window)
-
-        _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
-        _fig.patch.set_facecolor("#ffffff")
-        for _i, _symbol in enumerate(symbols):
-            _ax = _axes.flat[_i]
-            _c = symbol_to_color[_symbol]
-            _ax.plot(_dates, _cov_ewma[_i, _i, :] ** 0.5,
-                     color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="ewma")
-            _ax.plot(_dates, _cov_ma[_i, _i, :] ** 0.5,
-                     color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label=f"ma ({_window}d)")
-            style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4,
-                     y_fmt=lambda v, _: f"{v:.1%}")
-            _ax.set_ylim(0, 0.06)
-            _ax.set_title(_symbol, color=_INK, fontsize=9, fontweight="bold", loc="left", pad=5)
-            if _i == 0:
-                _ax.legend(frameon=False, fontsize=7, labelcolor=_DIM)
-
-        _axes.flat[-1].set_visible(False)
-        _fig.suptitle(
-            rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {_half_life}d, MA window = {_window}d)",
-            color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
-        )
-        _fig.tight_layout(rect=[0, 0, 1, 0.94])
-
-    plt.show()
-    return
-
-
-@app.cell
-def plot_ewma_covariance_std_dev(
-    equivalent_window,
     ewma_covariance_estimate,
+    ewma_half_life_radio,
+    mo,
+    np,
     plt,
     returns_arr,
     returns_wide_df,
@@ -720,43 +612,56 @@ def plot_ewma_covariance_std_dev(
     _INK = "#111827"
     _DIM = "#6b7280"
     _dates = returns_wide_df["Date"].to_numpy()
+    _half_life = ewma_half_life_radio.value
 
-    half_life = 20
-    cov_ewma_2 = ewma_covariance_estimate(returns_arr, beta=0.5 ** (1 / half_life))
-    _window = equivalent_window(half_life)  # same effective sample size as the EWMA
+    _window = equivalent_window(_half_life)  # same effective sample size as the EWMA
+    _cov_ewma = ewma_covariance_estimate(returns_arr, beta=0.5 ** (1 / _half_life))
     _cov_ma = rolling_window_covariance_estimate(returns_arr, window=_window)
+    _std_ewma = np.stack([_cov_ewma[_i, _i, :] ** 0.5 for _i in range(len(symbols))])  # (stocks, time)
+    _std_ma = np.stack([_cov_ma[_i, _i, :] ** 0.5 for _i in range(len(symbols))])
+    _ymax = 1.05 * max(_std_ewma.max(), _std_ma.max())  # shared across panels, so nothing is cut off
 
     _fig, _axes = plt.subplots(2, 3, figsize=(12, 5))
     _fig.patch.set_facecolor("#ffffff")
     for _i, _symbol in enumerate(symbols):
         _ax = _axes.flat[_i]
         _c = symbol_to_color[_symbol]
-        _ax.plot(_dates, cov_ewma_2[_i, _i, :] ** 0.5,
-                 color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="ewma")
-        _ax.plot(_dates, _cov_ma[_i, _i, :] ** 0.5,
-                 color=_c, linewidth=1.0, alpha=0.55, linestyle="--", zorder=2, label=f"ma ({_window}d)")
-        style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4,
-                 y_fmt=lambda v, _: f"{v:.1%}")
-        _ax.set_ylim(0, 0.06)
+        _ax.plot(_dates, _std_ewma[_i], color=_c, linewidth=1.0, alpha=0.9, zorder=2, label="ewma")
+        _ax.plot(
+            _dates,
+            _std_ma[_i],
+            color=_c,
+            linewidth=1.0,
+            alpha=0.55,
+            linestyle="--",
+            zorder=2,
+            label=f"ma ({_window}d)",
+        )
+        style_ax(_ax, date_interval=12, labelsize=7.5, tick_length=4, pad=4, y_fmt=lambda v, _: f"{v:.1%}")
+        _ax.set_ylim(0, _ymax)
         _ax.set_title(_symbol, color=_INK, fontsize=9, fontweight="bold", loc="left", pad=5)
         if _i == 0:
             _ax.legend(frameon=False, fontsize=7, labelcolor=_DIM)
 
     _axes.flat[-1].set_visible(False)
     _fig.suptitle(
-        rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {half_life}d, MA window = {_window}d)",
-        color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
+        rf"FAANG  ·  EWMA vs MA Std Dev  ($H^{{vol}}$ = {_half_life}d, MA window = {_window}d)",
+        color=_INK,
+        fontsize=11,
+        fontweight="bold",
+        x=0.0,
+        ha="left",
     )
     _fig.tight_layout(rect=[0, 0, 1, 0.94])
-    plt.gcf()
-    return cov_ewma_2, half_life
+    mo.vstack([ewma_half_life_radio, _fig])
+    return
 
 
 @app.cell
 def plot_full_covariance_grid(
-    cov_ewma_2,
-    half_life,
+    ewma_covariance_estimate,
     plt,
+    returns_arr,
     returns_wide_df,
     style_ax,
     symbol_to_color,
@@ -767,6 +672,9 @@ def plot_full_covariance_grid(
     _INK = "#111827"
     _dates = returns_wide_df["Date"].to_numpy()
 
+    _half_life = 20
+    _cov_ewma = ewma_covariance_estimate(returns_arr, beta=0.5 ** (1 / _half_life))
+
     _fig, _axes = plt.subplots(5, 5, figsize=(14, 12))
     _fig.patch.set_facecolor("#ffffff")
 
@@ -775,7 +683,7 @@ def plot_full_covariance_grid(
         _ax = _axes[x, y]
         _c = _INK if _symbol_1 != _symbol_2 else symbol_to_color[_symbol_1]
 
-        _ax.plot(_dates, cov_ewma_2[x, y, :], color=_c, linewidth=0.9, alpha=0.85, zorder=2)
+        _ax.plot(_dates, _cov_ewma[x, y, :], color=_c, linewidth=0.9, alpha=0.85, zorder=2)
         style_ax(_ax, date_interval=24, labelsize=6.5, tick_length=3, pad=3)
         _ax.set_ylim(0, 0.005)
 
@@ -785,8 +693,12 @@ def plot_full_covariance_grid(
             _ax.set_ylabel(_symbol_1, color=_INK, fontsize=8, fontweight="bold")
 
     _fig.suptitle(
-        f"FAANG  ·  EWMA Covariance  (H = {half_life}d)",
-        color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
+        f"FAANG  ·  EWMA Covariance  (H = {_half_life}d)",
+        color=_INK,
+        fontsize=11,
+        fontweight="bold",
+        x=0.0,
+        ha="left",
     )
     _fig.tight_layout(rect=[0, 0, 1, 0.97])
     plt.gcf()
@@ -804,16 +716,22 @@ def define_iterated_ewma(ewma_covariance_estimate, np):
         """
         return np.concatenate([x[..., :1], x[..., :-1]], axis=-1)
 
-    def iterated_ewma(returns: np.ndarray, h_vol: float, h_corr: float) -> np.ndarray:
+    def iterated_ewma(returns: np.ndarray, h_vol: float, h_corr: float, clip_at: float | None = 4.2) -> np.ndarray:
         """
         IEWMA predictor. Returns covariance predictions of shape (N, N, T), where
         entry [..., t] is the prediction for day t made from returns[:, :t] only.
+
+        clip_at winsorizes the standardized returns at +-clip_at before the correlation EWMA
+        (the paper's rule of thumb is 4.2). Pass None to disable; the paper's reference code
+        (cvxgrp/cov_pred_finance) does not winsorize in its stock experiment.
         """
         covs = ewma_covariance_estimate(returns, beta=0.5 ** (1 / h_vol))  # (N, N, T)
         std_devs = _one_step_ahead(np.diagonal(covs, axis1=0, axis2=1).T ** 0.5)  # (N, T)
 
         returns_standardized = returns / std_devs  # (N, T), sigma_t excludes r_t
-        winsorized_returns = np.clip(returns_standardized, a_min=-4.2, a_max=4.2)
+        winsorized_returns = (
+            returns_standardized if clip_at is None else np.clip(returns_standardized, a_min=-clip_at, a_max=clip_at)
+        )
 
         R = ewma_covariance_estimate(winsorized_returns, 0.5 ** (1 / h_corr))  # (N, N, T)
         std_devs_R = np.diagonal(R, axis1=0, axis2=1).T ** 0.5  # (N, T)
@@ -861,14 +779,18 @@ def define_plot_covariance_matrices(
             style_ax(_ax, date_interval=24, labelsize=6.5, tick_length=3, pad=3, y_fmt=_y_fmt)
             _ax.set_ylim(0, 1 if is_off_diag else 0.06)
 
-            if y == 0:
+            if y == x:
                 _ax.set_ylabel(_symbol_1, color=_INK, fontsize=8, fontweight="bold")
             if x == 0:
                 _ax.set_title(_symbol_2, color=_INK, fontsize=8, fontweight="bold", loc="left", pad=4)
 
         _fig.suptitle(
             rf"FAANG  ·  IEWMA Correlation & Std Dev  ($H^{{vol}}$ = {h_vol}d, $H^{{cor}}$ = {h_corr}d)",
-            color=_INK, fontsize=11, fontweight="bold", x=0.0, ha="left",
+            color=_INK,
+            fontsize=11,
+            fontweight="bold",
+            x=0.0,
+            ha="left",
         )
         _fig.tight_layout(rect=[0, 0, 1, 0.97])
         return _fig
@@ -891,28 +813,112 @@ def run_iterated_ewma(
     return
 
 
+@app.cell(hide_code=True)
+def section_cm_iewma(mo):
+    mo.md(r"""
+    # Combining Predictors (CM-IEWMA)
+
+    No single pair of half-lives $(H^{\text{vol}}, H^{\text{cor}})$ is best in every market regime. Fast
+    predictors react quickly when volatility jumps, and slow predictors are less noisy when markets are calm.
+    Given $K$ IEWMA predictors $\hat{\Sigma}^{(k)}_t$, Johansson et al. (2023) combine them with weights
+    chosen from how well each has predicted the last $N$ days.
+
+    ## Log-likelihood in terms of the precision Cholesky factor
+
+    Write the precision matrix of each predictor as $(\hat{\Sigma}^{(k)}_t)^{-1} = L^{(k)}_t (L^{(k)}_t)^T$,
+    with $L^{(k)}_t$ lower triangular with positive diagonal. Since
+    $\det \hat{\Sigma}^{-1} = \prod_i L_{ii}^2$ and $r^T \hat{\Sigma}^{-1} r = \|L^T r\|_2^2$, the
+    Gaussian log-likelihood of a return $r_t$ is, up to a constant,
+
+    $$\ell_t(L) = \sum_{i=1}^n \log L_{ii} - \tfrac{1}{2} \|L^T r_t\|_2^2 .$$
+
+    The combined predictor mixes the **factors** (not the covariances) with weights $w \in \mathbf{R}^K$ in the simplex,
+
+    $$L_t(w) = \sum_{k=1}^K w_k L^{(k)}_t, \qquad w \succeq 0, \quad \mathbf{1}^T w = 1, \qquad
+    \hat{\Sigma}_t = \left(L_t(w) L_t(w)^T\right)^{-1}.$$
+
+    A mixture of lower triangular matrices with positive diagonals is again one, so $\hat{\Sigma}_t$ is always a
+    valid covariance matrix.
+
+    ## The weight problem
+
+    The prediction $L^{(k)}_s$ for day $s$ only uses returns through day $s-1$. To choose the weights for day $t$,
+    we score the combined predictor on the last $N$ days, whose returns are now known:
+
+    $$\begin{aligned}
+    \underset{w}{\text{maximize}} \quad & \sum_{s=t-N}^{t-1} \left[ \sum_{i=1}^n \log L_{s,ii}(w) - \tfrac{1}{2} \|L_s(w)^T r_s\|_2^2 \right] \\
+    \text{subject to} \quad & w \succeq 0, \quad \mathbf{1}^T w = 1 .
+    \end{aligned}$$
+
+    The solution is then applied to the factors for day $t$ itself. The only variable is $w \in \mathbf{R}^K$, and $\succeq$ denotes componentwise inequality.
+
+    ## Why this is a convex problem
+
+    We are maximizing a sum of concave functions over a polyhedron. Term by term, using the composition
+    rules for convex functions:
+
+    1. **Everything inside is affine in $w$.** $L_{s,ii}(w) = \sum_k w_k L^{(k)}_{s,ii}$ and
+       $L_s(w)^T r_s = \sum_k w_k \, L^{(k)T}_s r_s$ are both linear in $w$.
+    2. **The log terms are concave.** $\log$ is concave and nondecreasing, and it is composed with an affine
+       function of $w$, so $\log L_{s,ii}(w)$ is concave. Its argument is positive on the feasible set because
+       each $L^{(k)}_{s,ii} > 0$ and $w$ is a nonnegative vector summing to one.
+    3. **The quadratic terms are convex, so their negatives are concave.** $\|\cdot\|_2$ is convex and
+       nonnegative, and $u \mapsto u^2$ is convex and nondecreasing on $u \ge 0$. Composing the two with the
+       affine map $w \mapsto L_s(w)^T r_s$ gives a convex function, so $-\tfrac{1}{2}\|L_s(w)^T r_s\|_2^2$ is concave.
+    4. **Sums preserve concavity.** The objective is a sum of concave functions of $w$, and the constraints
+       $w \succeq 0$, $\mathbf{1}^T w = 1$ are polyhedral. Maximizing a concave function over a convex set is a
+       convex problem, so any local maximum is global and a solver finds it reliably.
+
+    ## Why mix Cholesky factors
+
+    Mixing the covariances $\sum_k w_k \hat{\Sigma}^{(k)}$ does **not** work: the log-likelihood
+    $-\tfrac{1}{2}\log\det\hat{\Sigma} - \tfrac{1}{2} r^T \hat{\Sigma}^{-1} r$ has a convex first term and a
+    concave second term, so it is not concave in $\hat{\Sigma}$.
+
+    Mixing the precision matrices $S = \hat{\Sigma}^{-1}$ would also give a concave objective,
+    $\tfrac{1}{2}\log\det S - \tfrac{1}{2} r^T S r$. The paper does not say why it prefers Cholesky factors.
+    A practical advantage is that $\log\det$ becomes a sum of $\log$s of linear functions of $w$, so the problem
+    needs only logs and a sum of squares, not a log-determinant.
+    """)
+    return
+
+
 @app.cell
-def precision_mixture_solver(iterated_ewma, np, returns_arr):
+def mixture_components(iterated_ewma, np, returns_arr):
     import cvxpy as cp
 
     # Half-life pairs (h_vol, h_corr) in days — "Stocks" configuration from Boyd et al. 2023
-    _HALF_LIFE_PAIRS = [(10, 21), (21, 63), (63, 125), (125, 250), (250, 500)]
+    half_life_pairs = [(10, 21), (21, 63), (63, 125), (125, 250), (250, 500)]
 
-    def _precision_cholesky_factors(
+    def precision_cholesky_factors(
         cov_matrices: list[np.ndarray],  # K one-step-ahead predictions, each (N, N, T)
     ) -> list[np.ndarray]:
         """Compute L^(k) s.t. (Σ^(k))^{-1} = L^(k) (L^(k))^T for each component k."""
         result = []
         for cov_k in cov_matrices:
-            cov_t = cov_k.transpose(2, 0, 1)         # (T, N, N)
-            prec_t = np.linalg.inv(cov_t)            # (T, N, N)
+            cov_t = cov_k.transpose(2, 0, 1)  # (T, N, N)
+            prec_t = np.linalg.inv(cov_t)  # (T, N, N)
             result.append(np.linalg.cholesky(prec_t))  # (T, N, N), lower triangular
         return result
 
+    cov_matrices = [iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr) for _h_vol, _h_corr in half_life_pairs]
+    return cov_matrices, cp, precision_cholesky_factors
+
+
+@app.cell
+def precision_mixture_solver_naive(
+    cov_matrices,
+    cp,
+    np,
+    precision_cholesky_factors,
+    returns_arr,
+):
+    # Direct formulation: build the full N x N cvxpy expression for every day in the window, every solve.
+
     def _solve_optimal_weights(
         cholesky_factors: list[np.ndarray],  # K arrays, each (window, N, N)
-        returns: np.ndarray,                  # (N, window)
-    ) -> np.ndarray:
+        returns: np.ndarray,  # (N, window)
+    ) -> np.ndarray | None:
         """
         Maximize the average log-likelihood of the combined predictor over the lookback window:
 
@@ -920,6 +926,9 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
             s.t.   L_t = sum_k w_k * L_t^(k),  w >= 0,  sum(w) = 1
 
         The objective is concave in w because log(diag(L_t)) is concave in w (affine composition).
+
+        Returns None if the solver fails, so callers can see failures instead of silently
+        getting uniform weights.
         """
         K = len(cholesky_factors)
         _, window = returns.shape
@@ -932,12 +941,15 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
             L_t = sum(w[k] * cholesky_factors[k][t] for k in range(K))
             obj += cp.sum(cp.log(diags @ w)) - 0.5 * cp.sum_squares(L_t.T @ returns[:, t])
 
-        cp.Problem(cp.Maximize(obj), [cp.sum(w) == 1]).solve()
+        try:
+            cp.Problem(cp.Maximize(obj), [cp.sum(w) == 1]).solve()
+        except cp.SolverError:
+            return None
 
-        return w.value if w.value is not None else np.ones(K) / K
+        return w.value
 
-    def solve_precision_mixture(
-        returns: np.ndarray,             # (N, T)
+    def solve_precision_mixture_naive(
+        returns: np.ndarray,  # (N, T)
         cov_matrices: list[np.ndarray],  # K arrays, each (N, N, T)
         look_back: int = 10,
     ) -> np.ndarray:
@@ -946,32 +958,126 @@ def precision_mixture_solver(iterated_ewma, np, returns_arr):
         log-likelihood over [t-look_back, t), then apply them to predict the covariance at t.
 
         Returns covariance predictions of shape (N, N, T - look_back - 1), aligned with
-        dates[look_back + 1:].
+        dates[look_back + 1:]. Days where the weight solve fails are NaN.
         """
         K = len(cov_matrices)
         _, _, T = cov_matrices[0].shape
 
-        L_all = _precision_cholesky_factors(cov_matrices)
+        L_all = precision_cholesky_factors(cov_matrices)
 
         cov_preds = []
+        n_failed = 0
         for t in range(look_back + 1, T):  # index 0 has no history (see _one_step_ahead)
-            w_opt = _solve_optimal_weights([Lk[t - look_back:t] for Lk in L_all], returns[:, t - look_back:t])
+            w_opt = _solve_optimal_weights([Lk[t - look_back : t] for Lk in L_all], returns[:, t - look_back : t])
+            if w_opt is None:
+                n_failed += 1
+                cov_preds.append(np.full(cov_matrices[0].shape[:2], np.nan))
+                continue
             L_t = sum(w_opt[k] * L_all[k][t] for k in range(K))
             cov_preds.append(np.linalg.inv(L_t @ L_t.T))
 
+        if n_failed:
+            print(f"Weight solve failed on {n_failed} of {T - look_back - 1} days (predictions are NaN)")
+
         return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
 
-    cov_matrices = [
-        iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr)
-        for _h_vol, _h_corr in _HALF_LIFE_PAIRS
-    ]
-    cov_predicted = solve_precision_mixture(returns_arr, cov_matrices, look_back=10)
-    return (cov_matrices,)
+    cov_predicted_naive = solve_precision_mixture_naive(returns_arr, cov_matrices, look_back=10)
+    return (cov_predicted_naive,)
 
 
 @app.cell
-def check_cov_eigenvalues(cov_matrices, np):
-    np.linalg.eigh(cov_matrices[0][:, :, 10])
+def precision_mixture_solver_kxk(
+    cov_matrices,
+    cp,
+    np,
+    precision_cholesky_factors,
+    returns_arr,
+):
+    # K x K formulation: the data enters only through A and P, and the problem is built once (DPP).
+
+    def _weight_problem(n_stocks: int, K: int, look_back: int):
+        """
+        Build the weight problem once, with the data as cvxpy Parameters (DPP), so each day only
+        swaps in new parameter values instead of re-canonicalizing the problem.
+
+        With L_s(w) = sum_k w_k L_s^(k), both terms of the objective are simple in w:
+
+            sum_i log L_s,ii(w)  =  sum(log(A @ w)),   A stacks diag(L_s^(k)) for the window
+                                                       (shape n_stocks * look_back x K)
+            sum_s ||L_s(w)^T r_s||^2  =  ||sum_k w_k B_s[:, k]||^2 summed over s  =  w^T P w,
+                                                       P = sum_s B_s^T B_s  (shape K x K),
+                                                       B_s[:, k] = L_s^(k)T r_s
+
+        so the data enters only through A and the K x K matrix P (passed as a square root P_half).
+        """
+        w = cp.Variable(K, nonneg=True)
+        A = cp.Parameter((n_stocks * look_back, K))
+        P_half = cp.Parameter((K, K))  # P = P_half @ P_half.T
+        objective = cp.sum(cp.log(A @ w)) - 0.5 * cp.sum_squares(P_half.T @ w)
+        problem = cp.Problem(cp.Maximize(objective), [cp.sum(w) == 1])
+        return problem, w, A, P_half
+
+    def _psd_square_root(P: np.ndarray) -> np.ndarray:
+        """S with S @ S.T = P. Uses eigh instead of Cholesky so a singular P does not fail."""
+        eigvals, eigvecs = np.linalg.eigh(P)
+        return eigvecs * np.sqrt(np.clip(eigvals, 0.0, None))
+
+    def solve_precision_mixture_kxk(
+        returns: np.ndarray,  # (N, T)
+        cov_matrices: list[np.ndarray],  # K arrays, each (N, N, T)
+        look_back: int = 10,
+    ) -> np.ndarray:
+        """
+        Same predictor as solve_precision_mixture_naive, but with the K x K reformulation of the weight problem.
+
+        Returns covariance predictions of shape (N, N, T - look_back - 1), aligned with
+        dates[look_back + 1:]. Days where the weight solve fails are NaN.
+        """
+        K = len(cov_matrices)
+        n_stocks, _, T = cov_matrices[0].shape
+
+        L_all = precision_cholesky_factors(cov_matrices)  # K arrays, each (T, N, N)
+
+        # Per-day data for the weight problem, computed once for all days
+        diags = np.stack([np.diagonal(L_k, axis1=1, axis2=2) for L_k in L_all], axis=-1)  # (T, N, K)
+        B = np.stack([np.einsum("tji,jt->ti", L_k, returns) for L_k in L_all], axis=-1)  # (T, N, K), L_k^T r_t
+        BtB = np.einsum("tnk,tnl->tkl", B, B)  # (T, K, K)
+
+        problem, w, A, P_half = _weight_problem(n_stocks, K, look_back)
+
+        cov_preds = []
+        n_failed = 0
+        for t in range(look_back + 1, T):  # index 0 has no history (see _one_step_ahead)
+            window = slice(t - look_back, t)
+            A.value = diags[window].reshape(-1, K)
+            P_half.value = _psd_square_root(BtB[window].sum(axis=0))
+
+            try:
+                problem.solve()
+            except cp.SolverError:
+                w.value = None
+
+            if w.value is None:
+                n_failed += 1
+                cov_preds.append(np.full((n_stocks, n_stocks), np.nan))
+                continue
+
+            L_t = sum(w.value[k] * L_all[k][t] for k in range(K))
+            cov_preds.append(np.linalg.inv(L_t @ L_t.T))
+
+        if n_failed:
+            print(f"Weight solve failed on {n_failed} of {T - look_back - 1} days (predictions are NaN)")
+
+        return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
+
+    cov_predicted_kxk = solve_precision_mixture_kxk(returns_arr, cov_matrices, look_back=10)
+    return (cov_predicted_kxk,)
+
+
+@app.cell
+def check_kxk_matches_naive(cov_predicted_kxk, cov_predicted_naive, np):
+    # both formulations solve the same problem, so predictions agree up to solver tolerance
+    np.testing.assert_allclose(cov_predicted_kxk, cov_predicted_naive, rtol=1e-3, atol=1e-6)
     return
 
 
