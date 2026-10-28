@@ -55,6 +55,9 @@ excerpt: "One sentence description used in previews."
 - Absolute value: `\lvert x \rvert` (not `|x|`)
 - L2 norm: `\|...\|_2`
 - L1 norm: `\|...\|_1`
+- Ones vector: `\mathbf{1}`
+- Vector (componentwise) inequality: `\succeq` / `\preceq`, e.g. `w \succeq 0` (Boyd & Vandenberghe style). Use `\ge` / `\le` only for scalars.
+- State the variable and its domain, e.g. `w \in \mathbf{R}^K`.
 
 ### Optimization problem layout
 
@@ -67,6 +70,7 @@ $$
 - Use `\underset{...}{\text{minimize}}` (not `\min`).
 - Use `\quad` after `\text{minimize}` before the objective.
 - Always include `\frac{1}{N}` scaling for empirical loss functions.
+- Constraints go after `\text{subject to}` and use `\succeq` for vector inequalities, e.g. `\text{subject to}\quad w \succeq 0, \quad \mathbf{1}^T w = 1`.
 
 ### Sign / subgradient
 
