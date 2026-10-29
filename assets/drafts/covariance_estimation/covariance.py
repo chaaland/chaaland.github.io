@@ -890,6 +890,9 @@ def mixture_components(iterated_ewma, np, returns_arr):
     # Half-life pairs (h_vol, h_corr) in days — "Stocks" configuration from Boyd et al. 2023
     half_life_pairs = [(10, 21), (21, 63), (63, 125), (125, 250), (250, 500)]
 
+    # Days of history used to choose the mixture weights at each time step
+    look_back_days = 20
+
     def precision_cholesky_factors(
         cov_matrices: list[np.ndarray],  # K one-step-ahead predictions, each (N, N, T)
     ) -> list[np.ndarray]:
@@ -902,13 +905,20 @@ def mixture_components(iterated_ewma, np, returns_arr):
         return result
 
     cov_matrices = [iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr) for _h_vol, _h_corr in half_life_pairs]
-    return cov_matrices, cp, precision_cholesky_factors
+    return (
+        cov_matrices,
+        cp,
+        half_life_pairs,
+        look_back_days,
+        precision_cholesky_factors,
+    )
 
 
 @app.cell
 def precision_mixture_solver_naive(
     cov_matrices,
     cp,
+    look_back_days,
     np,
     precision_cholesky_factors,
     returns_arr,
@@ -981,7 +991,7 @@ def precision_mixture_solver_naive(
 
         return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
 
-    cov_predicted_naive = solve_precision_mixture_naive(returns_arr, cov_matrices, look_back=10)
+    cov_predicted_naive = solve_precision_mixture_naive(returns_arr, cov_matrices, look_back=look_back_days)
     return (cov_predicted_naive,)
 
 
@@ -989,6 +999,7 @@ def precision_mixture_solver_naive(
 def precision_mixture_solver_kxk(
     cov_matrices,
     cp,
+    look_back_days,
     np,
     precision_cholesky_factors,
     returns_arr,
@@ -1026,12 +1037,12 @@ def precision_mixture_solver_kxk(
         returns: np.ndarray,  # (N, T)
         cov_matrices: list[np.ndarray],  # K arrays, each (N, N, T)
         look_back: int = 10,
-    ) -> np.ndarray:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Same predictor as solve_precision_mixture_naive, but with the K x K reformulation of the weight problem.
 
-        Returns covariance predictions of shape (N, N, T - look_back - 1), aligned with
-        dates[look_back + 1:]. Days where the weight solve fails are NaN.
+        Returns (covariances, weights) with shapes (N, N, T - look_back - 1) and (K, T - look_back - 1),
+        both aligned with dates[look_back + 1:]. Days where the weight solve fails are NaN.
         """
         K = len(cov_matrices)
         n_stocks, _, T = cov_matrices[0].shape
@@ -1046,6 +1057,7 @@ def precision_mixture_solver_kxk(
         problem, w, A, P_half = _weight_problem(n_stocks, K, look_back)
 
         cov_preds = []
+        weights = []
         n_failed = 0
         for t in range(look_back + 1, T):  # index 0 has no history (see _one_step_ahead)
             window = slice(t - look_back, t)
@@ -1060,24 +1072,95 @@ def precision_mixture_solver_kxk(
             if w.value is None:
                 n_failed += 1
                 cov_preds.append(np.full((n_stocks, n_stocks), np.nan))
+                weights.append(np.full(K, np.nan))
                 continue
 
             L_t = sum(w.value[k] * L_all[k][t] for k in range(K))
             cov_preds.append(np.linalg.inv(L_t @ L_t.T))
+            weights.append(w.value.copy())
 
         if n_failed:
             print(f"Weight solve failed on {n_failed} of {T - look_back - 1} days (predictions are NaN)")
 
-        return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
+        return np.stack(cov_preds, axis=-1), np.stack(weights, axis=-1)  # (N, N, T'), (K, T'), T' = T - look_back - 1
 
-    cov_predicted_kxk = solve_precision_mixture_kxk(returns_arr, cov_matrices, look_back=10)
-    return (cov_predicted_kxk,)
+    cov_predicted_kxk, weights_kxk = solve_precision_mixture_kxk(returns_arr, cov_matrices, look_back=look_back_days)
+    return cov_predicted_kxk, weights_kxk
 
 
 @app.cell
 def check_kxk_matches_naive(cov_predicted_kxk, cov_predicted_naive, np):
     # both formulations solve the same problem, so predictions agree up to solver tolerance
     np.testing.assert_allclose(cov_predicted_kxk, cov_predicted_naive, rtol=1e-3, atol=1e-6)
+    return
+
+
+@app.cell(hide_code=True)
+def weights_smoothing_selector(mo):
+    weights_smoothing_radio = mo.ui.radio(
+        options={"None (daily)": 1, "21 days": 21, "63 days": 63, "126 days": 126},
+        value="63 days",
+        label="Trailing average",
+        inline=True,
+    )
+    return (weights_smoothing_radio,)
+
+
+@app.cell
+def plot_mixture_weights(
+    half_life_pairs,
+    mo,
+    np,
+    plt,
+    returns_wide_df,
+    style_ax,
+    weights_kxk,
+    weights_smoothing_radio,
+):
+    _INK = "#111827"
+    _DIM = "#6b7280"
+    _k = weights_smoothing_radio.value
+
+    # weights are aligned with the last T - look_back - 1 dates
+    _dates = returns_wide_df["Date"].to_numpy()[-weights_kxk.shape[1] :]
+
+    # solver tolerance can leave tiny negatives, so clip and renormalize onto the simplex
+    _w = np.clip(weights_kxk, 0.0, None)
+    _w = _w / _w.sum(axis=0, keepdims=True)
+
+    # trailing mean over the last _k days (shorter at the start); averages of simplex points stay on the simplex
+    _csum = np.cumsum(np.concatenate([np.zeros((_w.shape[0], 1)), _w], axis=1), axis=1)
+    _start = np.maximum(np.arange(1, _w.shape[1] + 1) - _k, 0)
+    _w = (_csum[:, 1:] - _csum[:, _start]) / (np.arange(1, _w.shape[1] + 1) - _start)
+
+    _colors = plt.cm.viridis(np.linspace(0.05, 0.95, len(half_life_pairs)))  # fast (dark) to slow (light)
+    _labels = [f"{_h_vol}/{_h_cor}" for _h_vol, _h_cor in half_life_pairs]
+
+    _fig, _ax = plt.subplots(figsize=(10, 4.5))
+    _ax.stackplot(_dates, _w, colors=_colors, labels=_labels, linewidth=0, alpha=0.95, zorder=2)
+    style_ax(_ax, fig=_fig, date_interval=6, y_fmt=lambda v, _: f"{v:.0%}")
+    _ax.set_ylim(0, 1)
+    _ax.margins(x=0)
+    _legend = _ax.legend(
+        title=r"$H^{vol}$ / $H^{cor}$ (days)",
+        loc="upper left",
+        bbox_to_anchor=(1.01, 1.0),
+        frameon=False,
+        labelcolor=_INK,
+        fontsize=8.5,
+        title_fontsize=8.5,
+    )
+    _legend.get_title().set_color(_DIM)
+    _ax.set_title(
+        "FAANG  ·  CM-IEWMA Component Weights" + ("" if _k == 1 else f"  ({_k}d trailing average)"),
+        color=_INK,
+        fontsize=11,
+        fontweight="bold",
+        loc="left",
+        pad=10,
+    )
+    _fig.tight_layout()
+    mo.vstack([weights_smoothing_radio, _fig])
     return
 
 
