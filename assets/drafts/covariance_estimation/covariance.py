@@ -73,26 +73,43 @@ def section_load_stock_returns(mo):
 @app.cell
 def load_stock_data(Path, cs, end_date, pl, start_date, yf):
     data_file = Path("stocks.parquet")
+
+    # The first five are plotted throughout the notebook; the rest widen the universe for the mixture experiments
     symbols = ["META", "AAPL", "AMZN", "NFLX", "GOOG"]
     colors = ["tab:blue", "tab:gray", "tab:purple", "tab:red", "tab:green"]
     symbol_to_color = dict(zip(symbols, colors))
+    extra_symbols = [
+        "MSFT", "NVDA", "TSLA", "JPM", "V", "UNH", "XOM", "JNJ", "WMT", "PG",
+        "MA", "HD", "CVX", "MRK", "LLY", "ABBV", "KO", "PEP", "BAC", "COST",
+        "AVGO", "ORCL", "CSCO", "ADBE", "CRM", "AMD", "INTC", "QCOM", "TXN", "T",
+        "VZ", "DIS", "NKE", "MCD", "PFE", "TMO", "ABT", "WFC", "CAT", "IBM",
+        "HON", "AMGN", "GS", "LOW", "UPS",
+    ]  # fmt: skip
+    universe = symbols + extra_symbols
 
-    if data_file.exists():
-        df = pl.read_parquet(data_file)
-    else:
-        frames = []
+    # Only download tickers that are not already in the cache, then write everything back
+    cached_df = pl.read_parquet(data_file) if data_file.exists() else None
+    cached_tickers = set() if cached_df is None else set(cached_df["Ticker"].unique())
+    missing_symbols = [symbol for symbol in universe if symbol not in cached_tickers]
 
-        for symbol in symbols:
-            df = yf.Ticker(symbol).history(start=start_date, end=end_date)
-            df = pl.from_pandas(df.reset_index()).with_columns(pl.lit(symbol).alias("Ticker"))
-            frames.append(df)
+    if missing_symbols:
+        frames = [] if cached_df is None else [cached_df]
 
-        df = pl.concat(frames, how="vertical").sort("Ticker", "Date")
-        df.write_parquet(data_file)
+        for symbol in missing_symbols:
+            history = yf.Ticker(symbol).history(start=start_date, end=end_date)
+            assert len(history) > 0, f"No data returned for {symbol}"
+            frames.append(pl.from_pandas(history.reset_index()).with_columns(pl.lit(symbol).alias("Ticker")))
 
-    df = df.select(cs.by_name("Ticker", "Date"), ~cs.by_name("Ticker", "Date"))
+        cached_df = pl.concat(frames, how="diagonal_relaxed").sort("Ticker", "Date")
+        cached_df.write_parquet(data_file)
+
+    universe_df = cached_df.filter(pl.col("Ticker").is_in(universe))
+    universe_df = universe_df.select(cs.by_name("Ticker", "Date"), ~cs.by_name("Ticker", "Date"))
+
+    # the plots below only use the five tickers in `symbols`
+    df = universe_df.filter(pl.col("Ticker").is_in(symbols))
     df
-    return df, symbol_to_color, symbols
+    return df, symbol_to_color, symbols, universe, universe_df
 
 
 @app.cell
@@ -884,7 +901,18 @@ def section_cm_iewma(mo):
 
 
 @app.cell
-def mixture_components(iterated_ewma, np, returns_arr):
+def prepare_universe_returns(pl, universe, universe_df):
+    # the mixture experiments use every ticker in the universe, not just the five that are plotted above
+    universe_returns_df = universe_df.select(
+        "Ticker", "Date", Return=pl.col("Close").pct_change().over("Ticker")
+    ).filter(pl.col("Return").is_not_null())
+    universe_returns_wide_df = universe_returns_df.pivot(on="Ticker", index="Date")
+    universe_returns_arr = universe_returns_wide_df.select(universe).to_numpy().T  # stocks x time
+    return universe_returns_arr, universe_returns_wide_df
+
+
+@app.cell
+def mixture_components(iterated_ewma, np, universe_returns_arr):
     import cvxpy as cp
 
     # Half-life pairs (h_vol, h_corr) in days — "Stocks" configuration from Boyd et al. 2023
@@ -904,7 +932,7 @@ def mixture_components(iterated_ewma, np, returns_arr):
             result.append(np.linalg.cholesky(prec_t))  # (T, N, N), lower triangular
         return result
 
-    cov_matrices = [iterated_ewma(returns_arr, h_vol=_h_vol, h_corr=_h_corr) for _h_vol, _h_corr in half_life_pairs]
+    cov_matrices = [iterated_ewma(universe_returns_arr, h_vol=_h_vol, h_corr=_h_corr) for _h_vol, _h_corr in half_life_pairs]
     return (
         cov_matrices,
         cp,
@@ -921,9 +949,10 @@ def precision_mixture_solver_naive(
     look_back_days,
     np,
     precision_cholesky_factors,
-    returns_arr,
+    universe_returns_arr,
 ):
     # Direct formulation: build the full N x N cvxpy expression for every day in the window, every solve.
+    import time as _time
 
     def _solve_optimal_weights(
         cholesky_factors: list[np.ndarray],  # K arrays, each (window, N, N)
@@ -972,26 +1001,31 @@ def precision_mixture_solver_naive(
         """
         K = len(cov_matrices)
         _, _, T = cov_matrices[0].shape
+        n_days = T - look_back - 1
 
         L_all = precision_cholesky_factors(cov_matrices)
 
         cov_preds = []
         n_failed = 0
-        for t in range(look_back + 1, T):  # index 0 has no history (see _one_step_ahead)
+        start = _time.perf_counter()
+        for i, t in enumerate(range(look_back + 1, T)):  # index 0 has no history (see _one_step_ahead)
+            if i % 100 == 0:
+                print(f"naive: day {i}/{n_days} ({_time.perf_counter() - start:.0f}s elapsed)")
+
             w_opt = _solve_optimal_weights([Lk[t - look_back : t] for Lk in L_all], returns[:, t - look_back : t])
             if w_opt is None:
                 n_failed += 1
+                print(f"naive: weight solve failed on day {i}")
                 cov_preds.append(np.full(cov_matrices[0].shape[:2], np.nan))
                 continue
             L_t = sum(w_opt[k] * L_all[k][t] for k in range(K))
             cov_preds.append(np.linalg.inv(L_t @ L_t.T))
 
-        if n_failed:
-            print(f"Weight solve failed on {n_failed} of {T - look_back - 1} days (predictions are NaN)")
+        print(f"naive: done in {_time.perf_counter() - start:.0f}s, {n_failed} of {n_days} weight solves failed (NaN)")
 
         return np.stack(cov_preds, axis=-1)  # (N, N, T - look_back - 1)
 
-    cov_predicted_naive = solve_precision_mixture_naive(returns_arr, cov_matrices, look_back=look_back_days)
+    cov_predicted_naive = solve_precision_mixture_naive(universe_returns_arr, cov_matrices, look_back=look_back_days)
     return (cov_predicted_naive,)
 
 
@@ -1002,7 +1036,7 @@ def precision_mixture_solver_kxk(
     look_back_days,
     np,
     precision_cholesky_factors,
-    returns_arr,
+    universe_returns_arr,
 ):
     # K x K formulation: the data enters only through A and P, and the problem is built once (DPP).
 
@@ -1084,14 +1118,19 @@ def precision_mixture_solver_kxk(
 
         return np.stack(cov_preds, axis=-1), np.stack(weights, axis=-1)  # (N, N, T'), (K, T'), T' = T - look_back - 1
 
-    cov_predicted_kxk, weights_kxk = solve_precision_mixture_kxk(returns_arr, cov_matrices, look_back=look_back_days)
+    cov_predicted_kxk, weights_kxk = solve_precision_mixture_kxk(universe_returns_arr, cov_matrices, look_back=look_back_days)
     return cov_predicted_kxk, weights_kxk
 
 
 @app.cell
 def check_kxk_matches_naive(cov_predicted_kxk, cov_predicted_naive, np):
-    # both formulations solve the same problem, so predictions agree up to solver tolerance
-    np.testing.assert_allclose(cov_predicted_kxk, cov_predicted_naive, rtol=1e-3, atol=1e-6)
+    # both formulations solve the same problem, so predictions agree up to solver tolerance;
+    # a failed solve is NaN, so compare only the days that both formulations solved
+    _solved = ~np.isnan(cov_predicted_naive).any(axis=(0, 1)) & ~np.isnan(cov_predicted_kxk).any(axis=(0, 1))
+    np.testing.assert_allclose(
+        cov_predicted_kxk[..., _solved], cov_predicted_naive[..., _solved], rtol=1e-3, atol=1e-6
+    )
+    print(f"Formulations agree on {_solved.sum()} of {len(_solved)} days (the rest failed in at least one solve)")
     return
 
 
@@ -1112,8 +1151,9 @@ def plot_mixture_weights(
     mo,
     np,
     plt,
-    returns_wide_df,
     style_ax,
+    universe,
+    universe_returns_wide_df,
     weights_kxk,
     weights_smoothing_radio,
 ):
@@ -1122,7 +1162,7 @@ def plot_mixture_weights(
     _k = weights_smoothing_radio.value
 
     # weights are aligned with the last T - look_back - 1 dates
-    _dates = returns_wide_df["Date"].to_numpy()[-weights_kxk.shape[1] :]
+    _dates = universe_returns_wide_df["Date"].to_numpy()[-weights_kxk.shape[1] :]
 
     # solver tolerance can leave tiny negatives, so clip and renormalize onto the simplex
     _w = np.clip(weights_kxk, 0.0, None)
@@ -1152,7 +1192,7 @@ def plot_mixture_weights(
     )
     _legend.get_title().set_color(_DIM)
     _ax.set_title(
-        "FAANG  ·  CM-IEWMA Component Weights" + ("" if _k == 1 else f"  ({_k}d trailing average)"),
+        f"{len(universe)} Stocks  ·  CM-IEWMA Component Weights" + ("" if _k == 1 else f"  ({_k}d trailing average)"),
         color=_INK,
         fontsize=11,
         fontweight="bold",
