@@ -72,6 +72,12 @@ $$
 - Always include `\frac{1}{N}` scaling for empirical loss functions.
 - Constraints go after `\text{subject to}` and use `\succeq` for vector inequalities, e.g. `\text{subject to}\quad w \succeq 0, \quad \mathbf{1}^T w = 1`.
 
+### Named operators
+
+- Write operator names in bold roman, `\mathbf{...}` (Boyd & Vandenberghe style), not `\mathrm{...}` or plain italics.
+- Covariance and variance: `\mathbf{cov}(x, y)`, `\mathbf{var}(x)`, e.g. `\beta = \mathbf{cov}(r, m) / \mathbf{var}(m)`.
+- Diagonal matrix: `\mathbf{diag}(d_1, \ldots, d_n)`.
+
 ### Sign / subgradient
 
 - Sign function: `\mathbf{sign}(x)`
